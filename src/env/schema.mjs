@@ -17,10 +17,14 @@ export const serverSchema = z.object({
     // Since NextAuth automatically uses the VERCEL_URL if present.
     (str) => process.env.VERCEL_URL ?? str,
     // VERCEL_URL doesnt include `https` so it cant be validated as a URL
-    process.env.VERCEL ? z.string() : z.string().url(),
+    process.env.VERCEL ? z.string() : z.string().url()
   ),
-  DISCORD_CLIENT_ID: z.string(),
-  DISCORD_CLIENT_SECRET: z.string(),
+  STRAVA_CLIENT_ID: z.string(),
+  STRAVA_CLIENT_SECRET: z.string(),
+  FACEBOOK_ID: z.string(),
+  FACEBOOK_SECRET: z.string(),
+  GOOGLE_ID: z.string(),
+  GOOGLE_SECRET: z.string(),
 });
 
 /**
