@@ -1,7 +1,7 @@
 export default function Footer() {
   return (
-    <footer className="footer mt-auto bg-neutral p-10 text-neutral-content">
-      <div>
+    <footer className="footer mt-auto gap-12 bg-neutral p-10 text-neutral-content">
+      <div className="flex w-full justify-end">
         <svg
           width="50"
           height="50"

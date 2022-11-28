@@ -34,6 +34,10 @@ export const authOptions: NextAuthOptions = {
       clientSecret: env.STRAVA_CLIENT_SECRET,
     }),
   ],
+  pages: {
+    signIn: "/user/signin",
+    newUser: "/user/new",
+  },
 };
 
 export default NextAuth(authOptions);

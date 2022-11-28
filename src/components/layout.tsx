@@ -15,9 +15,9 @@ export default function Layout({ children }: Props) {
         <meta name="description" content="Management de clubs de sport" />
         <link rel="icon" href="/favicon.ico" />
       </Head>
-      <div className="flex h-screen flex-1 flex-col">
+      <div className="flex h-screen flex-1 flex-col" data-theme="acid">
         <Navbar />
-        <main>{children}</main>
+        <main className="h-full bg-gray-100">{children}</main>
         <Footer />
       </div>
     </>

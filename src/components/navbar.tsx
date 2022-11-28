@@ -51,7 +51,7 @@ export default function Navbar() {
 
       <div className="navbar-end">
         {sessionData?.user?.id ? (
-          <div className="dropdown-end dropdown">
+          <div className="dropdown dropdown-end">
             <label tabIndex={0} className="btn-ghost btn-circle avatar btn">
               <div className="w-10 rounded-full">
                 <Image
@@ -71,7 +71,7 @@ export default function Navbar() {
                   className="justify-between"
                   href={`/user/${sessionData.user.id}`}
                 >
-                  Mon profile
+                  Mes informations
                 </Link>
               </li>
               <li>
