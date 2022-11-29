@@ -19,12 +19,11 @@ export const userRouter = router({
       })
     )
     .mutation(({ ctx, input }) => {
-      if (input.role === "ADMIN" && ctx.session.user?.role !== "ADMIN")
+      if (input.role === Role.ADMIN && ctx.session.user?.role !== Role.ADMIN)
         throw new TRPCError({
           code: "UNAUTHORIZED",
           message: "Only an admin user can give admin access",
         });
-      console.log("input :>> ", input);
       return ctx.prisma.user.update({
         where: { id: input.id },
         data: { ...input },

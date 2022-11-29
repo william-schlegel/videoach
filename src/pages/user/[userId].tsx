@@ -1,13 +1,13 @@
-import type { Role } from "@prisma/client";
+import { Role } from "@prisma/client";
 import { useRouter } from "next/router";
 import { trpc } from "../../utils/trpc";
 import { useForm, type SubmitHandler } from "react-hook-form";
 
 export const ROLE_LIST = [
-  { label: "Utilisateur", value: "USER" },
-  { label: "Coach", value: "COACH" },
-  { label: "Manager", value: "MANAGER" },
-  { label: "Administrateur", value: "ADMIN" },
+  { label: "Utilisateur", value: Role.USER },
+  { label: "Coach", value: Role.COACH },
+  { label: "Manager", value: Role.MANAGER },
+  { label: "Administrateur", value: Role.ADMIN },
 ];
 
 type FormValues = {
@@ -32,6 +32,7 @@ export default function Profile() {
   const onSubmit: SubmitHandler<FormValues> = (data) =>
     updateUser.mutate({
       id: myUserId,
+      ...userQuery.data,
       ...data,
     });
 
@@ -55,7 +56,7 @@ export default function Profile() {
             {...register("role")}
             defaultValue={userQuery.data?.role}
           >
-            {ROLE_LIST.filter((rl) => rl.value !== "ADMIN").map((rl) => (
+            {ROLE_LIST.filter((rl) => rl.value !== Role.ADMIN).map((rl) => (
               <option key={rl.value} value={rl.value}>
                 {rl.label}
               </option>

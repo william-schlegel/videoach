@@ -1,3 +1,4 @@
+import { Role } from "@prisma/client";
 import { initTRPC, TRPCError } from "@trpc/server";
 import superjson from "superjson";
 
@@ -39,7 +40,11 @@ const isAuthed = t.middleware(({ ctx, next }) => {
 export const protectedProcedure = t.procedure.use(isAuthed);
 
 const isAdmin = t.middleware(({ ctx, next }) => {
-  if (!ctx.session || !ctx.session.user || ctx.session.user?.role !== "ADMIN") {
+  if (
+    !ctx.session ||
+    !ctx.session.user ||
+    ctx.session.user?.role !== Role.ADMIN
+  ) {
     throw new TRPCError({ code: "UNAUTHORIZED" });
   }
   return next({

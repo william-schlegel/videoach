@@ -1,4 +1,4 @@
-import type { Role } from "@prisma/client";
+import { Role } from "@prisma/client";
 import { useSession } from "next-auth/react";
 import { useForm, type SubmitHandler } from "react-hook-form";
 import { trpc } from "../../utils/trpc";
@@ -31,7 +31,7 @@ function NewUser() {
             className="select-bordered select w-full max-w-xs"
             {...register("role")}
           >
-            {ROLE_LIST.filter((rl) => rl.value !== "ADMIN").map((rl) => (
+            {ROLE_LIST.filter((rl) => rl.value !== Role.ADMIN).map((rl) => (
               <option
                 key={rl.value}
                 selected={rl.value === getValues("role")}

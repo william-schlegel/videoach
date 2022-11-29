@@ -67,6 +67,7 @@ model User {
   image         String?
   accounts      Account[]
   sessions      Session[]
+  clubs         Club[]
   role          Role      @default(USER)
 }
 
@@ -76,4 +77,28 @@ model VerificationToken {
   expires    DateTime
 
   @@unique([identifier, token])
+}
+
+model Club {
+  id         String     @id @default(cuid())
+  name       String
+  address    String
+  userId     String
+  manager    User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  rooms      Room[]
+  activities Activity[]
+}
+
+model Room {
+  id     String @id @default(cuid())
+  name   String
+  clubId String
+  club   Club   @relation(fields: [clubId], references: [id], onDelete: Cascade)
+}
+
+model Activity {
+  id     String  @id @default(cuid())
+  name   String
+  Club   Club?   @relation(fields: [clubId], references: [id])
+  clubId String?
 }

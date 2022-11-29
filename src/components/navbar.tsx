@@ -1,14 +1,15 @@
+import { Role } from "@prisma/client";
 import { signIn, signOut, useSession } from "next-auth/react";
 import Image from "next/image";
 import Link from "next/link";
 import { type FC } from "react";
 
 const MENUS = [
-  { label: "Le club", page: "/" },
+  { label: "Le club", page: "/club" },
   { label: "Activités", page: "/activites" },
   { label: "Planning", page: "/planning" },
   { label: "Coachs", page: "/coachs" },
-  { label: "Réserver", page: "/reservation", acces: ["USER"] },
+  { label: "Réserver", page: "/reservation", acces: [Role.USER] },
 ];
 
 export default function Navbar() {
@@ -121,7 +122,9 @@ const Menu: FC = () => {
 const Logo: FC = () => {
   return (
     <div className="flex-1">
-      <a className="btn-ghost btn text-2xl capitalize">Videoach</a>
+      <Link href={"/"} className="btn-ghost btn text-2xl capitalize">
+        Videoach
+      </Link>
     </div>
   );
 };
