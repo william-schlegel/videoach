@@ -4,13 +4,12 @@
 
 @layer components {
   h1 {
-    @apply py-3 text-xl font-bold text-primary;
-  }
-
-  fieldset {
-    @apply flex items-center gap-2 py-1;
+    @apply py-3 text-3xl font-bold text-primary;
   }
   label {
-    @apply font-semibold text-primary;
+    @apply label-text label font-semibold text-primary;
+  }
+  input {
+    @apply input-bordered input w-full;
   }
 }

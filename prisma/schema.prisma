@@ -56,6 +56,7 @@ enum Role {
   USER
   COACH
   MANAGER
+  MANAGER_COACH
   ADMIN
 }
 
@@ -85,15 +86,24 @@ model Club {
   address    String
   userId     String
   manager    User       @relation(fields: [userId], references: [id], onDelete: Cascade)
-  rooms      Room[]
+  sites      Site[]
   activities Activity[]
+}
+
+model Site {
+  id      String @id @default(cuid())
+  name    String
+  address String
+  clubId  String
+  club    Club   @relation(fields: [clubId], references: [id], onDelete: Cascade)
+  rooms   Room[]
 }
 
 model Room {
   id     String @id @default(cuid())
   name   String
-  clubId String
-  club   Club   @relation(fields: [clubId], references: [id], onDelete: Cascade)
+  siteId String
+  site   Site   @relation(fields: [siteId], references: [id], onDelete: Cascade)
 }
 
 model Activity {

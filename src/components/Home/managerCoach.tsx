@@ -8,7 +8,7 @@ type Props = {
   userId: string;
 };
 
-const ManagerHomePage: FC<Props> = ({ userId }: Props) => {
+const ManagerCoachHomePage: FC<Props> = ({ userId }: Props) => {
   const { data: sessionData } = useSession();
 
   const clubQuery = trpc.clubs.getClubsForManager.useQuery(userId);
@@ -19,17 +19,15 @@ const ManagerHomePage: FC<Props> = ({ userId }: Props) => {
   )
     return <div>Cette page est réservée aux managers de clubs</div>;
 
-  console.log("clubQuery.data :>> ", clubQuery.data);
-
   return (
     <div className="container mx-auto">
-      <h1>Gérer mes clubs</h1>
+      <h1>Gérer ses clubs</h1>
       <div className="border-1 flex gap-4 rounded border-primary py-8">
         {clubQuery.isLoading ? (
           <div>Loading</div>
         ) : (
           clubQuery.data?.map((club) => (
-            <div className="btn-primary btn" key={club.id}>
+            <div className="card" key={club.id}>
               {club.name}
             </div>
           ))
@@ -40,4 +38,4 @@ const ManagerHomePage: FC<Props> = ({ userId }: Props) => {
   );
 };
 
-export default ManagerHomePage;
+export default ManagerCoachHomePage;
