@@ -7,10 +7,12 @@ import {
 } from "react-hook-form";
 import Modal from "../ui/modal";
 import SimpleForm from "../ui/simpleform";
+import { CgAdd } from "react-icons/cg";
 
 type FormValues = {
   name: string;
   address: string;
+  isSite: boolean;
 };
 
 const CreateClub = () => {
@@ -43,6 +45,7 @@ const CreateClub = () => {
       handleSubmit={handleSubmit(onSubmit, onError)}
       submitButtonText="Enregistrer"
       errors={errors}
+      buttonIcon={<CgAdd size={24} />}
     >
       <h3 className="text-lg font-bold">Créer un nouveau club</h3>
       <p className="py-4">
@@ -61,6 +64,24 @@ const CreateClub = () => {
             label: "Adresse",
             name: "address",
             required: "Adresse obligatoire",
+          },
+          {
+            name: "isSite",
+            component: (
+              <div className="form-control">
+                <label className="label cursor-pointer justify-start gap-4">
+                  <input
+                    type="checkbox"
+                    className="checkbox-primary checkbox"
+                    {...register("isSite")}
+                    defaultChecked={true}
+                  />
+                  <span className="label-text">
+                    {"C'est aussi un site d'activités"}
+                  </span>
+                </label>
+              </div>
+            ),
           },
         ]}
       />

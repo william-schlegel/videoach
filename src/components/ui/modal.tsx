@@ -1,3 +1,4 @@
+import { paramCase } from "param-case";
 import { type ReactNode, useRef } from "react";
 import { type FieldErrorsImpl } from "react-hook-form";
 
@@ -9,6 +10,7 @@ type Props = {
   submitButtonText: string;
   cancelButtonText?: string;
   errors?: FieldErrorsImpl;
+  buttonIcon?: ReactNode;
 };
 
 export default function Modal({
@@ -16,49 +18,70 @@ export default function Modal({
   handleSubmit,
   children,
   submitButtonText,
-  cancelButtonText,
+  cancelButtonText = "Annuler",
   handleCancel,
   errors,
+  buttonIcon,
 }: Props) {
   const closeRef = useRef<HTMLInputElement>(null);
+  const modalId = paramCase(title);
 
-  const handleClickSubmit = () => {
-    if (Object.keys(errors as object).length > 0) return;
+  const close = () => {
     if (!closeRef.current) return;
     closeRef.current.checked = false;
+  };
+
+  const handleClickSubmit = () => {
+    if (typeof errors === "object" && Object.keys(errors as object).length > 0)
+      return;
+    close();
     handleSubmit();
   };
 
   return (
     <>
-      <label htmlFor="club-creation-modal" className="btn-secondary btn">
+      <label htmlFor={modalId} className="btn-secondary btn gap-2">
+        {buttonIcon ? buttonIcon : null}
         {title}
       </label>
 
       <input
         type="checkbox"
-        id="club-creation-modal"
+        id={modalId}
         className="modal-toggle"
         ref={closeRef}
       />
       <div className="modal">
         <div className="modal-box relative">
           <label
-            htmlFor="club-creation-modal"
+            htmlFor={modalId}
             className="btn-secondary btn-sm btn-circle btn absolute right-2 top-2"
           >
             ✕
           </label>
           {children}
           <div className="modal-action">
-            <button className="btn-primary btn" onClick={handleClickSubmit}>
-              {submitButtonText}
-            </button>
-            {cancelButtonText && typeof handleCancel === "function" ? (
-              <button className="btn-primary btn" onClick={handleCancel}>
+            {cancelButtonText ? (
+              <button
+                className="btn-outline btn-secondary btn"
+                onClick={(e) => {
+                  e.preventDefault();
+                  if (typeof handleCancel === "function") handleCancel();
+                  close();
+                }}
+              >
                 {cancelButtonText}
               </button>
             ) : null}
+            <button
+              className="btn-primary btn"
+              onClick={(e) => {
+                e.preventDefault();
+                handleClickSubmit();
+              }}
+            >
+              {submitButtonText}
+            </button>
           </div>
         </div>
       </div>

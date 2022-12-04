@@ -3,6 +3,7 @@ import { useSession } from "next-auth/react";
 import { type FC } from "react";
 import { trpc } from "../../utils/trpc";
 import CreateClub from "../modals/createClub";
+import Spinner from "../ui/spinner";
 
 type Props = {
   userId: string;
@@ -24,7 +25,7 @@ const ManagerCoachHomePage: FC<Props> = ({ userId }: Props) => {
       <h1>Gérer ses clubs</h1>
       <div className="border-1 flex gap-4 rounded border-primary py-8">
         {clubQuery.isLoading ? (
-          <div>Loading</div>
+          <Spinner />
         ) : (
           clubQuery.data?.map((club) => (
             <div className="card" key={club.id}>

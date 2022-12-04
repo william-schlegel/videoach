@@ -12,11 +12,11 @@ import {
 } from "react";
 
 type SimpleFormField<T> = {
-  label: string;
+  label?: string | undefined;
   name: keyof T;
   required?: boolean | string;
   component?: ReactNode | undefined;
-  defaultValue?: number | string | undefined;
+  value?: number | string | undefined;
   type?: HTMLInputTypeAttribute;
   disabled?: boolean | undefined;
 };
@@ -45,8 +45,8 @@ export default function SimpleForm<T extends FieldValues>({
         const fn = field.name as string;
         return (
           <Fragment key={fn}>
-            <label>{field.label}</label>
-            <div>
+            {field.label !== undefined ? <label>{field.label}</label> : null}
+            <div className={field.label === undefined ? "col-span-2" : ""}>
               {field.component ? (
                 field.component
               ) : (
@@ -54,7 +54,7 @@ export default function SimpleForm<T extends FieldValues>({
                   {...register(fn as Path<T>, {
                     required: field.required ?? false,
                   })}
-                  defaultValue={field.defaultValue}
+                  value={field.value}
                   type={field.type || "text"}
                   disabled={field.disabled}
                 />

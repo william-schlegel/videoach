@@ -1,10 +1,13 @@
+import { Role } from "@prisma/client";
+import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 import { router, protectedProcedure } from "../trpc";
+import { siteRouter } from "./sites";
 
 export const clubRouter = router({
   getClubById: protectedProcedure.input(z.string()).query(({ ctx, input }) => {
     return ctx.prisma.club.findFirst({
-      where: { userId: input },
+      where: { id: input },
     });
   }),
   getClubsForManager: protectedProcedure
@@ -20,29 +23,78 @@ export const clubRouter = router({
         name: z.string(),
         address: z.string(),
         userId: z.string().cuid(),
+        isSite: z.boolean(),
       })
     )
-    .mutation(({ ctx, input }) => {
-      return ctx.prisma.club.create({ data: input });
+    .mutation(async ({ ctx, input }) => {
+      if (
+        ctx.session.user.role !== Role.ADMIN &&
+        ctx.session.user.id !== input.userId
+      )
+        throw new TRPCError({
+          code: "UNAUTHORIZED",
+          message: "You are not authorized to create a club for this user",
+        });
+      const club = await ctx.prisma.club.create({
+        data: {
+          name: input.name,
+          address: input.address,
+          userId: input.userId,
+        },
+      });
+      if (input.isSite) {
+        const caller = siteRouter.createCaller(ctx);
+        caller.createSite({
+          name: input.name,
+          address: input.address,
+          clubId: club.id,
+        });
+      }
+      return club;
     }),
-  // updateUser: protectedProcedure
-  //   .input(
-  //     z.object({
-  //       id: z.string(),
-  //       name: z.string().optional(),
-  //       email: z.string().email().optional(),
-  //       role: z.nativeEnum(Role),
-  //     })
-  //   )
-  //   .mutation(({ ctx, input }) => {
-  //     if (input.role === Role.ADMIN && ctx.session.user?.role !== Role.ADMIN)
-  //       throw new TRPCError({
-  //         code: "UNAUTHORIZED",
-  //         message: "Only an admin user can give admin access",
-  //       });
-  //     return ctx.prisma.user.update({
-  //       where: { id: input.id },
-  //       data: { ...input },
-  //     });
-  //   }),
+  updateClub: protectedProcedure
+    .input(
+      z.object({
+        id: z.string().cuid(),
+        name: z.string(),
+        address: z.string(),
+      })
+    )
+    .mutation(async ({ ctx, input }) => {
+      const club = await ctx.prisma.club.findFirst({
+        where: { id: input.id },
+      });
+      if (
+        ctx.session.user.role !== Role.ADMIN &&
+        ctx.session.user.id !== club?.userId
+      )
+        throw new TRPCError({
+          code: "UNAUTHORIZED",
+          message: "You are not authorized to modify this club",
+        });
+
+      return ctx.prisma.club.update({
+        where: { id: input.id },
+        data: {
+          name: input.name,
+          address: input.address,
+        },
+      });
+    }),
+  deleteClub: protectedProcedure
+    .input(z.string().cuid())
+    .mutation(async ({ ctx, input }) => {
+      const club = await ctx.prisma.club.findFirst({
+        where: { id: input },
+      });
+      if (
+        ctx.session.user.role !== Role.ADMIN &&
+        ctx.session.user.id !== club?.userId
+      )
+        throw new TRPCError({
+          code: "UNAUTHORIZED",
+          message: "You are not authorized to delete this club",
+        });
+      return ctx.prisma.club.delete({ where: { id: input } });
+    }),
 });
