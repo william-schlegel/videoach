@@ -3,11 +3,14 @@ import {
   useForm,
   type SubmitHandler,
   type SubmitErrorHandler,
+  type FieldErrorsImpl,
+  type UseFormRegister,
+  type FieldValues,
 } from "react-hook-form";
-import Modal from "../ui/modal";
+import Modal, { ModalVariant } from "../ui/modal";
 import SimpleForm from "../ui/simpleform";
 import { CgAdd, CgTrash } from "react-icons/cg";
-import { useState } from "react";
+import { type Dispatch, type SetStateAction, useState } from "react";
 
 type FormValues = {
   name: string;
@@ -16,21 +19,21 @@ type FormValues = {
 
 type CreateSiteProps = {
   clubId: string;
+  onSuccess?: (id: string) => void;
 };
 
-const CreateSite = ({ clubId }: CreateSiteProps) => {
-  const utils = trpc.useContext();
+export const CreateSite = ({ clubId, onSuccess }: CreateSiteProps) => {
   const {
     register,
     handleSubmit,
     formState: { errors },
+    reset,
   } = useForm<FormValues>();
   const [rooms, setRooms] = useState<string[] | null>(null);
 
   const createSite = trpc.sites.createSite.useMutation({
-    onSuccess: () => {
-      utils.sites.getSitesForClub.invalidate(clubId);
-    },
+    onSuccess: (data) =>
+      typeof onSuccess === "function" ? onSuccess(data.id) : {},
   });
 
   const onSubmit: SubmitHandler<FormValues> = (data) => {
@@ -42,6 +45,102 @@ const CreateSite = ({ clubId }: CreateSiteProps) => {
     console.log("errors", errors);
   };
 
+  return (
+    <Modal
+      title="Créer un nouveau site"
+      handleSubmit={handleSubmit(onSubmit, onError)}
+      submitButtonText="Enregistrer"
+      errors={errors}
+      buttonIcon={<CgAdd size={24} />}
+      onOpenModal={() => {
+        setRooms(null);
+        reset();
+      }}
+    >
+      <h3>Créer un nouveau site</h3>
+      <p className="py-4">
+        Saisissez les informations relatives à votre nouveau site
+        d&apos;activités
+      </p>
+      <SiteForm
+        register={register}
+        errors={errors}
+        rooms={rooms}
+        setRooms={setRooms}
+      />
+    </Modal>
+  );
+};
+
+type UpdateSiteProps = {
+  siteId: string;
+};
+
+export const UpdateSite = ({ siteId }: UpdateSiteProps) => {
+  const utils = trpc.useContext();
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+    reset,
+  } = useForm<FormValues>();
+  const [rooms, setRooms] = useState<string[] | null>(null);
+  const querySite = trpc.sites.getSiteById.useQuery(siteId, {
+    onSuccess(data) {
+      if (data) reset(data);
+    },
+  });
+  const updateSite = trpc.sites.updateSite.useMutation({
+    onSuccess: () => {
+      utils.sites.getSiteById.invalidate(siteId);
+    },
+  });
+
+  const onSubmit: SubmitHandler<FormValues> = (data) => {
+    console.log("data", data);
+    updateSite.mutate({ id: siteId, ...data });
+  };
+
+  const onError: SubmitErrorHandler<FormValues> = (errors) => {
+    console.log("errors", errors);
+  };
+
+  return (
+    <Modal
+      title={querySite.data?.name}
+      handleSubmit={handleSubmit(onSubmit, onError)}
+      submitButtonText="Mettre à jour le site"
+      errors={errors}
+      onOpenModal={() => {
+        setRooms(null);
+        reset();
+      }}
+      variant={ModalVariant.OUTLINED_PRIMARY}
+    >
+      <h3>Mettre à jour le site {querySite?.data?.name}</h3>
+      <SiteForm
+        register={register}
+        errors={errors}
+        rooms={rooms}
+        setRooms={setRooms}
+      />
+    </Modal>
+  );
+};
+
+type SiteFormProps<T extends FieldValues> = {
+  errors?: FieldErrorsImpl;
+  register: UseFormRegister<T>;
+  rooms: string[] | null;
+  setRooms: Dispatch<SetStateAction<string[] | null>>;
+};
+
+function SiteForm<T extends FieldValues>({
+  errors,
+  register,
+  rooms,
+  setRooms,
+}: SiteFormProps<T>): JSX.Element {
   const handleChangeRoom = (idx: number, name: string) => {
     const rs = rooms ? [...rooms] : [""];
     rs[idx] = name;
@@ -64,18 +163,7 @@ const CreateSite = ({ clubId }: CreateSiteProps) => {
   };
 
   return (
-    <Modal
-      title="Créer un nouveau site"
-      handleSubmit={handleSubmit(onSubmit, onError)}
-      submitButtonText="Enregistrer"
-      errors={errors}
-      buttonIcon={<CgAdd size={24} />}
-    >
-      <h3>Créer un nouveau site</h3>
-      <p className="py-4">
-        Saisissez les informations relatives à votre nouveau site
-        d&apos;activités
-      </p>
+    <>
       <SimpleForm
         errors={errors}
         register={register}
@@ -109,8 +197,6 @@ const CreateSite = ({ clubId }: CreateSiteProps) => {
           <CgTrash size={24} color="red" onClick={() => deleteRoom(idx)} />
         </div>
       ))}
-    </Modal>
+    </>
   );
-};
-
-export default CreateSite;
+}

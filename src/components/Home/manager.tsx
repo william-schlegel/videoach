@@ -1,11 +1,13 @@
 import { Role } from "@prisma/client";
 import { useSession } from "next-auth/react";
 import { useEffect, useState, type FC } from "react";
-import { type SubmitHandler, useForm } from "react-hook-form";
+import { useForm, type SubmitHandler } from "react-hook-form";
+import { CgTrash } from "react-icons/cg";
 import { trpc } from "../../utils/trpc";
 import Confirmation from "../modals/confirmation";
 import CreateClub from "../modals/createClub";
-import CreateSite from "../modals/createSite";
+import { CreateSite, UpdateSite } from "../modals/createSite";
+import { ModalVariant } from "../ui/modal";
 import SimpleForm from "../ui/simpleform";
 import Spinner from "../ui/spinner";
 
@@ -90,11 +92,19 @@ function ClubContent({ clubId }: ClubContentProps) {
   const updateClub = trpc.clubs.updateClub.useMutation({
     onSuccess: () => {
       utils.clubs.getClubsForManager.invalidate(sessionData?.user?.id ?? "");
+      utils.clubs.getClubById.refetch(clubId);
     },
   });
   const deleteClub = trpc.clubs.deleteClub.useMutation({
     onSuccess: () => {
       utils.clubs.getClubsForManager.invalidate(sessionData?.user?.id ?? "");
+      utils.clubs.getClubById.refetch(clubId);
+    },
+  });
+  const deleteSite = trpc.sites.deleteSite.useMutation({
+    onSuccess: () => {
+      utils.clubs.getClubsForManager.invalidate(sessionData?.user?.id ?? "");
+      utils.clubs.getClubById.refetch(clubId);
     },
   });
 
@@ -105,7 +115,7 @@ function ClubContent({ clubId }: ClubContentProps) {
   if (clubQuery.isLoading) return <Spinner />;
 
   return (
-    <div className="flex flex-wrap gap-4">
+    <div className="flex flex-wrap items-start gap-4">
       <SimpleForm
         register={register}
         fields={[
@@ -141,12 +151,26 @@ function ClubContent({ clubId }: ClubContentProps) {
         <div className="rounded border border-primary p-4">
           <div className="mb-4 flex flex-row items-center gap-8">
             <h3>Sites</h3>
-            <CreateSite clubId={clubId} />
+            <CreateSite
+              clubId={clubId}
+              onSuccess={() => {
+                utils.clubs.getClubById.refetch(clubId);
+              }}
+            />
           </div>
           {clubQuery?.data?.sites?.map((site) => (
-            <div key={site.id} className="flex gap-4">
-              <div className=""> {site.name} </div>
+            <div key={site.id} className="my-2 flex items-center gap-4">
+              <UpdateSite siteId={site.id} />
               <div className=""> {site.address} </div>
+              <Confirmation
+                message="Voulez-vou réellement supprimer ce site ?\nCette action est irréversible"
+                title="Supprimer"
+                buttonIcon={<CgTrash size={16} />}
+                onConfirm={() => {
+                  deleteSite.mutate(site.id);
+                }}
+                variant={ModalVariant.ICON_OUTLINED_SECONDARY}
+              />
             </div>
           ))}
         </div>

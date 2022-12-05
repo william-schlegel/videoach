@@ -22,6 +22,7 @@ const CreateClub = () => {
     register,
     handleSubmit,
     formState: { errors },
+    reset,
   } = useForm<FormValues>();
 
   const createClub = trpc.clubs.createClub.useMutation({
@@ -46,6 +47,7 @@ const CreateClub = () => {
       submitButtonText="Enregistrer"
       errors={errors}
       buttonIcon={<CgAdd size={24} />}
+      onOpenModal={() => reset()}
     >
       <h3>Créer un nouveau club</h3>
       <p className="py-4">
