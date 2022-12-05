@@ -27,6 +27,7 @@ type SimpleFormProps<T extends FieldValues> = {
   register: UseFormRegister<T>;
   onSubmit?: FormEventHandler<HTMLFormElement> | undefined;
   children?: ReactNode;
+  className?: string;
 };
 
 export default function SimpleForm<T extends FieldValues>({
@@ -35,10 +36,11 @@ export default function SimpleForm<T extends FieldValues>({
   register,
   onSubmit,
   children,
+  className,
 }: SimpleFormProps<T>): JSX.Element {
   return (
     <form
-      className="grid grid-cols-[auto_1fr] gap-2"
+      className={`grid grid-cols-[auto_1fr] gap-2 ${className}`}
       onSubmit={typeof onSubmit === "function" ? (e) => onSubmit(e) : undefined}
     >
       {fields.map((field) => {

@@ -25,7 +25,7 @@ function Confirmation({
       submitButtonText={textConfirmation}
       cancelButtonText={textCancel}
     >
-      <h3 className="text-lg font-bold">{title}</h3>
+      <h3>{title}</h3>
       {message.split("\\n").map((p, idx) => (
         <p key={idx}>{p}</p>
       ))}

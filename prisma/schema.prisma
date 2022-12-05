@@ -106,9 +106,16 @@ model Room {
   site   Site   @relation(fields: [siteId], references: [id], onDelete: Cascade)
 }
 
+model ActivityGroup {
+  id         String     @id @default(cuid())
+  name       String
+  default    Boolean
+  Activities Activity[]
+}
+
 model Activity {
-  id     String  @id @default(cuid())
+  id     String          @id @default(cuid())
   name   String
-  Club   Club?   @relation(fields: [clubId], references: [id])
-  clubId String?
+  groups ActivityGroup[]
+  clubs  Club[]
 }

@@ -2,12 +2,13 @@ import { Role } from "@prisma/client";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 import { router, protectedProcedure } from "../trpc";
-import { siteRouter } from "./sites";
+// import { siteRouter } from "./sites";
 
 export const clubRouter = router({
   getClubById: protectedProcedure.input(z.string()).query(({ ctx, input }) => {
-    return ctx.prisma.club.findFirst({
+    return ctx.prisma.club.findUnique({
       where: { id: input },
+      include: { sites: true, activities: true },
     });
   }),
   getClubsForManager: protectedProcedure
@@ -40,16 +41,24 @@ export const clubRouter = router({
           name: input.name,
           address: input.address,
           userId: input.userId,
+          sites: input.isSite
+            ? {
+                create: {
+                  name: input.name,
+                  address: input.address,
+                },
+              }
+            : undefined,
         },
       });
-      if (input.isSite) {
-        const caller = siteRouter.createCaller(ctx);
-        caller.createSite({
-          name: input.name,
-          address: input.address,
-          clubId: club.id,
-        });
-      }
+      // if (input.isSite) {
+      //   const caller = siteRouter.createCaller(ctx);
+      //   caller.createSite({
+      //     name: input.name,
+      //     address: input.address,
+      //     clubId: club.id,
+      //   });
+      // }
       return club;
     }),
   updateClub: protectedProcedure

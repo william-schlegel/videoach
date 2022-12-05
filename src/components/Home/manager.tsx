@@ -5,6 +5,7 @@ import { type SubmitHandler, useForm } from "react-hook-form";
 import { trpc } from "../../utils/trpc";
 import Confirmation from "../modals/confirmation";
 import CreateClub from "../modals/createClub";
+import CreateSite from "../modals/createSite";
 import SimpleForm from "../ui/simpleform";
 import Spinner from "../ui/spinner";
 
@@ -98,13 +99,13 @@ function ClubContent({ clubId }: ClubContentProps) {
   });
 
   const onSubmit: SubmitHandler<FormValues> = (data) => {
-    console.log("data", data);
     updateClub.mutate({ id: clubId, ...data });
   };
 
   if (clubQuery.isLoading) return <Spinner />;
+
   return (
-    <>
+    <div className="flex flex-wrap gap-4">
       <SimpleForm
         register={register}
         fields={[
@@ -121,6 +122,7 @@ function ClubContent({ clubId }: ClubContentProps) {
         ]}
         errors={errors}
         onSubmit={handleSubmit(onSubmit)}
+        className="w-1/2"
       >
         <div className="col-span-2 mt-4 flex flex-1 justify-end gap-4 border-t border-primary pt-4">
           <Confirmation
@@ -135,7 +137,29 @@ function ClubContent({ clubId }: ClubContentProps) {
           </button>
         </div>
       </SimpleForm>
-    </>
+      <div className="flex flex-1 flex-col gap-4">
+        <div className="rounded border border-primary p-4">
+          <div className="mb-4 flex flex-row items-center gap-8">
+            <h3>Sites</h3>
+            <CreateSite clubId={clubId} />
+          </div>
+          {clubQuery?.data?.sites?.map((site) => (
+            <div key={site.id} className="flex gap-4">
+              <div className=""> {site.name} </div>
+              <div className=""> {site.address} </div>
+            </div>
+          ))}
+        </div>
+        <div className="rounded border border-primary p-4">
+          <h3>Activités</h3>
+          {clubQuery?.data?.activities?.map((activity) => (
+            <div key={activity.id} className="flex gap-4">
+              <div className=""> {activity.name} </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
   );
 }
 

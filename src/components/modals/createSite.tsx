@@ -1,4 +1,3 @@
-import { useSession } from "next-auth/react";
 import { trpc } from "../../utils/trpc";
 import {
   useForm,
@@ -12,11 +11,13 @@ import { CgAdd } from "react-icons/cg";
 type FormValues = {
   name: string;
   address: string;
-  isSite: boolean;
 };
 
-const CreateClub = () => {
-  const { data: sessionData } = useSession();
+type CreateSiteProps = {
+  clubId: string;
+};
+
+const CreateSite = ({ clubId }: CreateSiteProps) => {
   const utils = trpc.useContext();
   const {
     register,
@@ -24,15 +25,15 @@ const CreateClub = () => {
     formState: { errors },
   } = useForm<FormValues>();
 
-  const createClub = trpc.clubs.createClub.useMutation({
+  const createSite = trpc.sites.createSite.useMutation({
     onSuccess: () => {
-      utils.clubs.getClubsForManager.invalidate(sessionData?.user?.id ?? "");
+      utils.sites.getSitesForClub.invalidate(clubId);
     },
   });
 
   const onSubmit: SubmitHandler<FormValues> = (data) => {
     console.log("data", data);
-    createClub.mutate({ userId: sessionData?.user?.id ?? "", ...data });
+    createSite.mutate({ clubId, ...data });
   };
 
   const onError: SubmitErrorHandler<FormValues> = (errors) => {
@@ -41,22 +42,23 @@ const CreateClub = () => {
 
   return (
     <Modal
-      title="Créer un nouveau club"
+      title="Créer un nouveau site"
       handleSubmit={handleSubmit(onSubmit, onError)}
       submitButtonText="Enregistrer"
       errors={errors}
       buttonIcon={<CgAdd size={24} />}
     >
-      <h3>Créer un nouveau club</h3>
+      <h3>Créer un nouveau site</h3>
       <p className="py-4">
-        Saisissez les informations relatives à votre nouveau club
+        Saisissez les informations relatives à votre nouveau site
+        d&apos;activités
       </p>
       <SimpleForm
         errors={errors}
         register={register}
         fields={[
           {
-            label: "Nom du club",
+            label: "Nom du site",
             name: "name",
             required: "Le nom est obligatoire",
           },
@@ -65,28 +67,10 @@ const CreateClub = () => {
             name: "address",
             required: "Adresse obligatoire",
           },
-          {
-            name: "isSite",
-            component: (
-              <div className="form-control">
-                <label className="label cursor-pointer justify-start gap-4">
-                  <input
-                    type="checkbox"
-                    className="checkbox-primary checkbox"
-                    {...register("isSite")}
-                    defaultChecked={true}
-                  />
-                  <span className="label-text">
-                    {"C'est aussi un site d'activités"}
-                  </span>
-                </label>
-              </div>
-            ),
-          },
         ]}
       />
     </Modal>
   );
 };
 
-export default CreateClub;
+export default CreateSite;
