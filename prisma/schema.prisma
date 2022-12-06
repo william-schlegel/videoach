@@ -111,15 +111,17 @@ model Room {
 model ActivityGroup {
   id         String     @id @default(cuid())
   name       String
-  default    Boolean
+  default    Boolean    @default(false)
   Activities Activity[]
-  user       User       @relation(fields: [userId], references: [id], onDelete: Cascade)
-  userId     String
+  user       User?      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId     String?
 }
 
 model Activity {
-  id     String          @id @default(cuid())
-  name   String
-  groups ActivityGroup[]
-  clubs  Club[]
+  id      String        @id @default(cuid())
+  name    String
+  groupId String
+  group   ActivityGroup @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  clubId  String
+  club    Club          @relation(fields: [clubId], references: [id], onDelete: Cascade)
 }

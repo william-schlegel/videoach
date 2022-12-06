@@ -106,4 +106,31 @@ export const clubRouter = router({
         });
       return ctx.prisma.club.delete({ where: { id: input } });
     }),
+  updateClubActivities: protectedProcedure
+    .input(
+      z.object({
+        id: z.string().cuid(),
+        activities: z.array(z.string()),
+      })
+    )
+    .mutation(async ({ ctx, input }) => {
+      const club = await ctx.prisma.club.findFirst({
+        where: { id: input.id },
+      });
+      if (
+        ctx.session.user.role !== Role.ADMIN &&
+        ctx.session.user.id !== club?.userId
+      )
+        throw new TRPCError({
+          code: "UNAUTHORIZED",
+          message: "You are not authorized to modify this club",
+        });
+
+      return ctx.prisma.club.update({
+        where: { id: input.id },
+        data: {
+          activities: { connect: input.activities.map((id) => ({ id })) },
+        },
+      });
+    }),
 });

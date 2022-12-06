@@ -51,7 +51,7 @@ export const CreateSite = ({ clubId, onSuccess }: CreateSiteProps) => {
       handleSubmit={handleSubmit(onSubmit, onError)}
       submitButtonText="Enregistrer"
       errors={errors}
-      buttonIcon={<CgAdd size={24} />}
+      buttonIcon={<CgAdd size={16} />}
       onOpenModal={() => {
         setRooms(null);
         reset();
@@ -184,7 +184,7 @@ function SiteForm<T extends FieldValues>({
       <div className="flex items-center gap-4">
         <h3>Salles</h3>
         <button className="btn-outline btn-secondary btn" onClick={addRoom}>
-          <CgAdd size={24} />
+          <CgAdd size={16} />
           Ajouter
         </button>
       </div>
@@ -194,7 +194,7 @@ function SiteForm<T extends FieldValues>({
             value={room}
             onChange={(e) => handleChangeRoom(idx, e.target.value)}
           />
-          <CgTrash size={24} color="red" onClick={() => deleteRoom(idx)} />
+          <CgTrash size={16} color="red" onClick={() => deleteRoom(idx)} />
         </div>
       ))}
     </>

@@ -19,25 +19,27 @@ type Props = {
   handleSubmit: () => void;
   handleCancel?: () => void;
   children: ReactNode;
-  submitButtonText: string;
+  submitButtonText?: string;
   cancelButtonText?: string;
   errors?: FieldErrorsImpl;
   buttonIcon?: ReactNode;
   onOpenModal?: () => void;
   variant?: ModalVariant;
+  className?: string;
 };
 
 export default function Modal({
   title,
   handleSubmit,
   children,
-  submitButtonText,
+  submitButtonText = "Enregistrer",
   cancelButtonText = "Annuler",
   handleCancel,
   errors,
   buttonIcon,
   onOpenModal,
   variant = ModalVariant.SECONDARY,
+  className = "",
 }: Props) {
   const closeRef = useRef<HTMLInputElement>(null);
   const modalId = paramCase(title ?? uuid());
@@ -90,8 +92,8 @@ export default function Modal({
             onOpenModal();
         }}
       />
-      <div className="modal">
-        <div className="modal-box relative">
+      <div className={`modal`}>
+        <div className={`modal-box relative ${className}`}>
           <label
             htmlFor={modalId}
             className="btn-secondary btn-sm btn-circle btn absolute right-2 top-2"

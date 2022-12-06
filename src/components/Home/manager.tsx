@@ -4,9 +4,10 @@ import { useEffect, useState, type FC } from "react";
 import { useForm, type SubmitHandler } from "react-hook-form";
 import { CgTrash } from "react-icons/cg";
 import { trpc } from "../../utils/trpc";
+import AddActivity from "../modals/addActivity";
 import Confirmation from "../modals/confirmation";
 import CreateClub from "../modals/createClub";
-import { CreateSite, UpdateSite } from "../modals/createSite";
+import { CreateSite, UpdateSite } from "../modals/createUpdateSite";
 import { ModalVariant } from "../ui/modal";
 import SimpleForm from "../ui/simpleform";
 import Spinner from "../ui/spinner";
@@ -58,7 +59,7 @@ const ManagerHomePage: FC<Props> = ({ userId }: Props) => {
         )}
         {clubId === "" ? null : (
           <div className="w-full rounded border border-primary p-4">
-            <ClubContent clubId={clubId} />
+            <ClubContent userId={userId} clubId={clubId} />
           </div>
         )}
       </div>
@@ -67,6 +68,7 @@ const ManagerHomePage: FC<Props> = ({ userId }: Props) => {
 };
 
 type ClubContentProps = {
+  userId: string;
   clubId: string;
 };
 
@@ -75,7 +77,7 @@ type FormValues = {
   address: string;
 };
 
-function ClubContent({ clubId }: ClubContentProps) {
+function ClubContent({ userId, clubId }: ClubContentProps) {
   const { data: sessionData } = useSession();
   const clubQuery = trpc.clubs.getClubById.useQuery(clubId, {
     onSuccess(data) {
@@ -175,12 +177,27 @@ function ClubContent({ clubId }: ClubContentProps) {
           ))}
         </div>
         <div className="rounded border border-primary p-4">
-          <h3>Activités</h3>
-          {clubQuery?.data?.activities?.map((activity) => (
-            <div key={activity.id} className="flex gap-4">
-              <div className=""> {activity.name} </div>
-            </div>
-          ))}
+          <div className="mb-4 flex flex-row items-center gap-8">
+            <h3>Activités</h3>
+            <AddActivity
+              clubId={clubId}
+              userId={userId}
+              onSuccess={() => {
+                utils.clubs.getClubById.refetch(clubId);
+              }}
+              withAdd
+            />
+          </div>
+          <div className="flex flex-wrap gap-1">
+            {clubQuery?.data?.activities?.map((activity) => (
+              <span
+                key={activity.id}
+                className="rounded-full border border-neutral bg-base-100 px-4 py-2 text-neutral"
+              >
+                {activity.name}
+              </span>
+            ))}
+          </div>
         </div>
       </div>
     </div>

@@ -12,6 +12,9 @@
   h3 {
     @apply py-3 text-2xl font-semibold text-secondary;
   }
+  h4 {
+    @apply py-2 text-xl font-semibold text-secondary;
+  }
   label {
     @apply label-text label font-semibold text-primary;
   }
