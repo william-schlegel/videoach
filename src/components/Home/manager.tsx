@@ -186,6 +186,7 @@ function ClubContent({ userId, clubId }: ClubContentProps) {
                 utils.clubs.getClubById.refetch(clubId);
               }}
               withAdd
+              withUpdate
             />
           </div>
           <div className="flex flex-wrap gap-1">

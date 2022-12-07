@@ -32,9 +32,6 @@ export const activityRouter = router({
         },
       });
     }),
-  getAllActivities: protectedProcedure.query(({ ctx }) => {
-    return ctx.prisma.activity.findMany();
-  }),
   getActivitiesForClub: protectedProcedure
     .input(z.object({ clubId: z.string().cuid(), userId: z.string().cuid() }))
     .query(({ ctx, input }) => {

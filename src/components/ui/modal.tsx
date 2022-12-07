@@ -14,6 +14,13 @@ export enum ModalVariant {
   ICON_OUTLINED_SECONDARY = "Icon-Secondary",
 }
 
+export type ModalButtonSize =
+  | "btn-xs"
+  | "btn-sm"
+  | "btn-md"
+  | "btn-lg"
+  | "btn-xl";
+
 type Props = {
   title: string | undefined;
   handleSubmit: () => void;
@@ -26,6 +33,7 @@ type Props = {
   onOpenModal?: () => void;
   variant?: ModalVariant;
   className?: string;
+  buttonSize?: ModalButtonSize;
 };
 
 export default function Modal({
@@ -40,9 +48,10 @@ export default function Modal({
   onOpenModal,
   variant = ModalVariant.SECONDARY,
   className = "",
+  buttonSize = "btn-md",
 }: Props) {
   const closeRef = useRef<HTMLInputElement>(null);
-  const modalId = paramCase(title ?? uuid());
+  const modalId = paramCase(uuid());
 
   const close = () => {
     if (!closeRef.current) return;
@@ -76,7 +85,7 @@ export default function Modal({
           htmlFor={modalId}
           className={`${primary ? "btn-primary" : "btn-secondary"} ${
             outlined ? "btn-outline" : ""
-          } btn gap-2`}
+          } btn gap-2 ${buttonSize} `}
         >
           {buttonIcon ? buttonIcon : null}
           {iconOnly ? null : title}

@@ -100,11 +100,23 @@ model Site {
   rooms   Room[]
 }
 
+enum RoomReservation {
+  NONE
+  POSSIBLE
+  MANDATORY
+}
+
 model Room {
-  id     String @id @default(cuid())
-  name   String
-  siteId String
-  site   Site   @relation(fields: [siteId], references: [id], onDelete: Cascade)
+  id           String          @id @default(cuid())
+  name         String
+  reservation  RoomReservation @default(NONE)
+  capacity     Int
+  unavailable  Boolean         @default(false)
+  openWithClub Boolean         @default(true)
+  openingTime  DateTime        @db.Time
+  closingTime  DateTime        @db.Time
+  siteId       String
+  site         Site            @relation(fields: [siteId], references: [id], onDelete: Cascade)
 }
 
 // activity group may be standard (default group) or belong to a specific user

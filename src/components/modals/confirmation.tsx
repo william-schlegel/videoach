@@ -1,5 +1,5 @@
 import { type ReactNode } from "react";
-import Modal, { ModalVariant } from "../ui/modal";
+import Modal, { type ModalButtonSize, ModalVariant } from "../ui/modal";
 
 type Props = {
   title: string;
@@ -10,6 +10,7 @@ type Props = {
   onCancel?: () => void;
   buttonIcon?: ReactNode;
   variant?: ModalVariant;
+  buttonSize?: ModalButtonSize;
 };
 
 function Confirmation({
@@ -21,6 +22,7 @@ function Confirmation({
   onCancel,
   buttonIcon,
   variant = ModalVariant.SECONDARY,
+  buttonSize = "btn-md",
 }: Props) {
   return (
     <Modal
@@ -31,6 +33,7 @@ function Confirmation({
       cancelButtonText={textCancel}
       buttonIcon={buttonIcon}
       variant={variant}
+      buttonSize={buttonSize}
     >
       <h3>{title}</h3>
       {message.split("\\n").map((p, idx) => (
