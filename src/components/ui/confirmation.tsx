@@ -1,5 +1,5 @@
 import { type ReactNode } from "react";
-import Modal, { type ModalButtonSize, ModalVariant } from "../ui/modal";
+import Modal, { type ModalButtonSize, ModalVariant } from "./modal";
 
 type Props = {
   title: string;

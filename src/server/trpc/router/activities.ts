@@ -7,14 +7,14 @@ export const activityRouter = router({
   getActivityById: protectedProcedure
     .input(z.string())
     .query(({ ctx, input }) => {
-      return ctx.prisma.activity.findFirst({
+      return ctx.prisma.activity.findUnique({
         where: { id: input },
       });
     }),
   getActivityGroupById: protectedProcedure
     .input(z.string())
     .query(({ ctx, input }) => {
-      return ctx.prisma.activityGroup.findFirst({
+      return ctx.prisma.activityGroup.findUnique({
         where: { id: input },
       });
     }),
@@ -29,6 +29,9 @@ export const activityRouter = router({
             },
             { userId: input },
           ],
+        },
+        orderBy: {
+          name: "asc",
         },
       });
     }),
@@ -97,4 +100,56 @@ export const activityRouter = router({
     .mutation(({ ctx, input }) =>
       ctx.prisma.activity.delete({ where: { id: input.activityId } })
     ),
+  createGroup: protectedProcedure
+    .input(
+      z.object({
+        name: z.string(),
+        userId: z.string().cuid(),
+      })
+    )
+    .mutation(({ ctx, input }) =>
+      ctx.prisma.activityGroup.create({
+        data: {
+          name: input.name,
+          userId: input.userId,
+          default: false,
+        },
+      })
+    ),
+  updateGroup: protectedProcedure
+    .input(
+      z.object({
+        id: z.string().cuid(),
+        name: z.string(),
+      })
+    )
+    .mutation(({ ctx, input }) =>
+      ctx.prisma.activityGroup.update({
+        where: { id: input.id },
+        data: {
+          name: input.name,
+        },
+      })
+    ),
+  deleteGroup: protectedProcedure
+    .input(
+      z.object({
+        groupId: z.string().cuid(),
+      })
+    )
+    .mutation(async ({ ctx, input }) => {
+      const group = await ctx.prisma.activityGroup.findUnique({
+        where: { id: input.groupId },
+      });
+      if (
+        ctx.session.user.role !== Role.ADMIN &&
+        ctx.session.user.id !== group?.userId
+      )
+        throw new TRPCError({
+          code: "UNAUTHORIZED",
+          message: "You are not authorized to delete this group",
+        });
+
+      return ctx.prisma.activityGroup.delete({ where: { id: input.groupId } });
+    }),
 });

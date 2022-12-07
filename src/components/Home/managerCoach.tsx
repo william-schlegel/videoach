@@ -2,7 +2,7 @@ import { Role } from "@prisma/client";
 import { useSession } from "next-auth/react";
 import { type FC } from "react";
 import { trpc } from "../../utils/trpc";
-import CreateClub from "../modals/createClub";
+import CreateClub from "../modals/manageClub";
 import Spinner from "../ui/spinner";
 
 type Props = {

@@ -2,7 +2,7 @@ import { trpc } from "../../utils/trpc";
 import Modal, { ModalVariant } from "../ui/modal";
 import { CgAdd, CgPen, CgTrash } from "react-icons/cg";
 import { useState } from "react";
-import Confirmation from "./confirmation";
+import Confirmation from "../ui/confirmation";
 
 type AddActivityProps = {
   userId: string;
@@ -61,17 +61,27 @@ const AddActivity = ({
             {queryGroups.data?.map((group) => (
               <li key={group.id}>
                 <button
-                  className={`w-full ${groupId === group.id ? "active" : ""}`}
+                  className={`flex w-full justify-between ${
+                    groupId === group.id ? "active" : ""
+                  }`}
                   onClick={() => setGroupId(group.id)}
                 >
                   {group.name}
+                  {withUpdate && (
+                    <div className="flex gap-1">
+                      <UpdateGroup
+                        id={group.id}
+                        userId={userId}
+                        initialName={group.name}
+                      />
+                      <DeleteGroup groupId={group.id} userId={userId} />
+                    </div>
+                  )}
                 </button>
               </li>
             ))}
           </ul>
-          {withAdd ? (
-            <button className="btn-secondary btn w-full">Nouveau groupe</button>
-          ) : null}
+          {withAdd ? <NewGroup userId={userId} /> : null}
         </div>
         <div className="flex flex-grow flex-col gap-2">
           <h4>Activités</h4>
@@ -109,12 +119,12 @@ const AddActivity = ({
 
 export default AddActivity;
 
-type NewActivityType = {
+type NewActivityProps = {
   clubId: string;
   groupId: string;
 };
 
-const NewActivity = ({ clubId, groupId }: NewActivityType) => {
+const NewActivity = ({ clubId, groupId }: NewActivityProps) => {
   const utils = trpc.useContext();
   const groupQuery = trpc.activities.getActivityGroupById.useQuery(groupId);
   const createActivity = trpc.activities.createActivity.useMutation({
@@ -150,7 +160,7 @@ const NewActivity = ({ clubId, groupId }: NewActivityType) => {
   );
 };
 
-type UpdateActivityType = {
+type UpdateActivityProps = {
   clubId: string;
   groupId: string;
   id: string;
@@ -162,7 +172,7 @@ function UpdateActivity({
   groupId,
   id,
   initialName,
-}: UpdateActivityType) {
+}: UpdateActivityProps) {
   const utils = trpc.useContext();
   const updateActivity = trpc.activities.updateActivity.useMutation({
     onSuccess: () => utils.activities.getActivitiesForClub.invalidate(),
@@ -204,12 +214,12 @@ function UpdateActivity({
   );
 }
 
-type DeleteActivityType = {
+type DeleteActivityProps = {
   clubId: string;
   activityId: string;
 };
 
-function DeleteActivity({ clubId, activityId }: DeleteActivityType) {
+function DeleteActivity({ clubId, activityId }: DeleteActivityProps) {
   const utils = trpc.useContext();
   const deleteActivity = trpc.activities.deleteActivity.useMutation({
     onSuccess: () => utils.activities.getActivitiesForClub.invalidate(),
@@ -220,6 +230,113 @@ function DeleteActivity({ clubId, activityId }: DeleteActivityType) {
       title="Supprimer l'activité"
       message="Voulez-vous supprimer cette activité ?\nCette action est irréversible"
       onConfirm={() => deleteActivity.mutate({ clubId, activityId })}
+      buttonIcon={<CgTrash size={12} />}
+      variant={ModalVariant.ICON_OUTLINED_SECONDARY}
+      textConfirmation="Supprimer définitivement"
+      buttonSize="btn-sm"
+    />
+  );
+}
+
+type NewGroupProps = {
+  userId: string;
+};
+
+const NewGroup = ({ userId }: NewGroupProps) => {
+  const utils = trpc.useContext();
+  const createGroup = trpc.activities.createGroup.useMutation({
+    onSuccess: () =>
+      utils.activities.getActivityGroupsForUser.invalidate(userId),
+  });
+  const [name, setName] = useState("");
+  const [error, setError] = useState(false);
+
+  function addNewGroup() {
+    if (name === "") {
+      setError(true);
+      return;
+    }
+    setError(false);
+    createGroup.mutate({
+      name,
+      userId,
+    });
+  }
+
+  return (
+    <Modal title="Nouveau groupe" handleSubmit={addNewGroup}>
+      <h3>Créer un nouveau groupe d&apos;activités</h3>
+      <input value={name} onChange={(e) => setName(e.target.value)} />
+      {error && (
+        <p className="text-sm text-error">Le nom doit être renseigné</p>
+      )}
+    </Modal>
+  );
+};
+
+type UpdateGroupProps = {
+  userId: string;
+  id: string;
+  initialName: string;
+};
+
+function UpdateGroup({ userId, id, initialName }: UpdateGroupProps) {
+  const utils = trpc.useContext();
+  const updateGroup = trpc.activities.updateGroup.useMutation({
+    onSuccess: () =>
+      utils.activities.getActivityGroupsForUser.invalidate(userId),
+  });
+  const [name, setName] = useState(initialName);
+  const [error, setError] = useState(false);
+
+  function update() {
+    if (name === "") {
+      setError(true);
+      return;
+    }
+    setError(false);
+    updateGroup.mutate({
+      id,
+      name,
+    });
+  }
+
+  return (
+    <Modal
+      title="Modifier le groupe"
+      handleSubmit={update}
+      buttonIcon={<CgPen size={12} />}
+      variant={ModalVariant.ICON_OUTLINED_SECONDARY}
+      buttonSize="btn-sm"
+    >
+      <h3>
+        Modifier le groupe <span className="text-primary">{initialName}</span>
+      </h3>
+      <input value={name} onChange={(e) => setName(e.target.value)} />
+      {error && (
+        <p className="text-sm text-error">Le nom doit être renseigné</p>
+      )}
+    </Modal>
+  );
+}
+
+type DeleteGroupProps = {
+  userId: string;
+  groupId: string;
+};
+
+function DeleteGroup({ groupId, userId }: DeleteGroupProps) {
+  const utils = trpc.useContext();
+  const deleteGroup = trpc.activities.deleteGroup.useMutation({
+    onSuccess: () =>
+      utils.activities.getActivityGroupsForUser.invalidate(userId),
+  });
+
+  return (
+    <Confirmation
+      title="Supprimer le groupe"
+      message="Voulez-vous supprimer ce groupe et les activités attachées ?\nCette action est irréversible"
+      onConfirm={() => deleteGroup.mutate({ groupId })}
       buttonIcon={<CgTrash size={12} />}
       variant={ModalVariant.ICON_OUTLINED_SECONDARY}
       textConfirmation="Supprimer définitivement"
