@@ -1,6 +1,7 @@
 {
   "club": "Club",
   "navigation": {
+    "dashboard": "Mon tableau de bord",
     "find-club": "Trouver un club",
     "activity": "Activités",
     "planning": "Planning",

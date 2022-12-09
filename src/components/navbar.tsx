@@ -5,15 +5,32 @@ import Link from "next/link";
 import { type FC } from "react";
 import { useTranslation } from "next-i18next";
 
-const MENUS = [
-  { label: "navigation.find-club", page: "/club" },
+type MenuDefinitionType = {
+  label: string;
+  page: string;
+  access?: Role[];
+};
+
+const MENUS: MenuDefinitionType[] = [
+  {
+    label: "navigation.dashboard",
+    page: "/",
+    access: [
+      Role.ADMIN,
+      Role.COACH,
+      Role.MANAGER,
+      Role.MANAGER_COACH,
+      Role.MEMBER,
+    ],
+  },
+  { label: "navigation.find-club", page: "/club", access: [] },
   { label: "navigation.activity", page: "/activites" },
   { label: "navigation.planning", page: "/planning" },
   { label: "navigation.coachs", page: "/coachs" },
   {
     label: "navigation.reservation",
     page: "/reservation",
-    acces: [Role.MEMBER],
+    access: [Role.MEMBER],
   },
 ];
 
@@ -111,9 +128,9 @@ const Menu: FC = () => {
     <>
       {MENUS.map((menu) => {
         if (
-          Array.isArray(menu.acces) &&
+          Array.isArray(menu.access) &&
           (!sessionData?.user?.role ||
-            !menu.acces.includes(sessionData.user.role))
+            !menu.access.includes(sessionData.user.role))
         )
           return null;
         return (
