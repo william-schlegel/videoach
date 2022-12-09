@@ -1,0 +1,14 @@
+{
+  "club": "Club",
+  "navigation": {
+    "find-club": "Find a club",
+    "activity": "Activities",
+    "planning": "Planning",
+    "coachs": "Coachs",
+    "reservation": "Reservation",
+    "my-info": "My information",
+    "disconnect": "Disconnect",
+    "connect": "Connect",
+    "create-account": "Create an account"
+  }
+}

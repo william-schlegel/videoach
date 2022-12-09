@@ -1,27 +1,49 @@
 import { Role } from "@prisma/client";
-import { type NextPage } from "next";
-import { useSession } from "next-auth/react";
-import AdminHomePage from "../components/Home/admin";
-import CoachHomePage from "../components/Home/coach";
-import ManagerHomePage from "../components/Home/manager";
-import ManagerCoachHomePage from "../components/Home/managerCoach";
-import PublicHomePage from "../components/Home/public";
-import UserHomePage from "../components/Home/user";
+import { type GetServerSidePropsContext } from "next";
+import { serverSideTranslations } from "next-i18next/serverSideTranslations";
+import nextI18nConfig from "../../next-i18next.config.mjs";
+import { authOptions } from "./api/auth/[...nextauth]";
+import { unstable_getServerSession } from "next-auth/next";
 
-const Home: NextPage = () => {
-  const { data: sessionData } = useSession();
-  if (!sessionData) return <PublicHomePage />;
-  if (sessionData.user?.role === Role.USER)
-    return <UserHomePage userId={sessionData.user.id} />;
-  if (sessionData.user?.role === Role.COACH)
-    return <CoachHomePage userId={sessionData.user.id} />;
-  if (sessionData.user?.role === Role.MANAGER)
-    return <ManagerHomePage userId={sessionData.user.id} />;
-  if (sessionData.user?.role === Role.MANAGER_COACH)
-    return <ManagerCoachHomePage userId={sessionData.user.id} />;
-  if (sessionData.user?.role === Role.ADMIN)
-    return <AdminHomePage userId={sessionData.user.id} />;
-  return <div>Home pour {sessionData.user?.role}</div>;
+const Home = () => {
+  return <div>Page de présentation du concept</div>;
 };
 
 export default Home;
+
+export const getServerSideProps = async ({
+  locale,
+  req,
+  res,
+}: GetServerSidePropsContext) => {
+  const session = await unstable_getServerSession(req, res, authOptions);
+  let destination = "";
+  if (session) {
+    if (session.user?.role === Role.MEMBER)
+      destination = `/member/${session.user.id}`;
+    if (session.user?.role === Role.COACH)
+      destination = `/coach/${session.user.id}`;
+    if (session.user?.role === Role.MANAGER)
+      destination = `/manager/${session.user.id}`;
+    if (session.user?.role === Role.MANAGER_COACH)
+      destination = `/manager-coach/${session.user.id}`;
+    if (session.user?.role === Role.ADMIN)
+      destination = `/admin/${session.user.id}`;
+  }
+  return {
+    redirect: destination
+      ? {
+          destination,
+          permanent: false,
+        }
+      : undefined,
+    props: {
+      session,
+      ...(await serverSideTranslations(
+        locale ?? "fr",
+        ["common"],
+        nextI18nConfig
+      )),
+    },
+  };
+};

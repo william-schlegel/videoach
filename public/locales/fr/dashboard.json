@@ -1,0 +1,18 @@
+{
+  "clubs_one": "Club",
+  "clubs_other": "Clubs",
+  "sites_one": "Site",
+  "sites_other": "Sites",
+  "rooms_one": "Salle",
+  "rooms_other": "Salles",
+  "activities_one": "Activité",
+  "activities_other": "Activités",
+  "members_one": "Membre",
+  "members_other": "Membres",
+  "manage-club": "Gérer mes clubs",
+  "manager-dashboard": "Dashboard du manager",
+  "planning": "Planning du jour",
+  "chat": "Chat avec les membres et les coachs",
+  "event": "Evènements programmés",
+  "note": "Notes"
+}

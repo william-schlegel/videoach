@@ -5,7 +5,7 @@ import { useForm, type SubmitHandler } from "react-hook-form";
 import SimpleForm from "../../components/ui/simpleform";
 
 export const ROLE_LIST = [
-  { label: "Utilisateur", value: Role.USER },
+  { label: "Utilisateur", value: Role.MEMBER },
   { label: "Coach", value: Role.COACH },
   { label: "Manager", value: Role.MANAGER },
   { label: "Manager & Coach", value: Role.MANAGER_COACH },
@@ -26,7 +26,7 @@ export default function Profile() {
     onSuccess: (data) => {
       setValue("name", data?.name || "");
       setValue("email", data?.email || "");
-      setValue("role", data?.role || Role.USER);
+      setValue("role", data?.role || Role.MEMBER);
     },
   });
   const {

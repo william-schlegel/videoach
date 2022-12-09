@@ -14,8 +14,24 @@
     "isolatedModules": true,
     "jsx": "preserve",
     "incremental": true,
-    "noUncheckedIndexedAccess": true
+    "noUncheckedIndexedAccess": true,
+    "baseUrl": ".",
+    "paths": {
+      "@trpcserver/*": ["./src/server/trpc/*"],
+      "@trpcclient/*": ["./src/utils/*"],
+      "@ui/*": ["./src/components/ui/*"],
+      "@modals/*": ["./src/components/modals/*"],
+      "@auth/*": ["./src/pages/api/auth/*"],
+      "@root/*": ["./*"]
+    }
   },
-  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", "**/*.cjs", "**/*.mjs"],
+  "include": [
+    "next-env.d.ts",
+    "**/*.ts",
+    "**/*.tsx",
+    "**/*.cjs",
+    "**/*.mjs",
+    "next-i18next.config.mjs"
+  ],
   "exclude": ["node_modules"]
 }

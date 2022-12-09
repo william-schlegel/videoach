@@ -67,7 +67,7 @@ const AddActivity = ({
                   onClick={() => setGroupId(group.id)}
                 >
                   {group.name}
-                  {withUpdate && (
+                  {withUpdate && !group.default && (
                     <div className="flex gap-1">
                       <UpdateGroup
                         id={group.id}

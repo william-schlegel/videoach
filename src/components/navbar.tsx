@@ -3,17 +3,23 @@ import { signIn, signOut, useSession } from "next-auth/react";
 import Image from "next/image";
 import Link from "next/link";
 import { type FC } from "react";
+import { useTranslation } from "next-i18next";
 
 const MENUS = [
-  { label: "Le club", page: "/club" },
-  { label: "Activités", page: "/activites" },
-  { label: "Planning", page: "/planning" },
-  { label: "Coachs", page: "/coachs" },
-  { label: "Réserver", page: "/reservation", acces: [Role.USER] },
+  { label: "navigation.find-club", page: "/club" },
+  { label: "navigation.activity", page: "/activites" },
+  { label: "navigation.planning", page: "/planning" },
+  { label: "navigation.coachs", page: "/coachs" },
+  {
+    label: "navigation.reservation",
+    page: "/reservation",
+    acces: [Role.MEMBER],
+  },
 ];
 
 export default function Navbar() {
   const { data: sessionData } = useSession();
+  const { t } = useTranslation("common");
 
   return (
     <div className="navbar bg-base-100">
@@ -72,21 +78,23 @@ export default function Navbar() {
                   className="justify-between"
                   href={`/user/${sessionData.user.id}`}
                 >
-                  Mes informations
+                  {t("navigation.my-info")}
                 </Link>
               </li>
               <li>
-                <div onClick={() => signOut()}>Se déconnecter</div>
+                <div onClick={() => signOut()}>
+                  {t("navigation.disconnect")}
+                </div>
               </li>
             </ul>
           </div>
         ) : (
           <ul className="menu menu-horizontal p-0">
             <li>
-              <div onClick={() => signIn()}>Se connecter</div>
+              <div onClick={() => signIn()}>{t("navigation.connect")}</div>
             </li>
             <li>
-              <Link href="/user/signin">Créer un compte</Link>
+              <Link href="/user/signin">{t("navigation.create-account")}</Link>
             </li>
           </ul>
         )}
@@ -97,6 +105,7 @@ export default function Navbar() {
 
 const Menu: FC = () => {
   const { data: sessionData } = useSession();
+  const { t } = useTranslation("common");
 
   return (
     <>
@@ -110,7 +119,7 @@ const Menu: FC = () => {
         return (
           <li key={menu.page}>
             <Link className="justify-between" href={menu.page}>
-              {menu.label}
+              {t(menu.label)}
             </Link>
           </li>
         );

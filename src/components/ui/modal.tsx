@@ -1,7 +1,7 @@
 import { paramCase } from "param-case";
-import { type ReactNode, useRef } from "react";
+import { type ReactNode, useRef, useMemo } from "react";
 import { type FieldErrorsImpl } from "react-hook-form";
-import { uuid } from "uuidv4";
+import { v4 as uuidv4 } from "uuid";
 
 export enum ModalVariant {
   PRIMARY = "Primary",
@@ -51,7 +51,7 @@ export default function Modal({
   buttonSize = "btn-md",
 }: Props) {
   const closeRef = useRef<HTMLInputElement>(null);
-  const modalId = paramCase(uuid());
+  const modalId = useMemo(() => paramCase(uuidv4()), []);
 
   const close = () => {
     if (!closeRef.current) return;
@@ -86,6 +86,7 @@ export default function Modal({
           className={`${primary ? "btn-primary" : "btn-secondary"} ${
             outlined ? "btn-outline" : ""
           } btn gap-2 ${buttonSize} `}
+          tabIndex={0}
         >
           {buttonIcon ? buttonIcon : null}
           {iconOnly ? null : title}

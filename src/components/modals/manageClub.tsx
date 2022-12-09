@@ -14,6 +14,7 @@ import { CgTrash } from "react-icons/cg";
 import AddActivity from "./manageActivity";
 import { CreateSite, UpdateSite } from "./manageSite";
 import { ModalVariant } from "../ui/modal";
+import { useTranslation } from "next-i18next";
 
 type FormValues = {
   name: string;
@@ -30,6 +31,7 @@ const CreateClub = () => {
     formState: { errors },
     reset,
   } = useForm<FormValues>();
+  const { t } = useTranslation("club");
 
   const createClub = trpc.clubs.createClub.useMutation({
     onSuccess: () => {
@@ -48,30 +50,28 @@ const CreateClub = () => {
 
   return (
     <Modal
-      title="Créer un nouveau club"
+      title={t("create-new-club")}
       handleSubmit={handleSubmit(onSubmit, onError)}
       submitButtonText="Enregistrer"
       errors={errors}
       buttonIcon={<CgAdd size={24} />}
       onOpenModal={() => reset()}
     >
-      <h3>Créer un nouveau club</h3>
-      <p className="py-4">
-        Saisissez les informations relatives à votre nouveau club
-      </p>
+      <h3>{t("create-new-club")}</h3>
+      <p className="py-4">{t("enter-new-club-info")}</p>
       <SimpleForm
         errors={errors}
         register={register}
         fields={[
           {
-            label: "Nom du club",
+            label: t("club-name"),
             name: "name",
-            required: "Le nom est obligatoire",
+            required: t("name-mandatory"),
           },
           {
-            label: "Adresse",
+            label: t("club-address"),
             name: "address",
-            required: "Adresse obligatoire",
+            required: t("address-mandatory"),
           },
           {
             name: "isSite",
@@ -84,9 +84,7 @@ const CreateClub = () => {
                     {...register("isSite")}
                     defaultChecked={true}
                   />
-                  <span className="label-text">
-                    {"C'est aussi un site d'activités"}
-                  </span>
+                  <span className="label-text">{t("is-site")}</span>
                 </label>
               </div>
             ),
@@ -139,6 +137,7 @@ export function ClubContent({ userId, clubId }: ClubContentProps) {
       utils.clubs.getClubById.invalidate(clubId);
     },
   });
+  const { t } = useTranslation("club");
 
   const onSubmit: SubmitHandler<ClubFormValues> = (data) => {
     updateClub.mutate({ id: clubId, ...data });
@@ -152,14 +151,14 @@ export function ClubContent({ userId, clubId }: ClubContentProps) {
         register={register}
         fields={[
           {
-            label: "Nom du club",
+            label: t("club-name"),
             name: "name",
-            required: "Le nom est obligatoire",
+            required: t("name-mandatory"),
           },
           {
-            label: "Adresse",
+            label: t("club-address"),
             name: "address",
-            required: "Adresse obligatoire",
+            required: t("address-mandatory"),
           },
         ]}
         errors={errors}
@@ -168,21 +167,21 @@ export function ClubContent({ userId, clubId }: ClubContentProps) {
       >
         <div className="col-span-2 mt-4 flex flex-1 justify-end gap-4 border-t border-primary pt-4">
           <Confirmation
-            message="Voulez-vou réellement supprimer ce club ?\nCette action est irréversible"
-            title="Supprimer ce club"
+            message={t("club-deletion-message")}
+            title={t("club-deletion")}
             onConfirm={() => {
               deleteClub.mutate(clubId);
             }}
           />
-          <button className="btn btn-primary" type="submit">
-            Enregistrer les modifications
+          <button className="btn-primary btn" type="submit">
+            {t("save-modifications")}
           </button>
         </div>
       </SimpleForm>
       <div className="flex flex-1 flex-col gap-4">
         <div className="rounded border border-primary p-4">
-          <div className="mb-4 flex flex-row items-center gap-8">
-            <h3>Sites</h3>
+          <div className="mb-4 flex flex-row items-center gap-4">
+            <h3>{t("site", { count: clubQuery?.data?.sites?.length ?? 0 })}</h3>
             <CreateSite clubId={clubId} />
           </div>
           {clubQuery?.data?.sites?.map((site) => (
@@ -190,8 +189,8 @@ export function ClubContent({ userId, clubId }: ClubContentProps) {
               <UpdateSite clubId={clubId} siteId={site.id} />
               <div className=""> {site.address} </div>
               <Confirmation
-                message="Voulez-vou réellement supprimer ce site ?\nCette action est irréversible"
-                title="Supprimer"
+                message={t("site-deletion-message")}
+                title={t("site-deletion")}
                 buttonIcon={<CgTrash size={16} />}
                 onConfirm={() => {
                   deleteSite.mutate(site.id);
@@ -202,8 +201,12 @@ export function ClubContent({ userId, clubId }: ClubContentProps) {
           ))}
         </div>
         <div className="rounded border border-primary p-4">
-          <div className="mb-4 flex flex-row items-center gap-8">
-            <h3>Activités</h3>
+          <div className="mb-4 flex flex-row items-center gap-4">
+            <h3>
+              {t("activity", {
+                count: clubQuery?.data?.activities.length ?? 0,
+              })}
+            </h3>
             <AddActivity
               clubId={clubId}
               userId={userId}

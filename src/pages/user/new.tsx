@@ -30,13 +30,10 @@ function NewUser() {
             id="role"
             className="select-bordered select w-full max-w-xs"
             {...register("role")}
+            value={getValues("role")}
           >
             {ROLE_LIST.filter((rl) => rl.value !== Role.ADMIN).map((rl) => (
-              <option
-                key={rl.value}
-                selected={rl.value === getValues("role")}
-                value={rl.value}
-              >
+              <option key={rl.value} value={rl.value}>
                 {rl.label}
               </option>
             ))}

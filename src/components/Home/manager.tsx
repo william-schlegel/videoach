@@ -27,7 +27,7 @@ const ManagerHomePage: FC<Props> = ({ userId }: Props) => {
 
   return (
     <div className="container mx-auto">
-      <div className="mb-4 flex flex-row items-center gap-8">
+      <div className="mb-4 flex flex-row items-center gap-4">
         <h1>Gérer mes clubs</h1>
         <CreateClub />
       </div>

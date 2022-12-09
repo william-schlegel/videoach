@@ -14,7 +14,7 @@ export const clubRouter = router({
     .input(z.string())
     .query(({ ctx, input }) => {
       return ctx.prisma.club.findMany({
-        where: { userId: input },
+        where: { managerId: input },
         orderBy: { name: "asc" },
       });
     }),
@@ -40,7 +40,7 @@ export const clubRouter = router({
         data: {
           name: input.name,
           address: input.address,
-          userId: input.userId,
+          managerId: input.userId,
           sites: input.isSite
             ? {
                 create: {
@@ -67,7 +67,7 @@ export const clubRouter = router({
       });
       if (
         ctx.session.user.role !== Role.ADMIN &&
-        ctx.session.user.id !== club?.userId
+        ctx.session.user.id !== club?.managerId
       )
         throw new TRPCError({
           code: "UNAUTHORIZED",
@@ -90,7 +90,7 @@ export const clubRouter = router({
       });
       if (
         ctx.session.user.role !== Role.ADMIN &&
-        ctx.session.user.id !== club?.userId
+        ctx.session.user.id !== club?.managerId
       )
         throw new TRPCError({
           code: "UNAUTHORIZED",
@@ -111,7 +111,7 @@ export const clubRouter = router({
       });
       if (
         ctx.session.user.role !== Role.ADMIN &&
-        ctx.session.user.id !== club?.userId
+        ctx.session.user.id !== club?.managerId
       )
         throw new TRPCError({
           code: "UNAUTHORIZED",

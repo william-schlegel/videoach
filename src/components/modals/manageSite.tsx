@@ -12,7 +12,6 @@ import SimpleForm from "../ui/simpleform";
 import { CgAdd, CgTrash } from "react-icons/cg";
 import { type Dispatch, type SetStateAction, useState } from "react";
 import { RoomReservation } from "@prisma/client";
-import { uuid } from "uuidv4";
 
 type SiteFormValues = {
   name: string;
@@ -75,6 +74,7 @@ export const CreateSite = ({ clubId }: CreateSiteProps) => {
         setRooms([]);
         reset();
       }}
+      className="w-11/12 max-w-5xl"
     >
       <h3>Créer un nouveau site</h3>
       <p className="py-4">
@@ -137,6 +137,7 @@ export const UpdateSite = ({ clubId, siteId }: UpdateSiteProps) => {
         reset();
       }}
       variant={ModalVariant.OUTLINED_PRIMARY}
+      className="w-11/12 max-w-5xl"
     >
       <h3>Mettre à jour le site {querySite?.data?.name}</h3>
       <SiteForm
@@ -258,14 +259,11 @@ const NewRoom = ({ clubId, siteId }: NewRoomProps) => {
             component: (
               <select
                 className="select-bordered select w-full"
+                value={getValues("reservation")}
                 {...register("reservation")}
               >
                 {RESERVATIONS.map((reservation) => (
-                  <option
-                    key={reservation.value}
-                    value={reservation.value}
-                    selected={reservation.value === getValues("reservation")}
-                  >
+                  <option key={reservation.value} value={reservation.value}>
                     {reservation.label}
                   </option>
                 ))}
