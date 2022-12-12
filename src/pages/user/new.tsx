@@ -3,6 +3,10 @@ import { useSession } from "next-auth/react";
 import { useForm, type SubmitHandler } from "react-hook-form";
 import { trpc } from "../../utils/trpc";
 import { ROLE_LIST } from "./[userId]";
+import type { GetServerSidePropsContext } from "next";
+import { useTranslation } from "next-i18next";
+import { serverSideTranslations } from "next-i18next/serverSideTranslations";
+import nextI18nConfig from "@root/next-i18next.config.mjs";
 
 type FormValues = {
   name: string;
@@ -16,16 +20,20 @@ function NewUser() {
   const onSubmit: SubmitHandler<FormValues> = (data) =>
     updateUser.mutate({ id: sessionData?.user?.id || "", ...data });
 
+  const { t } = useTranslation("auth");
+
   return (
     <div className="container mx-auto p-8">
-      <h1>Bienvenue {sessionData?.user?.name}</h1>
+      <h1>
+        {t("welcome")} {sessionData?.user?.name}
+      </h1>
       <form onSubmit={handleSubmit(onSubmit)}>
         <fieldset>
-          <label htmlFor="name">Changer mon nom</label>
+          <label htmlFor="name">{t("change-my-name")}</label>
           <input className="input" {...register("name")} />
         </fieldset>
         <fieldset>
-          <label htmlFor="role">Role</label>
+          <label htmlFor="role">{t("role")}</label>
           <select
             id="role"
             className="select-bordered select w-full max-w-xs"
@@ -39,12 +47,24 @@ function NewUser() {
             ))}
           </select>
         </fieldset>
-        <button className="btn-primary btn">
-          Enregistrer les informations
-        </button>
+        <button className="btn-primary btn">{t("save-profile")}</button>
       </form>
     </div>
   );
 }
 
 export default NewUser;
+
+export async function getServerSideProps({
+  locale,
+}: GetServerSidePropsContext) {
+  return {
+    props: {
+      ...(await serverSideTranslations(
+        locale ?? "fr",
+        ["common", "auth"],
+        nextI18nConfig
+      )),
+    },
+  };
+}

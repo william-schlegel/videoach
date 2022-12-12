@@ -8,8 +8,8 @@ const RoomObject = {
   capacity: z.number(),
   unavailable: z.boolean(),
   openWithClub: z.boolean(),
-  openingTime: z.date().optional().default(new Date("00:00:00")),
-  closingTime: z.date().optional().default(new Date("23:59:59")),
+  openingTime: z.date().optional(),
+  closingTime: z.date().optional(),
 };
 
 export const siteRouter = router({

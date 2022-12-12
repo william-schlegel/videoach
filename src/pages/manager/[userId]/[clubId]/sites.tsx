@@ -2,7 +2,6 @@ import { Role } from "@prisma/client";
 import { useSession } from "next-auth/react";
 import { useState } from "react";
 import { trpc } from "@trpcclient/trpc";
-import { CreateClub, DeleteClub, UpdateClub } from "@modals/manageClub";
 import Spinner from "@ui/spinner";
 import {
   type InferGetServerSidePropsType,
@@ -13,21 +12,35 @@ import { authOptions } from "@auth/[...nextauth]";
 import { serverSideTranslations } from "next-i18next/serverSideTranslations";
 import nextI18nConfig from "@root/next-i18next.config.mjs";
 import { useTranslation } from "next-i18next";
-import AddActivity from "@modals/manageActivity";
+import {
+  CreateSite,
+  DeleteSite,
+  ManageRooms,
+  NewRoom,
+  UpdateSite,
+} from "@modals/manageSite";
 import Link from "next/link";
 import { useRouter } from "next/router";
 
-const ManageClubs = ({
+const ManageSites = ({
   userId,
+  clubId,
 }: InferGetServerSidePropsType<typeof getServerSideProps>) => {
   const { data: sessionData } = useSession();
-  const clubQuery = trpc.clubs.getClubsForManager.useQuery(userId, {
+  const [siteId, setSiteId] = useState("");
+  const clubQuery = trpc.clubs.getClubById.useQuery(clubId);
+  const siteQuery = trpc.sites.getSitesForClub.useQuery(clubId, {
     onSuccess(data) {
-      if (clubId === "") setClubId(data[0]?.id || "");
+      if (siteId === "") setSiteId(data[0]?.id || "");
     },
   });
-  const [clubId, setClubId] = useState("");
   const { t } = useTranslation("club");
+  const router = useRouter();
+
+  const root = router.asPath.split("/");
+  root.pop();
+  root.pop();
+  const path = root.reduce((a, r) => a.concat(`${r}/`), "");
 
   if (
     sessionData &&
@@ -39,32 +52,40 @@ const ManageClubs = ({
 
   return (
     <div className="container mx-auto">
-      <div className="mb-4 flex flex-row items-center gap-4">
-        <h1>{t("manage-my-club", { count: clubQuery.data?.length ?? 0 })}</h1>
-        <CreateClub />
+      <div className="mb-4 flex flex-row items-center justify-between">
+        <div className="flex items-center gap-4">
+          <h1 className="flex items-center gap-4">
+            {t("manage-my-sites", { count: siteQuery.data?.length ?? 0 })}
+            <span className="text-secondary">{clubQuery.data?.name}</span>
+          </h1>
+          <CreateSite clubId={clubId} />
+        </div>
+        <Link className="btn-outline btn-primary btn" href={`${path}clubs`}>
+          {t("back-to-clubs")}
+        </Link>
       </div>
       <div className="flex gap-4">
-        {clubQuery.isLoading ? (
+        {siteQuery.isLoading ? (
           <Spinner />
         ) : (
           <ul className="menu w-1/4 bg-base-100">
-            {clubQuery.data?.map((club) => (
-              <li key={club.id}>
+            {siteQuery.data?.map((site) => (
+              <li key={site.id}>
                 <button
                   className={`w-full text-center ${
-                    clubId === club.id ? "active" : ""
+                    siteId === site.id ? "active" : ""
                   }`}
-                  onClick={() => setClubId(club.id)}
+                  onClick={() => setSiteId(site.id)}
                 >
-                  {club.name}
+                  {site.name}
                 </button>
               </li>
             ))}
           </ul>
         )}
-        {clubId === "" ? null : (
+        {siteId === "" ? null : (
           <div className="w-full rounded border border-primary p-4">
-            <ClubContent userId={userId} clubId={clubId} />
+            <SiteContent userId={userId} clubId={clubId} siteId={siteId} />
           </div>
         )}
       </div>
@@ -72,45 +93,43 @@ const ManageClubs = ({
   );
 };
 
-export default ManageClubs;
+export default ManageSites;
 
-type ClubContentProps = {
+type SiteContentProps = {
   userId: string;
   clubId: string;
+  siteId: string;
 };
 
-export function ClubContent({ userId, clubId }: ClubContentProps) {
-  const clubQuery = trpc.clubs.getClubById.useQuery(clubId);
+export function SiteContent({ userId, clubId, siteId }: SiteContentProps) {
+  const siteQuery = trpc.sites.getSiteById.useQuery(siteId);
   const utils = trpc.useContext();
   const { t } = useTranslation("club");
-  const router = useRouter();
 
-  const root = router.asPath.split("/");
-  root.pop();
-  const path = root.reduce((a, r) => a.concat(`${r}/`), "");
-
-  if (clubQuery.isLoading) return <Spinner />;
+  if (siteQuery.isLoading) return <Spinner />;
 
   return (
     <>
       <div className="flex items-center gap-4">
-        <div className="flex items-center gap-2">
-          <h2>{clubQuery.data?.name}</h2>
-          <p>({clubQuery.data?.address})</p>
-        </div>
-        <UpdateClub clubId={clubId} />
-        <DeleteClub clubId={clubId} />
+        <h2>{siteQuery.data?.name}</h2>
+        <p>({siteQuery.data?.address})</p>
+        <UpdateSite clubId={clubId} siteId={siteId} />
+        <DeleteSite clubId={clubId} siteId={siteId} />
       </div>
-      <div className="flex flex-wrap gap-4">
+      {/* <div className="flex flex-wrap gap-4">
         <div className="flex-1 rounded border border-primary p-4 ">
           <div className="mb-4 flex flex-row items-center gap-4">
             <h3>{t("site", { count: clubQuery?.data?.sites?.length ?? 0 })}</h3>
-            <Link className="btn-secondary btn" href={`${path}${clubId}/sites`}>
+            <Link className="btn-secondary btn" href={`${userId}/${clubId}/sites`}>
               {t("manage-sites")}
             </Link>
+
+
+            <CreateSite clubId={clubId} />
           </div>
           {clubQuery?.data?.sites?.map((site) => (
             <div key={site.id} className="my-2 flex items-center gap-4">
+              <UpdateSite clubId={clubId} siteId={site.id} />
               <span>{site.address}</span>
               <div className="rounded-full border border-neutral bg-base-100 px-4 py-2 text-neutral">
                 {t("room", { count: site.rooms.length })}
@@ -120,6 +139,8 @@ export function ClubContent({ userId, clubId }: ClubContentProps) {
                   </span>
                 )}
               </div>
+              <ManageRooms clubId={clubId} siteId={site.id} />
+              <NewRoom clubId={clubId} siteId={site.id} />
             </div>
           ))}
         </div>
@@ -150,8 +171,8 @@ export function ClubContent({ userId, clubId }: ClubContentProps) {
               </span>
             ))}
           </div>
-        </div>
-      </div>
+        </div> 
+      </div>*/}
     </>
   );
 }
@@ -160,6 +181,7 @@ export const getServerSideProps = async ({
   locale,
   req,
   res,
+  params,
 }: GetServerSidePropsContext) => {
   const session = await unstable_getServerSession(req, res, authOptions);
   if (
@@ -180,6 +202,7 @@ export const getServerSideProps = async ({
         nextI18nConfig
       )),
       userId: session?.user?.id || "",
+      clubId: params?.clubId as string,
     },
   };
 };

@@ -9,9 +9,17 @@ import {
 } from "react-hook-form";
 import Modal, { ModalVariant } from "../ui/modal";
 import SimpleForm from "../ui/simpleform";
-import { CgAdd, CgTrash } from "react-icons/cg";
-import { type Dispatch, type SetStateAction, useState } from "react";
+import { CgAdd, CgPen, CgTrash } from "react-icons/cg";
+import {
+  type Dispatch,
+  type SetStateAction,
+  useState,
+  type PropsWithoutRef,
+} from "react";
 import { RoomReservation } from "@prisma/client";
+import { useSession } from "next-auth/react";
+import Confirmation from "@ui/confirmation";
+import { useTranslation } from "next-i18next";
 
 type SiteFormValues = {
   name: string;
@@ -40,23 +48,13 @@ export const CreateSite = ({ clubId }: CreateSiteProps) => {
   } = useForm<SiteFormValues>();
   const [rooms, setRooms] = useState<RoomFormValues[]>([]);
   const utils = trpc.useContext();
+  const { t } = useTranslation("club");
 
   const createSite = trpc.sites.createSite.useMutation({
     onSuccess: () => utils.clubs.getClubById.invalidate(clubId),
   });
-  const createRoom = trpc.sites.createRooms.useMutation();
-
   const onSubmit: SubmitHandler<SiteFormValues> = (data) => {
-    createSite.mutate(
-      { clubId, ...data },
-      {
-        onSuccess(data) {
-          createRoom.mutate(
-            rooms.map((room) => ({ siteId: data.id, ...room }))
-          );
-        },
-      }
-    );
+    createSite.mutate({ clubId, ...data });
   };
 
   const onError: SubmitErrorHandler<SiteFormValues> = (errors) => {
@@ -65,7 +63,7 @@ export const CreateSite = ({ clubId }: CreateSiteProps) => {
 
   return (
     <Modal
-      title="Créer un nouveau site"
+      title={t("create-site")}
       handleSubmit={handleSubmit(onSubmit, onError)}
       submitButtonText="Enregistrer"
       errors={errors}
@@ -76,11 +74,8 @@ export const CreateSite = ({ clubId }: CreateSiteProps) => {
       }}
       className="w-11/12 max-w-5xl"
     >
-      <h3>Créer un nouveau site</h3>
-      <p className="py-4">
-        Saisissez les informations relatives à votre nouveau site
-        d&apos;activités
-      </p>
+      <h3>{t("create-new-site")}</h3>
+      <p className="py-4">{t("enter-info-new-site")}</p>
       <SiteForm
         register={register}
         errors={errors}
@@ -116,6 +111,7 @@ export const UpdateSite = ({ clubId, siteId }: UpdateSiteProps) => {
       utils.sites.getSiteById.invalidate(siteId);
     },
   });
+  const { t } = useTranslation("club");
 
   const onSubmit: SubmitHandler<SiteFormValues> = (data) => {
     console.log("data", data);
@@ -130,16 +126,22 @@ export const UpdateSite = ({ clubId, siteId }: UpdateSiteProps) => {
     <Modal
       title={querySite.data?.name}
       handleSubmit={handleSubmit(onSubmit, onError)}
-      submitButtonText="Mettre à jour le site"
+      submitButtonText={t("update-site")}
       errors={errors}
       onOpenModal={() => {
         setRooms([]);
         reset();
       }}
-      variant={ModalVariant.OUTLINED_PRIMARY}
-      className="w-11/12 max-w-5xl"
+      buttonIcon={<CgPen size={16} />}
+      variant={ModalVariant.ICON_OUTLINED_PRIMARY}
+      className="w-2/3 max-w-5xl"
     >
-      <h3>Mettre à jour le site {querySite?.data?.name}</h3>
+      <div className="flex items-center justify-between">
+        <h3 className="flex items-center gap-4">
+          {t("update-site")}
+          <span className="text-primary">{querySite?.data?.name}</span>
+        </h3>
+      </div>
       <SiteForm
         register={register}
         errors={errors}
@@ -149,6 +151,41 @@ export const UpdateSite = ({ clubId, siteId }: UpdateSiteProps) => {
         siteId={siteId}
       />
     </Modal>
+  );
+};
+
+type PropsUpdateDelete = {
+  clubId: string;
+  siteId: string;
+  variant?: ModalVariant;
+};
+
+export const DeleteSite = ({
+  clubId,
+  siteId,
+  variant = ModalVariant.ICON_OUTLINED_SECONDARY,
+}: PropsWithoutRef<PropsUpdateDelete>) => {
+  const utils = trpc.useContext();
+  const { data: sessionData } = useSession();
+  const { t } = useTranslation("club");
+
+  const deleteSite = trpc.sites.deleteSite.useMutation({
+    onSuccess: () => {
+      utils.clubs.getClubsForManager.invalidate(sessionData?.user?.id ?? "");
+      utils.clubs.getClubById.invalidate(clubId);
+    },
+  });
+
+  return (
+    <Confirmation
+      message={t("site-deletion-message")}
+      title={t("site-deletion")}
+      buttonIcon={<CgTrash size={16} />}
+      onConfirm={() => {
+        deleteSite.mutate(siteId);
+      }}
+      variant={variant}
+    />
   );
 };
 
@@ -164,58 +201,50 @@ type SiteFormProps<T extends FieldValues> = {
 function SiteForm<T extends FieldValues>({
   errors,
   register,
-  rooms,
-  setRooms,
-  clubId,
-  siteId,
 }: SiteFormProps<T>): JSX.Element {
   return (
-    <>
-      <SimpleForm
-        errors={errors}
-        register={register}
-        fields={[
-          {
-            label: "Nom du site",
-            name: "name",
-            required: "Le nom est obligatoire",
-          },
-          {
-            label: "Adresse",
-            name: "address",
-            required: "Adresse obligatoire",
-          },
-        ]}
-      />
-      <div className="divider"></div>
-      <div className="flex items-center gap-4">
-        <h3>Salles</h3>
-        <NewRoom clubId={clubId} siteId={siteId} />
-      </div>
-      {/*rooms?.map((room, idx) => (
-        <div key={idx} className="my-2 flex items-center gap-2">
-          <CgTrash size={16} color="red" onClick={() => deleteRoom(idx)} />
-        </div>
-      ))*/}
-    </>
+    <SimpleForm
+      errors={errors}
+      register={register}
+      fields={[
+        {
+          label: "Nom du site",
+          name: "name",
+          required: "Le nom est obligatoire",
+        },
+        {
+          label: "Adresse",
+          name: "address",
+          required: "Adresse obligatoire",
+        },
+      ]}
+    />
   );
 }
 
 type NewRoomProps = {
   siteId?: string;
   clubId: string;
+  variant?: ModalVariant;
 };
 
 export const RESERVATIONS = [
-  { value: RoomReservation.NONE, label: "Pas de réservation " },
-  { value: RoomReservation.POSSIBLE, label: "Possible" },
-  { value: RoomReservation.MANDATORY, label: "Obligatoire" },
+  { value: RoomReservation.NONE, label: "no-reservation" },
+  { value: RoomReservation.POSSIBLE, label: "reservation-possible" },
+  { value: RoomReservation.MANDATORY, label: "reservation-mandatory" },
 ];
 
-const NewRoom = ({ clubId, siteId }: NewRoomProps) => {
+export const NewRoom = ({
+  clubId,
+  siteId,
+  variant = ModalVariant.ICON_OUTLINED_PRIMARY,
+}: NewRoomProps) => {
   const utils = trpc.useContext();
   const createRoom = trpc.sites.createRoom.useMutation({
-    onSuccess: () => utils.sites.getSitesForClub.invalidate(clubId),
+    onSuccess: () => {
+      utils.sites.getSitesForClub.invalidate(clubId);
+      reset();
+    },
   });
   const {
     register,
@@ -224,10 +253,19 @@ const NewRoom = ({ clubId, siteId }: NewRoomProps) => {
     reset,
     getValues,
   } = useForm<RoomFormValues>();
+  const { t } = useTranslation("club");
 
   const onSubmit: SubmitHandler<RoomFormValues> = (data) => {
     console.log("data", data);
-    if (siteId) createRoom.mutate({ siteId, ...data });
+    if (siteId)
+      createRoom.mutate({
+        siteId,
+        name: data.name,
+        reservation: data.reservation,
+        capacity: Number(data.capacity),
+        unavailable: false,
+        openWithClub: true,
+      });
   };
 
   const onError: SubmitErrorHandler<RoomFormValues> = (errors) => {
@@ -236,21 +274,23 @@ const NewRoom = ({ clubId, siteId }: NewRoomProps) => {
 
   return (
     <Modal
-      title="Nouvelle salle"
+      title={t("new-room")}
       handleSubmit={handleSubmit(onSubmit, onError)}
+      buttonIcon={<CgAdd size={24} />}
+      variant={variant}
     >
-      <h3>Créer une nouvelle salle</h3>
+      <h3>{t("new-room")}</h3>
       <SimpleForm
         errors={errors}
         register={register}
         fields={[
           {
-            label: "Nom de la salle",
+            label: t("room-name"),
             name: "name",
-            required: "Le nom est obligatoire",
+            required: t("room-name-mandatory"),
           },
           {
-            label: "Capacité",
+            label: t("capacity"),
             name: "capacity",
             type: "number",
           },
@@ -264,10 +304,101 @@ const NewRoom = ({ clubId, siteId }: NewRoomProps) => {
               >
                 {RESERVATIONS.map((reservation) => (
                   <option key={reservation.value} value={reservation.value}>
-                    {reservation.label}
+                    {t(reservation.label)}
                   </option>
                 ))}
               </select>
+            ),
+          },
+        ]}
+      />
+    </Modal>
+  );
+};
+
+export const ManageRooms = ({
+  clubId,
+  siteId,
+  variant = ModalVariant.ICON_OUTLINED_SECONDARY,
+}: NewRoomProps) => {
+  const utils = trpc.useContext();
+  const createRoom = trpc.sites.createRoom.useMutation({
+    onSuccess: () => {
+      utils.sites.getSitesForClub.invalidate(clubId);
+      reset();
+    },
+  });
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+    reset,
+    getValues,
+  } = useForm<RoomFormValues>();
+  const { t } = useTranslation("club");
+
+  const onSubmit: SubmitHandler<RoomFormValues> = (data) => {
+    console.log("data", data);
+    if (siteId)
+      createRoom.mutate({ siteId, ...data, capacity: Number(data.capacity) });
+  };
+
+  const onError: SubmitErrorHandler<RoomFormValues> = (errors) => {
+    console.log("errors", errors);
+  };
+
+  return (
+    <Modal
+      title={t("manage-room")}
+      handleSubmit={handleSubmit(onSubmit, onError)}
+      buttonIcon={<CgPen size={24} />}
+      variant={variant}
+    >
+      <h3>{t("new-room")}</h3>
+      <SimpleForm
+        errors={errors}
+        register={register}
+        fields={[
+          {
+            label: t("room-name"),
+            name: "name",
+            required: t("room-name-mandatory"),
+          },
+          {
+            label: t("capacity"),
+            name: "capacity",
+            type: "number",
+          },
+          {
+            name: "reservation",
+            component: (
+              <select
+                className="select-bordered select w-full"
+                value={getValues("reservation")}
+                {...register("reservation")}
+              >
+                {RESERVATIONS.map((reservation) => (
+                  <option key={reservation.value} value={reservation.value}>
+                    {t(reservation.label)}
+                  </option>
+                ))}
+              </select>
+            ),
+          },
+          {
+            name: "unavailable",
+            component: (
+              <div className="form-control">
+                <label className="label cursor-pointer justify-start gap-4">
+                  <input
+                    type="checkbox"
+                    className="checkbox-primary checkbox"
+                    {...register("unavailable")}
+                    defaultChecked={false}
+                  />
+                  <span className="label-text">{t("room-unavailable")}</span>
+                </label>
+              </div>
             ),
           },
         ]}

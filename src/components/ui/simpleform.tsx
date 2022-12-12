@@ -17,6 +17,7 @@ type SimpleFormField<T> = {
   required?: boolean | string;
   component?: ReactNode | undefined;
   value?: number | string | undefined;
+  defaultValue?: number | string | undefined;
   type?: HTMLInputTypeAttribute;
   disabled?: boolean | undefined;
 };
@@ -57,6 +58,7 @@ export default function SimpleForm<T extends FieldValues>({
                     required: field.required ?? false,
                   })}
                   value={field.value}
+                  defaultValue={field.defaultValue}
                   type={field.type || "text"}
                   disabled={field.disabled}
                 />

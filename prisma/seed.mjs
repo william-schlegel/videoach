@@ -13,6 +13,7 @@ async function main() {
       role: "MANAGER",
     },
   });
+  console.log("account", william);
   await prisma.activityGroup.createMany({
     data: [
       {
@@ -25,6 +26,7 @@ async function main() {
     ],
   });
   const groups = await prisma.activityGroup.findMany();
+  console.log("groups", groups);
   await prisma.club.createMany({
     data: [
       {

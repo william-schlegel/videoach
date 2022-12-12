@@ -10,6 +10,8 @@
     "my-info": "Mes informations",
     "disconnect": "Se déconnecter",
     "connect": "Se connecter",
-    "create-account": "Créer un compte"
+    "create-account": "Créer un compte",
+    "error-404": "Page introuvable",
+    "error-500": "Erreur interne serveur"
   }
 }

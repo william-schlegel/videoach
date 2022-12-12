@@ -8,6 +8,7 @@ generator client {
 datasource db {
   url      = env("DATABASE_URL")
   provider = "postgresql"
+  // relationMode = "prisma"
 }
 
 // datasource db {
@@ -83,23 +84,28 @@ model VerificationToken {
 }
 
 model Club {
-  id         String     @id @default(cuid())
+  id         String           @id @default(cuid())
   name       String
   address    String
   managerId  String
-  manager    User       @relation(fields: [managerId], references: [id], onDelete: Cascade, name: "Manager")
+  manager    User             @relation(fields: [managerId], references: [id], onDelete: Cascade, name: "Manager")
   sites      Site[]
   activities Activity[]
-  members    User[]     @relation(name: "Member")
+  members    User[]           @relation(name: "Member")
+  calendarId String?
+  calendar   OpeningCalendar? @relation(fields: [calendarId], references: [id], onDelete: Cascade)
 }
 
 model Site {
-  id      String @id @default(cuid())
-  name    String
-  address String
-  clubId  String
-  club    Club   @relation(fields: [clubId], references: [id], onDelete: Cascade)
-  rooms   Room[]
+  id           String           @id @default(cuid())
+  name         String
+  address      String
+  clubId       String
+  club         Club             @relation(fields: [clubId], references: [id], onDelete: Cascade)
+  rooms        Room[]
+  openWithClub Boolean          @default(true)
+  calendarId   String?
+  calendar     OpeningCalendar? @relation(fields: [calendarId], references: [id], onDelete: Cascade)
 }
 
 enum RoomReservation {
@@ -109,16 +115,17 @@ enum RoomReservation {
 }
 
 model Room {
-  id           String          @id @default(cuid())
+  id           String           @id @default(cuid())
   name         String
-  reservation  RoomReservation @default(NONE)
+  reservation  RoomReservation  @default(NONE)
   capacity     Int
-  unavailable  Boolean         @default(false)
-  openWithClub Boolean         @default(true)
-  openingTime  DateTime        @db.Time
-  closingTime  DateTime        @db.Time
+  unavailable  Boolean          @default(false)
+  openWithClub Boolean          @default(true)
+  openWithSite Boolean          @default(true)
+  calendarId   String?
+  calendar     OpeningCalendar? @relation(fields: [calendarId], references: [id], onDelete: Cascade)
   siteId       String
-  site         Site            @relation(fields: [siteId], references: [id], onDelete: Cascade)
+  site         Site             @relation(fields: [siteId], references: [id], onDelete: Cascade)
 }
 
 // activity group may be standard (default group) or belong to a specific user
@@ -126,7 +133,7 @@ model ActivityGroup {
   id         String     @id @default(cuid())
   name       String
   default    Boolean    @default(false)
-  Activities Activity[]
+  activities Activity[]
   user       User?      @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId     String?
 }
@@ -138,4 +145,28 @@ model Activity {
   group   ActivityGroup @relation(fields: [groupId], references: [id], onDelete: Cascade)
   clubId  String
   club    Club          @relation(fields: [clubId], references: [id], onDelete: Cascade)
+}
+
+model OpeningCalendar {
+  id          String           @id @default(cuid())
+  openingTime DayOpeningTime[]
+  rooms       Room[]
+  clubs       Club[]
+  sites       Site[]
+}
+
+model DayOpeningTime {
+  id            String            @id @default(cuid())
+  name          String
+  openingTimeId String
+  wholeDay      Boolean           @default(false)
+  workingHours  OpeningTime[]
+  calendar      OpeningCalendar[]
+}
+
+model OpeningTime {
+  id      String           @id @default(cuid())
+  opening DateTime         @db.Time
+  closing DateTime         @db.Time
+  day     DayOpeningTime[]
 }

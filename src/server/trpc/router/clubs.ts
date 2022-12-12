@@ -7,7 +7,14 @@ export const clubRouter = router({
   getClubById: protectedProcedure.input(z.string()).query(({ ctx, input }) => {
     return ctx.prisma.club.findUnique({
       where: { id: input },
-      include: { sites: true, activities: true },
+      include: {
+        sites: {
+          include: {
+            rooms: true,
+          },
+        },
+        activities: true,
+      },
     });
   }),
   getClubsForManager: protectedProcedure

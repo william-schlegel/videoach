@@ -3,13 +3,17 @@ import { useRouter } from "next/router";
 import { trpc } from "../../utils/trpc";
 import { useForm, type SubmitHandler } from "react-hook-form";
 import SimpleForm from "../../components/ui/simpleform";
+import type { GetServerSidePropsContext } from "next";
+import { useTranslation } from "next-i18next";
+import { serverSideTranslations } from "next-i18next/serverSideTranslations";
+import nextI18nConfig from "@root/next-i18next.config.mjs";
 
 export const ROLE_LIST = [
-  { label: "Utilisateur", value: Role.MEMBER },
-  { label: "Coach", value: Role.COACH },
-  { label: "Manager", value: Role.MANAGER },
-  { label: "Manager & Coach", value: Role.MANAGER_COACH },
-  { label: "Administrateur", value: Role.ADMIN },
+  { label: "user", value: Role.MEMBER },
+  { label: "coach", value: Role.COACH },
+  { label: "manager", value: Role.MANAGER },
+  { label: "manager-coach", value: Role.MANAGER_COACH },
+  { label: "admin", value: Role.ADMIN },
 ];
 
 type FormValues = {
@@ -41,7 +45,7 @@ export default function Profile() {
       utils.users.getUserById.invalidate(myUserId);
     },
   });
-
+  const { t } = useTranslation("auth");
   const onSubmit: SubmitHandler<FormValues> = (data) =>
     updateUser.mutate({
       id: myUserId,
@@ -51,28 +55,28 @@ export default function Profile() {
 
   return (
     <article className="mx-auto max-w-5xl">
-      <h1>Votre profile</h1>
+      <h1>{t("your-profile")}</h1>
       <SimpleForm
         register={register}
         errors={errors}
         onSubmit={handleSubmit(onSubmit)}
         fields={[
           {
-            label: "Changer mon nom",
+            label: t("change-name"),
             name: "name",
-            required: "Le nom est obligatoire",
+            required: t("name-mandatory"),
             value: userQuery.data?.name || undefined,
           },
           {
-            label: "Mon email",
+            label: t("my-email"),
             name: "email",
-            required: "L'email est obligatoire",
+            required: t("email-mandatory"),
             value: userQuery.data?.email || undefined,
             type: "email",
             disabled: true,
           },
           {
-            label: "Mon rôle",
+            label: t("my-role"),
             name: "role",
             component: (
               <select
@@ -82,7 +86,7 @@ export default function Profile() {
               >
                 {ROLE_LIST.filter((rl) => rl.value !== Role.ADMIN).map((rl) => (
                   <option key={rl.value} value={rl.value}>
-                    {rl.label}
+                    {t(rl.label)}
                   </option>
                 ))}
               </select>
@@ -91,9 +95,23 @@ export default function Profile() {
         ]}
       >
         <button className="btn-primary btn" disabled={updateUser.isLoading}>
-          Enregistrer les informations
+          {t("save-profile")}
         </button>
       </SimpleForm>
     </article>
   );
+}
+
+export async function getServerSideProps({
+  locale,
+}: GetServerSidePropsContext) {
+  return {
+    props: {
+      ...(await serverSideTranslations(
+        locale ?? "fr",
+        ["common", "auth"],
+        nextI18nConfig
+      )),
+    },
+  };
 }

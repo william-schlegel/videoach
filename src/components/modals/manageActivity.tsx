@@ -60,24 +60,21 @@ const AddActivity = ({
           <ul className="menu rounded-md border border-secondary bg-base-100">
             {queryGroups.data?.map((group) => (
               <li key={group.id}>
-                <button
-                  className={`flex w-full justify-between ${
-                    groupId === group.id ? "active" : ""
-                  }`}
-                  onClick={() => setGroupId(group.id)}
-                >
-                  {group.name}
+                <div className={`flex ${groupId === group.id ? "active" : ""}`}>
+                  <button onClick={() => setGroupId(group.id)}>
+                    {group.name}
+                  </button>
                   {withUpdate && !group.default && (
-                    <div className="flex gap-1">
+                    <>
                       <UpdateGroup
                         id={group.id}
                         userId={userId}
                         initialName={group.name}
                       />
                       <DeleteGroup groupId={group.id} userId={userId} />
-                    </div>
+                    </>
                   )}
-                </button>
+                </div>
               </li>
             ))}
           </ul>
