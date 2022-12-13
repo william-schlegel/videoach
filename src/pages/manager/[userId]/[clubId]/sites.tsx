@@ -21,6 +21,7 @@ import {
 } from "@modals/manageSite";
 import Link from "next/link";
 import { useRouter } from "next/router";
+import CreateCalendar from "@modals/manageCalendar";
 
 const ManageSites = ({
   userId,
@@ -113,8 +114,9 @@ export function SiteContent({ userId, clubId, siteId }: SiteContentProps) {
       <div className="flex items-center gap-4">
         <h2>{siteQuery.data?.name}</h2>
         <p>({siteQuery.data?.address})</p>
-        <UpdateSite clubId={clubId} siteId={siteId} />
+        <UpdateSite siteId={siteId} />
         <DeleteSite clubId={clubId} siteId={siteId} />
+        <CreateCalendar />
       </div>
       {/* <div className="flex flex-wrap gap-4">
         <div className="flex-1 rounded border border-primary p-4 ">
@@ -198,7 +200,7 @@ export const getServerSideProps = async ({
     props: {
       ...(await serverSideTranslations(
         locale ?? "fr",
-        ["common", "club"],
+        ["common", "club", "calendar"],
         nextI18nConfig
       )),
       userId: session?.user?.id || "",

@@ -149,15 +149,26 @@ model Activity {
 
 model OpeningCalendar {
   id          String           @id @default(cuid())
+  startDate   DateTime         @default(now())
   openingTime DayOpeningTime[]
   rooms       Room[]
   clubs       Club[]
   sites       Site[]
 }
 
+enum DayName {
+  SUNDAY
+  MONDAY
+  TUESDAY
+  WEDNESDAY
+  THURSDAY
+  FRIDAY
+  SATURDAY
+}
+
 model DayOpeningTime {
   id            String            @id @default(cuid())
-  name          String
+  name          DayName
   openingTimeId String
   wholeDay      Boolean           @default(false)
   workingHours  OpeningTime[]

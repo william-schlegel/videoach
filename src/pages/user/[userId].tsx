@@ -28,16 +28,18 @@ export default function Profile() {
   const myUserId = (Array.isArray(userId) ? userId[0] : userId) || "";
   const userQuery = trpc.users.getUserById.useQuery(myUserId, {
     onSuccess: (data) => {
-      setValue("name", data?.name || "");
-      setValue("email", data?.email || "");
-      setValue("role", data?.role || Role.MEMBER);
+      reset({
+        name: data?.name || "",
+        email: data?.email || "",
+        role: data?.role || Role.MEMBER,
+      });
     },
   });
   const {
     register,
     handleSubmit,
     formState: { errors },
-    setValue,
+    reset,
   } = useForm<FormValues>();
   const utils = trpc.useContext();
   const updateUser = trpc.users.updateUser.useMutation({
@@ -60,18 +62,17 @@ export default function Profile() {
         register={register}
         errors={errors}
         onSubmit={handleSubmit(onSubmit)}
+        isLoading={userQuery.isLoading}
         fields={[
           {
             label: t("change-name"),
             name: "name",
             required: t("name-mandatory"),
-            value: userQuery.data?.name || undefined,
           },
           {
             label: t("my-email"),
             name: "email",
             required: t("email-mandatory"),
-            value: userQuery.data?.email || undefined,
             type: "email",
             disabled: true,
           },

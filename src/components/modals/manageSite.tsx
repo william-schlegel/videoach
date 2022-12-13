@@ -10,12 +10,7 @@ import {
 import Modal, { ModalVariant } from "../ui/modal";
 import SimpleForm from "../ui/simpleform";
 import { CgAdd, CgPen, CgTrash } from "react-icons/cg";
-import {
-  type Dispatch,
-  type SetStateAction,
-  useState,
-  type PropsWithoutRef,
-} from "react";
+import { useState, type PropsWithoutRef } from "react";
 import { RoomReservation } from "@prisma/client";
 import { useSession } from "next-auth/react";
 import Confirmation from "@ui/confirmation";
@@ -46,7 +41,6 @@ export const CreateSite = ({ clubId }: CreateSiteProps) => {
     formState: { errors },
     reset,
   } = useForm<SiteFormValues>();
-  const [rooms, setRooms] = useState<RoomFormValues[]>([]);
   const utils = trpc.useContext();
   const { t } = useTranslation("club");
 
@@ -68,31 +62,21 @@ export const CreateSite = ({ clubId }: CreateSiteProps) => {
       submitButtonText="Enregistrer"
       errors={errors}
       buttonIcon={<CgAdd size={16} />}
-      onOpenModal={() => {
-        setRooms([]);
-        reset();
-      }}
+      onOpenModal={() => reset()}
       className="w-11/12 max-w-5xl"
     >
       <h3>{t("create-new-site")}</h3>
       <p className="py-4">{t("enter-info-new-site")}</p>
-      <SiteForm
-        register={register}
-        errors={errors}
-        rooms={rooms}
-        setRooms={setRooms}
-        clubId={clubId}
-      />
+      <SiteForm register={register} errors={errors} />
     </Modal>
   );
 };
 
 type UpdateSiteProps = {
-  clubId: string;
   siteId: string;
 };
 
-export const UpdateSite = ({ clubId, siteId }: UpdateSiteProps) => {
+export const UpdateSite = ({ siteId }: UpdateSiteProps) => {
   const utils = trpc.useContext();
   const {
     register,
@@ -100,7 +84,6 @@ export const UpdateSite = ({ clubId, siteId }: UpdateSiteProps) => {
     formState: { errors },
     reset,
   } = useForm<SiteFormValues>();
-  const [rooms, setRooms] = useState<RoomFormValues[]>([]);
   const querySite = trpc.sites.getSiteById.useQuery(siteId, {
     onSuccess(data) {
       if (data) reset(data);
@@ -128,10 +111,6 @@ export const UpdateSite = ({ clubId, siteId }: UpdateSiteProps) => {
       handleSubmit={handleSubmit(onSubmit, onError)}
       submitButtonText={t("update-site")}
       errors={errors}
-      onOpenModal={() => {
-        setRooms([]);
-        reset();
-      }}
       buttonIcon={<CgPen size={16} />}
       variant={ModalVariant.ICON_OUTLINED_PRIMARY}
       className="w-2/3 max-w-5xl"
@@ -142,14 +121,7 @@ export const UpdateSite = ({ clubId, siteId }: UpdateSiteProps) => {
           <span className="text-primary">{querySite?.data?.name}</span>
         </h3>
       </div>
-      <SiteForm
-        register={register}
-        errors={errors}
-        rooms={rooms}
-        setRooms={setRooms}
-        clubId={clubId}
-        siteId={siteId}
-      />
+      <SiteForm register={register} errors={errors} />
     </Modal>
   );
 };
@@ -192,10 +164,6 @@ export const DeleteSite = ({
 type SiteFormProps<T extends FieldValues> = {
   errors?: FieldErrorsImpl;
   register: UseFormRegister<T>;
-  rooms: RoomFormValues[];
-  setRooms: Dispatch<SetStateAction<RoomFormValues[]>>;
-  clubId: string;
-  siteId?: string;
 };
 
 function SiteForm<T extends FieldValues>({

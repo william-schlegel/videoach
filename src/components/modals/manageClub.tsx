@@ -108,7 +108,14 @@ export const UpdateClub = ({ clubId }: PropsWithoutRef<PropsUpdateDelete>) => {
     reset,
   } = useForm<ClubFormValues>();
   const { t } = useTranslation("club");
-  const queryClub = trpc.clubs.getClubById.useQuery(clubId);
+  const queryClub = trpc.clubs.getClubById.useQuery(clubId, {
+    onSuccess(data) {
+      reset({
+        address: data?.address,
+        name: data?.name,
+      });
+    },
+  });
   const updateClub = trpc.clubs.updateClub.useMutation({
     onSuccess: () => {
       utils.clubs.getClubsForManager.invalidate(sessionData?.user?.id ?? "");
@@ -131,7 +138,6 @@ export const UpdateClub = ({ clubId }: PropsWithoutRef<PropsUpdateDelete>) => {
       submitButtonText="Enregistrer"
       errors={errors}
       buttonIcon={<CgPen size={24} />}
-      onOpenModal={() => reset()}
       variant={ModalVariant.ICON_OUTLINED_PRIMARY}
     >
       <h3>
@@ -140,18 +146,17 @@ export const UpdateClub = ({ clubId }: PropsWithoutRef<PropsUpdateDelete>) => {
       <SimpleForm
         errors={errors}
         register={register}
+        isLoading={queryClub.isLoading}
         fields={[
           {
             label: t("club-name"),
             name: "name",
             required: t("name-mandatory"),
-            defaultValue: queryClub.data?.name,
           },
           {
             label: t("club-address"),
             name: "address",
             required: t("address-mandatory"),
-            defaultValue: queryClub.data?.address,
           },
         ]}
       />

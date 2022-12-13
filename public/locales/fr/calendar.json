@@ -1,0 +1,12 @@
+{
+  "monday": "Lundi",
+  "tuesday": "Mardi",
+  "wednesday": "Mercredi",
+  "thursday": "Jeudi",
+  "friday": "Vendredi",
+  "saturday": "Samedi",
+  "sunday": "Dimanche",
+  "create-new-calendar": "Créer un nouveau calendrier",
+  "update-calendar": "Mettre à jour le calendrier",
+  "start-date": "A partir du"
+}

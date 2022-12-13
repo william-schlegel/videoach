@@ -1,6 +1,6 @@
 import { paramCase } from "param-case";
 import { type ReactNode, useRef, useMemo } from "react";
-import { type FieldErrorsImpl } from "react-hook-form";
+import { type FieldErrors } from "react-hook-form";
 import { v4 as uuidv4 } from "uuid";
 
 export enum ModalVariant {
@@ -28,7 +28,7 @@ type Props = {
   children: ReactNode;
   submitButtonText?: string;
   cancelButtonText?: string;
-  errors?: FieldErrorsImpl;
+  errors?: FieldErrors;
   buttonIcon?: ReactNode;
   onOpenModal?: () => void;
   variant?: ModalVariant;
@@ -59,8 +59,7 @@ export default function Modal({
   };
 
   const handleClickSubmit = () => {
-    if (typeof errors === "object" && Object.keys(errors as object).length > 0)
-      return;
+    if (typeof errors === "object" && Object.keys(errors).length > 0) return;
     close();
     handleSubmit();
   };
@@ -106,7 +105,7 @@ export default function Modal({
         <div className={`modal-box relative${className}`}>
           <label
             htmlFor={modalId}
-            className="btn btn-secondary btn-sm btn-circle absolute right-1 top-1"
+            className="btn-secondary btn-sm btn-circle btn absolute right-1 top-1"
           >
             ✕
           </label>
@@ -114,7 +113,7 @@ export default function Modal({
           <div className="modal-action">
             {cancelButtonText ? (
               <button
-                className="btn-outline btn btn-secondary"
+                className="btn-outline btn-secondary btn"
                 onClick={(e) => {
                   e.preventDefault();
                   if (typeof handleCancel === "function") handleCancel();
@@ -125,7 +124,7 @@ export default function Modal({
               </button>
             ) : null}
             <button
-              className="btn btn-primary"
+              className="btn-primary btn"
               onClick={(e) => {
                 e.preventDefault();
                 handleClickSubmit();
