@@ -8,5 +8,9 @@
   "sunday": "Dimanche",
   "create-new-calendar": "Créer un nouveau calendrier",
   "update-calendar": "Mettre à jour le calendrier",
-  "start-date": "A partir du"
+  "start-date": "A partir du",
+  "whole-day": "24h",
+  "create-site-calendar": "Créer des horaires d'ouverture pour ce site",
+  "same-as-club": "Mêmes horaires que le club",
+  "save-calendar": "Enregistrer ce calendrier"
 }

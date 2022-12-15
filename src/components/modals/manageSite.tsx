@@ -10,7 +10,7 @@ import {
 import Modal, { ModalVariant } from "../ui/modal";
 import SimpleForm from "../ui/simpleform";
 import { CgAdd, CgPen, CgTrash } from "react-icons/cg";
-import { useState, type PropsWithoutRef } from "react";
+import { type PropsWithoutRef } from "react";
 import { RoomReservation } from "@prisma/client";
 import { useSession } from "next-auth/react";
 import Confirmation from "@ui/confirmation";
@@ -107,7 +107,7 @@ export const UpdateSite = ({ siteId }: UpdateSiteProps) => {
 
   return (
     <Modal
-      title={querySite.data?.name}
+      title={t("update-site-name", { siteName: querySite.data?.name })}
       handleSubmit={handleSubmit(onSubmit, onError)}
       submitButtonText={t("update-site")}
       errors={errors}

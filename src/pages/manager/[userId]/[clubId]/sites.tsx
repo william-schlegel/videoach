@@ -21,7 +21,7 @@ import {
 } from "@modals/manageSite";
 import Link from "next/link";
 import { useRouter } from "next/router";
-import CreateCalendar from "@modals/manageCalendar";
+import { CreateSiteCalendar } from "@modals/manageCalendar";
 
 const ManageSites = ({
   userId,
@@ -116,7 +116,7 @@ export function SiteContent({ userId, clubId, siteId }: SiteContentProps) {
         <p>({siteQuery.data?.address})</p>
         <UpdateSite siteId={siteId} />
         <DeleteSite clubId={clubId} siteId={siteId} />
-        <CreateCalendar />
+        <CreateSiteCalendar siteId={siteId} />
       </div>
       {/* <div className="flex flex-wrap gap-4">
         <div className="flex-1 rounded border border-primary p-4 ">

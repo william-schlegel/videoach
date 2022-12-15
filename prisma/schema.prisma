@@ -177,7 +177,7 @@ model DayOpeningTime {
 
 model OpeningTime {
   id      String           @id @default(cuid())
-  opening DateTime         @db.Time
-  closing DateTime         @db.Time
+  opening String // format HH:MM
+  closing String // format HH:MM
   day     DayOpeningTime[]
 }

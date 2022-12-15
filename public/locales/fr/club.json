@@ -42,6 +42,7 @@
   "create-site": "Créer un nouveau site",
   "create-new-site": "Créer un nouveau site d'activité",
   "enter-info-new-site": "Saisissez les informations relatives à votre nouveau site d'activités",
+  "update-site-name": "Mettre à jour le site {{siteName}}",
   "update-site": "Mettre à jour le site d'activité",
   "back-to-clubs": "Retour à mes clubs"
 }
