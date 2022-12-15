@@ -10,6 +10,8 @@
   "update-calendar": "Mettre à jour le calendrier",
   "start-date": "A partir du",
   "whole-day": "24h",
+  "closed": "Fermé",
+  "create-club-calendar": "Créer des horaires d'ouverture pour ce club",
   "create-site-calendar": "Créer des horaires d'ouverture pour ce site",
   "same-as-club": "Mêmes horaires que le club",
   "save-calendar": "Enregistrer ce calendrier"

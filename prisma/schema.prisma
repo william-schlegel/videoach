@@ -171,6 +171,7 @@ model DayOpeningTime {
   name          DayName
   openingTimeId String
   wholeDay      Boolean           @default(false)
+  closed        Boolean           @default(false)
   workingHours  OpeningTime[]
   calendar      OpeningCalendar[]
 }

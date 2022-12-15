@@ -16,6 +16,7 @@ import { useTranslation } from "next-i18next";
 import AddActivity from "@modals/manageActivity";
 import Link from "next/link";
 import { useRouter } from "next/router";
+import { CreateClubCalendar } from "@modals/manageCalendar";
 
 const ManageClubs = ({
   userId,
@@ -100,6 +101,7 @@ export function ClubContent({ userId, clubId }: ClubContentProps) {
         </div>
         <UpdateClub clubId={clubId} />
         <DeleteClub clubId={clubId} />
+        <CreateClubCalendar clubId={clubId} />
       </div>
       <div className="flex flex-wrap gap-4">
         <div className="flex-1 rounded border border-primary p-4 ">
@@ -176,7 +178,7 @@ export const getServerSideProps = async ({
     props: {
       ...(await serverSideTranslations(
         locale ?? "fr",
-        ["common", "club"],
+        ["common", "club", "calendar"],
         nextI18nConfig
       )),
       userId: session?.user?.id || "",

@@ -31,6 +31,7 @@ const calendarFormSchema = z.object({
     z.object({
       name: z.nativeEnum(DayName),
       wholeDay: z.boolean(),
+      closed: z.boolean(),
       start: z.array(z.string()).optional(),
       end: z.array(z.string()).optional(),
     })
@@ -44,6 +45,7 @@ const calendarDefaultValues: CalendarFormValues = {
   openingTime: DAYS.map((day) => ({
     name: day.value,
     wholeDay: true,
+    closed: false,
     start: ["00:00"],
     end: ["23:59"],
   })),
@@ -64,13 +66,13 @@ const FormCalendar = () => {
     mode: "onChange",
   });
   const wholeDays = watch([
-    "openingTime.0.wholeDay",
-    "openingTime.1.wholeDay",
-    "openingTime.2.wholeDay",
-    "openingTime.3.wholeDay",
-    "openingTime.4.wholeDay",
-    "openingTime.5.wholeDay",
-    "openingTime.6.wholeDay",
+    "openingTime.0",
+    "openingTime.1",
+    "openingTime.2",
+    "openingTime.3",
+    "openingTime.4",
+    "openingTime.5",
+    "openingTime.6",
   ]);
   const { t } = useTranslation("calendar");
 
@@ -91,7 +93,7 @@ const FormCalendar = () => {
 
   return (
     <form onSubmit={handleSubmit(onSubmit, onError)}>
-      <div className="form-control mb-2 w-full max-w-xs">
+      <div className="mb-2 grid grid-cols-[max-content,_1fr] gap-4">
         <label>{t("start-date")}</label>
         <input
           type="date"
@@ -99,7 +101,7 @@ const FormCalendar = () => {
           className="text-center"
         />
       </div>
-      <div className="grid grid-cols-[min-content,_min-content,_auto,_2rem] items-center gap-x-2 gap-y-1">
+      <div className="grid grid-cols-[min-content,_min-content,_min-content,_auto,_2rem] items-center gap-x-2 gap-y-1">
         {DAYS.map((day, idx) => (
           <Fragment key={day.value}>
             <span>{t(day.label)}</span>
@@ -114,32 +116,78 @@ const FormCalendar = () => {
                 <span className="label-text">{t("whole-day")}</span>
               </label>
             </div>
-            {wholeDays[idx] ? (
+            {wholeDays[idx]?.wholeDay ? (
               <>
+                <span></span>
                 <span></span>
                 <span></span>
               </>
             ) : (
               <>
-                <div className="flex gap-2">
-                  <input
-                    type="time"
-                    {...register(`openingTime.${idx}.start.0`)}
-                    className="input-sm w-fit text-center"
-                  />
-                  <input
-                    type="time"
-                    {...register(`openingTime.${idx}.end.0`)}
-                    className="input-sm w-fit text-center"
-                  />
+                <div className="form-control">
+                  <label className="label cursor-pointer justify-start gap-4">
+                    <input
+                      type="checkbox"
+                      className="checkbox-primary checkbox"
+                      {...register(`openingTime.${idx}.closed`)}
+                      defaultChecked={false}
+                    />
+                    <span className="label-text">{t("closed")}</span>
+                  </label>
                 </div>
-                <CgAdd size={16} className="text-center text-secondary" />
+                {wholeDays[idx]?.closed ? (
+                  <>
+                    <span></span>
+                    <span></span>
+                  </>
+                ) : (
+                  <>
+                    <div className="flex gap-2">
+                      <input
+                        type="time"
+                        {...register(`openingTime.${idx}.start.0`)}
+                        className="input-sm w-fit text-center"
+                      />
+                      <input
+                        type="time"
+                        {...register(`openingTime.${idx}.end.0`)}
+                        className="input-sm w-fit text-center"
+                      />
+                    </div>
+                    <CgAdd size={16} className="text-center text-secondary" />
+                  </>
+                )}
               </>
             )}
           </Fragment>
         ))}
       </div>
     </form>
+  );
+};
+
+type ClubCalendarProps = {
+  clubId: string;
+};
+
+export const CreateClubCalendar = ({ clubId }: ClubCalendarProps) => {
+  const { t } = useTranslation("calendar");
+  function onSubmit() {
+    console.log("submit");
+  }
+
+  return (
+    <Modal
+      title={t("create-club-calendar")}
+      handleSubmit={onSubmit}
+      submitButtonText={t("save-calendar")}
+      buttonIcon={<CgTime size={16} />}
+      variant={ModalVariant.ICON_OUTLINED_SECONDARY}
+      className="w-2/3 max-w-xl"
+    >
+      <h3>{t("create-club-calendar")}</h3>
+      <FormCalendar />
+    </Modal>
   );
 };
 
@@ -162,6 +210,7 @@ export const CreateSiteCalendar = ({ siteId }: SiteCalendarProps) => {
       submitButtonText={t("save-calendar")}
       buttonIcon={<CgTime size={16} />}
       variant={ModalVariant.ICON_OUTLINED_SECONDARY}
+      className="w-2/3 max-w-xl"
     >
       <h3>{t("create-site-calendar")}</h3>
       <div className="form-control">
