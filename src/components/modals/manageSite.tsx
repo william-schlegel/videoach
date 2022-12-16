@@ -7,7 +7,7 @@ import {
   type UseFormRegister,
   type FieldValues,
 } from "react-hook-form";
-import Modal, { ModalVariant } from "../ui/modal";
+import Modal, { type TModalVariant } from "../ui/modal";
 import SimpleForm from "../ui/simpleform";
 import { CgAdd, CgPen, CgTrash } from "react-icons/cg";
 import { type PropsWithoutRef } from "react";
@@ -112,7 +112,7 @@ export const UpdateSite = ({ siteId }: UpdateSiteProps) => {
       submitButtonText={t("update-site")}
       errors={errors}
       buttonIcon={<CgPen size={16} />}
-      variant={ModalVariant.ICON_OUTLINED_PRIMARY}
+      variant={"Icon-Outlined-Primary"}
       className="w-2/3 max-w-5xl"
     >
       <div className="flex items-center justify-between">
@@ -129,13 +129,13 @@ export const UpdateSite = ({ siteId }: UpdateSiteProps) => {
 type PropsUpdateDelete = {
   clubId: string;
   siteId: string;
-  variant?: ModalVariant;
+  variant?: TModalVariant;
 };
 
 export const DeleteSite = ({
   clubId,
   siteId,
-  variant = ModalVariant.ICON_OUTLINED_SECONDARY,
+  variant = "Icon-Outlined-Secondary",
 }: PropsWithoutRef<PropsUpdateDelete>) => {
   const utils = trpc.useContext();
   const { data: sessionData } = useSession();
@@ -193,7 +193,7 @@ function SiteForm<T extends FieldValues>({
 type NewRoomProps = {
   siteId?: string;
   clubId: string;
-  variant?: ModalVariant;
+  variant?: TModalVariant;
 };
 
 export const RESERVATIONS = [
@@ -205,7 +205,7 @@ export const RESERVATIONS = [
 export const NewRoom = ({
   clubId,
   siteId,
-  variant = ModalVariant.ICON_OUTLINED_PRIMARY,
+  variant = "Icon-Outlined-Primary",
 }: NewRoomProps) => {
   const utils = trpc.useContext();
   const createRoom = trpc.sites.createRoom.useMutation({
@@ -287,7 +287,7 @@ export const NewRoom = ({
 export const ManageRooms = ({
   clubId,
   siteId,
-  variant = ModalVariant.ICON_OUTLINED_SECONDARY,
+  variant = "Icon-Outlined-Secondary",
 }: NewRoomProps) => {
   const utils = trpc.useContext();
   const createRoom = trpc.sites.createRoom.useMutation({

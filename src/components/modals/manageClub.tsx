@@ -6,7 +6,7 @@ import {
   type SubmitHandler,
   type SubmitErrorHandler,
 } from "react-hook-form";
-import Modal, { ModalVariant } from "../ui/modal";
+import Modal from "../ui/modal";
 import SimpleForm from "../ui/simpleform";
 import { CgAdd, CgPen, CgTrash } from "react-icons/cg";
 import Confirmation from "../ui/confirmation";
@@ -138,7 +138,7 @@ export const UpdateClub = ({ clubId }: PropsWithoutRef<PropsUpdateDelete>) => {
       submitButtonText="Enregistrer"
       errors={errors}
       buttonIcon={<CgPen size={24} />}
-      variant={ModalVariant.ICON_OUTLINED_PRIMARY}
+      variant={"Icon-Outlined-Primary"}
     >
       <h3>
         {t("update-the-club")} {queryClub.data?.name}
@@ -184,7 +184,7 @@ export const DeleteClub = ({ clubId }: PropsWithoutRef<PropsUpdateDelete>) => {
         deleteClub.mutate(clubId);
       }}
       buttonIcon={<CgTrash size={24} />}
-      variant={ModalVariant.ICON_OUTLINED_SECONDARY}
+      variant={"Icon-Outlined-Secondary"}
     />
   );
 };

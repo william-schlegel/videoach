@@ -1,19 +1,15 @@
-import { Fragment, useState, type PropsWithoutRef } from "react";
-import { useSession } from "next-auth/react";
-import { trpc } from "../../utils/trpc";
-import {
-  useForm,
-  type SubmitHandler,
-  type SubmitErrorHandler,
-} from "react-hook-form";
-import Modal, { ModalVariant } from "../ui/modal";
-import { CgAdd, CgPen, CgTime, CgTrash } from "react-icons/cg";
-import Confirmation from "../ui/confirmation";
+import { useEffect } from "react";
+import { useState } from "react";
+// import { useSession } from "next-auth/react";
+// import { trpc } from "../../utils/trpc";
+import Modal from "../ui/modal";
+import { CgAdd, CgTime } from "react-icons/cg";
+// import Confirmation from "../ui/confirmation";
 import { useTranslation } from "next-i18next";
 import { DayName } from "@prisma/client";
-import { z } from "zod";
-import { zodResolver } from "@hookform/resolvers/zod";
-import SimpleForm from "@ui/simpleform";
+import ButtonIcon from "@ui/buttonIcon";
+import { fieldSet } from "@lib/fieldGetSet";
+import { formatDateAsYYYYMMDD } from "@lib/formatDate";
 
 export const DAYS = [
   { value: DayName.MONDAY, label: "monday" },
@@ -23,148 +19,150 @@ export const DAYS = [
   { value: DayName.FRIDAY, label: "friday" },
   { value: DayName.SATURDAY, label: "saturday" },
   { value: DayName.SUNDAY, label: "sunday" },
-];
+] as const;
 
-const calendarFormSchema = z.object({
-  startDate: z.date(),
-  openingTime: z.array(
-    z.object({
-      name: z.nativeEnum(DayName),
-      wholeDay: z.boolean(),
-      closed: z.boolean(),
-      start: z.array(z.string()).optional(),
-      end: z.array(z.string()).optional(),
-    })
-  ),
-});
-
-type CalendarFormValues = z.infer<typeof calendarFormSchema>;
-
-const calendarDefaultValues: CalendarFormValues = {
-  startDate: new Date(),
-  openingTime: DAYS.map((day) => ({
-    name: day.value,
-    wholeDay: true,
-    closed: false,
-    start: ["00:00"],
-    end: ["23:59"],
-  })),
+type OpeningTimeSchema = {
+  name: DayName;
+  wholeDay: boolean;
+  closed: boolean;
+  start?: string[];
+  end?: string[];
+};
+type CalendarFormSchema = {
+  startDate: Date;
+  openingTime: OpeningTimeSchema[];
 };
 
-const FormCalendar = () => {
-  // const { data: sessionData } = useSession();
-  // const utils = trpc.useContext();
-  const {
-    register,
-    handleSubmit,
-    formState: { errors },
-    reset,
-    watch,
-  } = useForm<CalendarFormValues>({
-    resolver: zodResolver(calendarFormSchema),
-    defaultValues: calendarDefaultValues,
-    mode: "onChange",
-  });
-  const wholeDays = watch([
-    "openingTime.0",
-    "openingTime.1",
-    "openingTime.2",
-    "openingTime.3",
-    "openingTime.4",
-    "openingTime.5",
-    "openingTime.6",
-  ]);
+function useFormCalendar(initialCalendar?: CalendarFormSchema) {
+  const calendarDefaultValues: CalendarFormSchema = {
+    startDate: new Date(),
+    openingTime: DAYS.map((day) => ({
+      name: day.value,
+      wholeDay: true,
+      closed: false,
+      start: ["00:00"],
+      end: ["23:59"],
+    })),
+  };
+  const [calendar, setCalendar] = useState(calendarDefaultValues);
+  useEffect(() => {
+    if (initialCalendar) setCalendar(initialCalendar);
+  }, [initialCalendar]);
+
+  function updateCalendar(cal: CalendarFormSchema) {
+    setCalendar(cal);
+  }
+
+  return { calendar, updateCalendar };
+}
+
+type FormCalendarProps = {
+  calendarValues: CalendarFormSchema;
+  onCalendarChange: (cal: CalendarFormSchema) => void;
+};
+
+function FormCalendar({ calendarValues, onCalendarChange }: FormCalendarProps) {
   const { t } = useTranslation("calendar");
 
-  // const createClub = trpc.clubs.createClub.useMutation({
-  //   onSuccess: () => {
-  //     utils.clubs.getClubsForManager.invalidate(sessionData?.user?.id ?? "");
-  //   },
-  // });
-
-  const onSubmit: SubmitHandler<CalendarFormValues> = (data) => {
-    console.log("data", data);
-    // createClub.mutate({ userId: sessionData?.user?.id ?? "", ...data });
-  };
-
-  const onError: SubmitErrorHandler<CalendarFormValues> = (errors) => {
-    console.log("errors", errors);
+  const onChange = (path: string, value: unknown) => {
+    const cv = { ...calendarValues };
+    fieldSet(cv, path, value);
+    onCalendarChange(cv);
   };
 
   return (
-    <form onSubmit={handleSubmit(onSubmit, onError)}>
+    <>
       <div className="mb-2 grid grid-cols-[max-content,_1fr] gap-4">
         <label>{t("start-date")}</label>
         <input
           type="date"
-          {...register("startDate", { valueAsDate: true })}
+          value={formatDateAsYYYYMMDD(calendarValues.startDate)}
+          onChange={(e) => onChange("startDate", new Date(e.target.value))}
           className="text-center"
         />
       </div>
-      <div className="grid grid-cols-[min-content,_min-content,_min-content,_auto,_2rem] items-center gap-x-2 gap-y-1">
-        {DAYS.map((day, idx) => (
-          <Fragment key={day.value}>
-            <span>{t(day.label)}</span>
-            <div className="form-control">
-              <label className="label cursor-pointer justify-start gap-4">
+      <table className="w-full table-auto">
+        {/* header */}
+        <thead>
+          <tr>
+            <th>{t("day")}</th>
+            <th>{t("whole-day")}</th>
+            <th>{t("closed")}</th>
+            <th>{t("times")}</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          {DAYS.map((day, idx) => (
+            <tr key={day.value}>
+              <td>{t(day.label)}</td>
+              <td className="text-center">
                 <input
                   type="checkbox"
                   className="checkbox-primary checkbox"
-                  {...register(`openingTime.${idx}.wholeDay`)}
+                  checked={calendarValues.openingTime[idx]?.wholeDay}
+                  onChange={(e) =>
+                    onChange(`openingTime.${idx}.wholeDay`, e.target.checked)
+                  }
                   defaultChecked={true}
                 />
-                <span className="label-text">{t("whole-day")}</span>
-              </label>
-            </div>
-            {wholeDays[idx]?.wholeDay ? (
-              <>
-                <span></span>
-                <span></span>
-                <span></span>
-              </>
-            ) : (
-              <>
-                <div className="form-control">
-                  <label className="label cursor-pointer justify-start gap-4">
+              </td>
+              {!calendarValues.openingTime[idx]?.wholeDay ? (
+                <>
+                  <td className="text-center">
                     <input
                       type="checkbox"
                       className="checkbox-primary checkbox"
-                      {...register(`openingTime.${idx}.closed`)}
+                      checked={calendarValues.openingTime[idx]?.closed}
+                      onChange={(e) =>
+                        onChange(`openingTime.${idx}.closed`, e.target.checked)
+                      }
                       defaultChecked={false}
                     />
-                    <span className="label-text">{t("closed")}</span>
-                  </label>
-                </div>
-                {wholeDays[idx]?.closed ? (
-                  <>
-                    <span></span>
-                    <span></span>
-                  </>
-                ) : (
-                  <>
-                    <div className="flex gap-2">
-                      <input
-                        type="time"
-                        {...register(`openingTime.${idx}.start.0`)}
-                        className="input-sm w-fit text-center"
-                      />
-                      <input
-                        type="time"
-                        {...register(`openingTime.${idx}.end.0`)}
-                        className="input-sm w-fit text-center"
-                      />
-                    </div>
-                    <CgAdd size={16} className="text-center text-secondary" />
-                  </>
-                )}
-              </>
-            )}
-          </Fragment>
-        ))}
-      </div>
-    </form>
+                  </td>
+
+                  {!calendarValues.openingTime[idx]?.closed ? (
+                    <>
+                      <td className="flex gap-2">
+                        <input
+                          type="time"
+                          value={calendarValues.openingTime[idx]?.start?.[0]}
+                          onChange={(e) =>
+                            onChange(
+                              `openingTime.${idx}.start.0`,
+                              e.target.value
+                            )
+                          }
+                          className="input-sm w-fit text-center"
+                        />
+                        <input
+                          type="time"
+                          value={calendarValues.openingTime[idx]?.end?.[0]}
+                          onChange={(e) =>
+                            onChange(`openingTime.${idx}.end.0`, e.target.value)
+                          }
+                          className="input-sm w-fit text-center"
+                        />
+                      </td>
+                      <td>
+                        <ButtonIcon
+                          title={t("more-times")}
+                          iconComponent={<CgAdd />}
+                          buttonVariant="Icon-Outlined-Secondary"
+                          buttonSize="btn-sm"
+                        />
+                      </td>
+                    </>
+                  ) : null}
+                </>
+              ) : null}
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </>
   );
-};
+}
 
 type ClubCalendarProps = {
   clubId: string;
@@ -172,8 +170,10 @@ type ClubCalendarProps = {
 
 export const CreateClubCalendar = ({ clubId }: ClubCalendarProps) => {
   const { t } = useTranslation("calendar");
+  const { calendar, updateCalendar } = useFormCalendar();
   function onSubmit() {
-    console.log("submit");
+    console.log("clubId", clubId);
+    console.log("submit", calendar);
   }
 
   return (
@@ -182,11 +182,14 @@ export const CreateClubCalendar = ({ clubId }: ClubCalendarProps) => {
       handleSubmit={onSubmit}
       submitButtonText={t("save-calendar")}
       buttonIcon={<CgTime size={16} />}
-      variant={ModalVariant.ICON_OUTLINED_SECONDARY}
+      variant="Icon-Outlined-Secondary"
       className="w-2/3 max-w-xl"
     >
       <h3>{t("create-club-calendar")}</h3>
-      <FormCalendar />
+      <FormCalendar
+        calendarValues={calendar}
+        onCalendarChange={updateCalendar}
+      />
     </Modal>
   );
 };
@@ -196,20 +199,21 @@ type SiteCalendarProps = {
 };
 
 export const CreateSiteCalendar = ({ siteId }: SiteCalendarProps) => {
-  console.log("siteId", siteId);
   const { t } = useTranslation("calendar");
   const [showCalendar, setShowCalendar] = useState(false);
-  function onSubmit() {
-    console.log("submit");
-  }
+  const { calendar, updateCalendar } = useFormCalendar();
 
+  function onSubmit() {
+    console.log("siteId :>> ", siteId);
+    console.log("submit", calendar);
+  }
   return (
     <Modal
       title={t("create-site-calendar")}
       handleSubmit={onSubmit}
       submitButtonText={t("save-calendar")}
       buttonIcon={<CgTime size={16} />}
-      variant={ModalVariant.ICON_OUTLINED_SECONDARY}
+      variant="Icon-Outlined-Secondary"
       className="w-2/3 max-w-xl"
     >
       <h3>{t("create-site-calendar")}</h3>
@@ -224,7 +228,12 @@ export const CreateSiteCalendar = ({ siteId }: SiteCalendarProps) => {
           <span className="label-text">{t("same-as-club")}</span>
         </label>
       </div>
-      {showCalendar ? <FormCalendar /> : null}
+      {showCalendar ? (
+        <FormCalendar
+          calendarValues={calendar}
+          onCalendarChange={updateCalendar}
+        />
+      ) : null}
     </Modal>
   );
 };

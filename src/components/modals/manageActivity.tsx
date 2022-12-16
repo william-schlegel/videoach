@@ -1,5 +1,5 @@
 import { trpc } from "../../utils/trpc";
-import Modal, { ModalVariant } from "../ui/modal";
+import Modal from "../ui/modal";
 import { CgAdd, CgPen, CgTrash } from "react-icons/cg";
 import { useState } from "react";
 import Confirmation from "../ui/confirmation";
@@ -196,7 +196,7 @@ function UpdateActivity({
       title="Modifier l'activité"
       handleSubmit={update}
       buttonIcon={<CgPen size={12} />}
-      variant={ModalVariant.ICON_OUTLINED_SECONDARY}
+      variant={"Icon-Outlined-Primary"}
       buttonSize="btn-sm"
     >
       <h3>
@@ -228,7 +228,7 @@ function DeleteActivity({ clubId, activityId }: DeleteActivityProps) {
       message="Voulez-vous supprimer cette activité ?\nCette action est irréversible"
       onConfirm={() => deleteActivity.mutate({ clubId, activityId })}
       buttonIcon={<CgTrash size={12} />}
-      variant={ModalVariant.ICON_OUTLINED_SECONDARY}
+      variant={"Icon-Outlined-Secondary"}
       textConfirmation="Supprimer définitivement"
       buttonSize="btn-sm"
     />
@@ -303,7 +303,7 @@ function UpdateGroup({ userId, id, initialName }: UpdateGroupProps) {
       title="Modifier le groupe"
       handleSubmit={update}
       buttonIcon={<CgPen size={12} />}
-      variant={ModalVariant.ICON_OUTLINED_SECONDARY}
+      variant={"Icon-Outlined-Secondary"}
       buttonSize="btn-sm"
     >
       <h3>
@@ -335,7 +335,7 @@ function DeleteGroup({ groupId, userId }: DeleteGroupProps) {
       message="Voulez-vous supprimer ce groupe et les activités attachées ?\nCette action est irréversible"
       onConfirm={() => deleteGroup.mutate({ groupId })}
       buttonIcon={<CgTrash size={12} />}
-      variant={ModalVariant.ICON_OUTLINED_SECONDARY}
+      variant={"Icon-Outlined-Secondary"}
       textConfirmation="Supprimer définitivement"
       buttonSize="btn-sm"
     />

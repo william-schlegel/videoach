@@ -17,8 +17,6 @@ type SimpleFormField<T> = {
   name: keyof T;
   required?: boolean | string;
   component?: ReactNode | undefined;
-  // value?: number | string | undefined;
-  // initialValue?: number | string | undefined;
   type?: HTMLInputTypeAttribute;
   disabled?: boolean | undefined;
 };

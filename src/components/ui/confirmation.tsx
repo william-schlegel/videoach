@@ -1,5 +1,6 @@
 import { type ReactNode } from "react";
-import Modal, { type ModalButtonSize, ModalVariant } from "./modal";
+import { type ButtonSize } from "./buttonIcon";
+import Modal, { type TModalVariant } from "./modal";
 
 type Props = {
   title: string;
@@ -9,8 +10,8 @@ type Props = {
   onConfirm: () => void;
   onCancel?: () => void;
   buttonIcon?: ReactNode;
-  variant?: ModalVariant;
-  buttonSize?: ModalButtonSize;
+  variant?: TModalVariant;
+  buttonSize?: ButtonSize;
 };
 
 function Confirmation({
@@ -21,7 +22,7 @@ function Confirmation({
   onConfirm,
   onCancel,
   buttonIcon,
-  variant = ModalVariant.SECONDARY,
+  variant = "Secondary",
   buttonSize = "btn-md",
 }: Props) {
   return (

@@ -19,6 +19,7 @@
     "paths": {
       "@trpcserver/*": ["./src/server/trpc/*"],
       "@trpcclient/*": ["./src/utils/*"],
+      "@lib/*": ["./src/lib/*"],
       "@ui/*": ["./src/components/ui/*"],
       "@modals/*": ["./src/components/modals/*"],
       "@auth/*": ["./src/pages/api/auth/*"],

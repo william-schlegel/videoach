@@ -1,4 +1,5 @@
 {
+  "day": "Jour",
   "monday": "Lundi",
   "tuesday": "Mardi",
   "wednesday": "Mercredi",
@@ -6,6 +7,8 @@
   "friday": "Vendredi",
   "saturday": "Samedi",
   "sunday": "Dimanche",
+  "times": "Horaires",
+  "more-times": "Plus d'horaires",
   "create-new-calendar": "Créer un nouveau calendrier",
   "update-calendar": "Mettre à jour le calendrier",
   "start-date": "A partir du",

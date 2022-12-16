@@ -2,24 +2,14 @@ import { paramCase } from "param-case";
 import { type ReactNode, useRef, useMemo } from "react";
 import { type FieldErrors } from "react-hook-form";
 import { v4 as uuidv4 } from "uuid";
+import { type ButtonSize, type TIconButtonVariant } from "./buttonIcon";
 
-export enum ModalVariant {
-  PRIMARY = "Primary",
-  SECONDARY = "Secondary",
-  OUTLINED_PRIMARY = "Outlined-Primary",
-  OUTLINED_SECONDARY = "Outlined-Secondary",
-  ICON_PRIMARY = "Icon-Primary",
-  ICON_SECONDARY = "Icon-Secondary",
-  ICON_OUTLINED_PRIMARY = "Icon-Primary",
-  ICON_OUTLINED_SECONDARY = "Icon-Secondary",
-}
-
-export type ModalButtonSize =
-  | "btn-xs"
-  | "btn-sm"
-  | "btn-md"
-  | "btn-lg"
-  | "btn-xl";
+export type TModalVariant =
+  | TIconButtonVariant
+  | "Primary"
+  | "Secondary"
+  | "Outlined-Primary"
+  | "Outlined-Secondary";
 
 type Props = {
   title: string | undefined;
@@ -31,9 +21,9 @@ type Props = {
   errors?: FieldErrors;
   buttonIcon?: ReactNode;
   onOpenModal?: () => void;
-  variant?: ModalVariant;
+  variant?: TModalVariant;
   className?: string;
-  buttonSize?: ModalButtonSize;
+  buttonSize?: ButtonSize;
 };
 
 export default function Modal({
@@ -46,7 +36,7 @@ export default function Modal({
   errors,
   buttonIcon,
   onOpenModal,
-  variant = ModalVariant.SECONDARY,
+  variant = "Primary",
   className = "",
   buttonSize = "btn-md",
 }: Props) {
@@ -65,17 +55,20 @@ export default function Modal({
   };
 
   const primary =
-    variant === ModalVariant.PRIMARY ||
-    variant === ModalVariant.OUTLINED_PRIMARY ||
-    variant === ModalVariant.ICON_PRIMARY;
+    variant === "Primary" ||
+    variant === "Outlined-Primary" ||
+    variant === "Icon-Primary" ||
+    variant === "Icon-Outlined-Primary";
   const outlined =
-    variant === ModalVariant.OUTLINED_PRIMARY ||
-    variant === ModalVariant.OUTLINED_SECONDARY ||
-    variant === ModalVariant.ICON_OUTLINED_PRIMARY ||
-    variant === ModalVariant.ICON_OUTLINED_SECONDARY;
+    variant === "Outlined-Primary" ||
+    variant === "Outlined-Secondary" ||
+    variant === "Icon-Outlined-Primary" ||
+    variant === "Icon-Outlined-Secondary";
   const iconOnly =
-    variant === ModalVariant.ICON_PRIMARY ||
-    variant === ModalVariant.ICON_SECONDARY;
+    variant === "Icon-Outlined-Primary" ||
+    variant === "Icon-Outlined-Secondary" ||
+    variant === "Icon-Primary" ||
+    variant === "Icon-Secondary";
 
   return (
     <>
@@ -102,7 +95,7 @@ export default function Modal({
         }}
       />
       <div className={`modal`}>
-        <div className={`modal-box relative${className}`}>
+        <div className={`modal-box relative overflow-hidden ${className}`}>
           <label
             htmlFor={modalId}
             className="btn-secondary btn-sm btn-circle btn absolute right-1 top-1"
