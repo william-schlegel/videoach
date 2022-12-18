@@ -12,16 +12,11 @@ import { authOptions } from "@auth/[...nextauth]";
 import { serverSideTranslations } from "next-i18next/serverSideTranslations";
 import nextI18nConfig from "@root/next-i18next.config.mjs";
 import { useTranslation } from "next-i18next";
-import {
-  CreateSite,
-  DeleteSite,
-  ManageRooms,
-  NewRoom,
-  UpdateSite,
-} from "@modals/manageSite";
+import { CreateSite, DeleteSite, UpdateSite } from "@modals/manageSite";
 import Link from "next/link";
 import { useRouter } from "next/router";
 import { CreateSiteCalendar } from "@modals/manageCalendar";
+import CalendarWeek from "@root/src/components/calendarWeek";
 
 const ManageSites = ({
   userId,
@@ -102,79 +97,55 @@ type SiteContentProps = {
   siteId: string;
 };
 
-export function SiteContent({ userId, clubId, siteId }: SiteContentProps) {
+export function SiteContent({ clubId, siteId }: SiteContentProps) {
   const siteQuery = trpc.sites.getSiteById.useQuery(siteId);
-  const utils = trpc.useContext();
+  const calendarQuery = trpc.calendars.getCalendarForSite.useQuery({
+    siteId,
+    clubId,
+    openWithClub: siteQuery.data?.openWithClub,
+  });
+
   const { t } = useTranslation("club");
+  const router = useRouter();
+
+  const root = router.asPath.split("/");
+  root.pop();
+  const path = root.reduce((a, r) => a.concat(`${r}/`), "");
 
   if (siteQuery.isLoading) return <Spinner />;
 
   return (
     <>
-      <div className="flex items-center gap-4">
-        <h2>{siteQuery.data?.name}</h2>
-        <p>({siteQuery.data?.address})</p>
-        <UpdateSite siteId={siteId} />
-        <DeleteSite clubId={clubId} siteId={siteId} />
-        <CreateSiteCalendar siteId={siteId} />
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-4">
+          <h2>{siteQuery.data?.name}</h2>
+          <p>({siteQuery.data?.address})</p>
+        </div>
+        <div className="flex items-center gap-2">
+          <UpdateSite siteId={siteId} />
+          <DeleteSite clubId={clubId} siteId={siteId} />
+          <CreateSiteCalendar siteId={siteId} />
+        </div>
       </div>
-      {/* <div className="flex flex-wrap gap-4">
+      <CalendarWeek
+        calendar={calendarQuery.data}
+        isLoading={calendarQuery.isLoading}
+      />
+      <div className="flex flex-wrap gap-4">
         <div className="flex-1 rounded border border-primary p-4 ">
           <div className="mb-4 flex flex-row items-center gap-4">
-            <h3>{t("site", { count: clubQuery?.data?.sites?.length ?? 0 })}</h3>
-            <Link className="btn-secondary btn" href={`${userId}/${clubId}/sites`}>
-              {t("manage-sites")}
+            <h3>{t("room", { count: siteQuery?.data?.rooms?.length ?? 0 })}</h3>
+            <Link className="btn-secondary btn" href={`${path}${siteId}/rooms`}>
+              {t("manage-rooms")}
             </Link>
-
-
-            <CreateSite clubId={clubId} />
           </div>
-          {clubQuery?.data?.sites?.map((site) => (
-            <div key={site.id} className="my-2 flex items-center gap-4">
-              <UpdateSite clubId={clubId} siteId={site.id} />
-              <span>{site.address}</span>
-              <div className="rounded-full border border-neutral bg-base-100 px-4 py-2 text-neutral">
-                {t("room", { count: site.rooms.length })}
-                {site.rooms.length > 0 && (
-                  <span className="text-lg text-primary">
-                    {site.rooms.length}
-                  </span>
-                )}
-              </div>
-              <ManageRooms clubId={clubId} siteId={site.id} />
-              <NewRoom clubId={clubId} siteId={site.id} />
+          {siteQuery?.data?.rooms?.map((room) => (
+            <div key={room.id} className="my-2 flex items-center gap-4">
+              <span>{room.name}</span>
             </div>
           ))}
         </div>
-        <div className="flex-1 rounded border border-primary p-4 ">
-          <div className="mb-4 flex flex-row items-center gap-4">
-            <h3>
-              {t("activity", {
-                count: clubQuery?.data?.activities.length ?? 0,
-              })}
-            </h3>
-            <AddActivity
-              clubId={clubId}
-              userId={userId}
-              onSuccess={() => {
-                utils.clubs.getClubById.invalidate(clubId);
-              }}
-              withAdd
-              withUpdate
-            />
-          </div>
-          <div className="flex flex-wrap gap-1">
-            {clubQuery?.data?.activities?.map((activity) => (
-              <span
-                key={activity.id}
-                className="rounded-full border border-neutral bg-base-100 px-4 py-2 text-neutral"
-              >
-                {activity.name}
-              </span>
-            ))}
-          </div>
-        </div> 
-      </div>*/}
+      </div>
     </>
   );
 }

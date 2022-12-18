@@ -89,6 +89,21 @@ export const clubRouter = router({
         },
       });
     }),
+  updateClubCalendar: protectedProcedure
+    .input(
+      z.object({
+        id: z.string().cuid(),
+        calendarId: z.string().cuid(),
+      })
+    )
+    .mutation(async ({ ctx, input }) => {
+      return ctx.prisma.club.update({
+        where: { id: input.id },
+        data: {
+          calendars: { connect: { id: input.calendarId } },
+        },
+      });
+    }),
   deleteClub: protectedProcedure
     .input(z.string().cuid())
     .mutation(async ({ ctx, input }) => {

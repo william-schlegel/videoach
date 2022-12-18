@@ -1,7 +1,7 @@
 import { useEffect } from "react";
 import { useState } from "react";
 // import { useSession } from "next-auth/react";
-// import { trpc } from "../../utils/trpc";
+import { trpc } from "../../utils/trpc";
 import Modal from "../ui/modal";
 import { CgAdd, CgTime } from "react-icons/cg";
 // import Confirmation from "../ui/confirmation";
@@ -21,12 +21,16 @@ export const DAYS = [
   { value: DayName.SUNDAY, label: "sunday" },
 ] as const;
 
+type WorkingHoursSchema = {
+  opening: string;
+  closing: string;
+};
+
 type OpeningTimeSchema = {
   name: DayName;
   wholeDay: boolean;
   closed: boolean;
-  start?: string[];
-  end?: string[];
+  workingHours: WorkingHoursSchema[];
 };
 type CalendarFormSchema = {
   startDate: Date;
@@ -40,8 +44,12 @@ function useFormCalendar(initialCalendar?: CalendarFormSchema) {
       name: day.value,
       wholeDay: true,
       closed: false,
-      start: ["00:00"],
-      end: ["23:59"],
+      workingHours: [
+        {
+          opening: "00:00",
+          closing: "23:59",
+        },
+      ],
     })),
   };
   const [calendar, setCalendar] = useState(calendarDefaultValues);
@@ -100,11 +108,10 @@ function FormCalendar({ calendarValues, onCalendarChange }: FormCalendarProps) {
                 <input
                   type="checkbox"
                   className="checkbox-primary checkbox"
-                  checked={calendarValues.openingTime[idx]?.wholeDay}
+                  checked={calendarValues.openingTime[idx]?.wholeDay ?? true}
                   onChange={(e) =>
                     onChange(`openingTime.${idx}.wholeDay`, e.target.checked)
                   }
-                  defaultChecked={true}
                 />
               </td>
               {!calendarValues.openingTime[idx]?.wholeDay ? (
@@ -113,11 +120,10 @@ function FormCalendar({ calendarValues, onCalendarChange }: FormCalendarProps) {
                     <input
                       type="checkbox"
                       className="checkbox-primary checkbox"
-                      checked={calendarValues.openingTime[idx]?.closed}
+                      checked={calendarValues.openingTime[idx]?.closed ?? false}
                       onChange={(e) =>
                         onChange(`openingTime.${idx}.closed`, e.target.checked)
                       }
-                      defaultChecked={false}
                     />
                   </td>
 
@@ -126,10 +132,13 @@ function FormCalendar({ calendarValues, onCalendarChange }: FormCalendarProps) {
                       <td className="flex gap-2">
                         <input
                           type="time"
-                          value={calendarValues.openingTime[idx]?.start?.[0]}
+                          value={
+                            calendarValues.openingTime[idx]?.workingHours?.[0]
+                              ?.opening
+                          }
                           onChange={(e) =>
                             onChange(
-                              `openingTime.${idx}.start.0`,
+                              `openingTime.${idx}.workingHours.0.opening`,
                               e.target.value
                             )
                           }
@@ -137,9 +146,15 @@ function FormCalendar({ calendarValues, onCalendarChange }: FormCalendarProps) {
                         />
                         <input
                           type="time"
-                          value={calendarValues.openingTime[idx]?.end?.[0]}
+                          value={
+                            calendarValues.openingTime[idx]?.workingHours?.[0]
+                              ?.closing
+                          }
                           onChange={(e) =>
-                            onChange(`openingTime.${idx}.end.0`, e.target.value)
+                            onChange(
+                              `openingTime.${idx}.workingHours.0.closing`,
+                              e.target.value
+                            )
                           }
                           className="input-sm w-fit text-center"
                         />
@@ -171,9 +186,19 @@ type ClubCalendarProps = {
 export const CreateClubCalendar = ({ clubId }: ClubCalendarProps) => {
   const { t } = useTranslation("calendar");
   const { calendar, updateCalendar } = useFormCalendar();
+  const saveCalendar = trpc.calendars.createCalendar.useMutation();
+  const updateClub = trpc.clubs.updateClubCalendar.useMutation();
+
   function onSubmit() {
-    console.log("clubId", clubId);
-    console.log("submit", calendar);
+    saveCalendar.mutate(calendar, {
+      onSuccess(data) {
+        if (data.id)
+          updateClub.mutate({
+            id: clubId,
+            calendarId: data.id,
+          });
+      },
+    });
   }
 
   return (
@@ -202,11 +227,21 @@ export const CreateSiteCalendar = ({ siteId }: SiteCalendarProps) => {
   const { t } = useTranslation("calendar");
   const [showCalendar, setShowCalendar] = useState(false);
   const { calendar, updateCalendar } = useFormCalendar();
+  const saveCalendar = trpc.calendars.createCalendar.useMutation();
+  const updateSite = trpc.sites.updateSiteCalendar.useMutation();
 
   function onSubmit() {
-    console.log("siteId :>> ", siteId);
-    console.log("submit", calendar);
+    saveCalendar.mutate(calendar, {
+      onSuccess(data) {
+        if (data.id)
+          updateSite.mutate({
+            id: siteId,
+            calendarId: data.id,
+          });
+      },
+    });
   }
+
   return (
     <Modal
       title={t("create-site-calendar")}
@@ -222,7 +257,7 @@ export const CreateSiteCalendar = ({ siteId }: SiteCalendarProps) => {
           <input
             type="checkbox"
             className="checkbox-primary checkbox"
-            defaultChecked={true}
+            checked={!showCalendar}
             onChange={(e) => setShowCalendar(!e.target.checked)}
           />
           <span className="label-text">{t("same-as-club")}</span>

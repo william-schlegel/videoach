@@ -137,7 +137,7 @@ export const UpdateClub = ({ clubId }: PropsWithoutRef<PropsUpdateDelete>) => {
       handleSubmit={handleSubmit(onSubmit, onError)}
       submitButtonText="Enregistrer"
       errors={errors}
-      buttonIcon={<CgPen size={24} />}
+      buttonIcon={<CgPen size={16} />}
       variant={"Icon-Outlined-Primary"}
     >
       <h3>
@@ -183,7 +183,7 @@ export const DeleteClub = ({ clubId }: PropsWithoutRef<PropsUpdateDelete>) => {
       onConfirm={() => {
         deleteClub.mutate(clubId);
       }}
-      buttonIcon={<CgTrash size={24} />}
+      buttonIcon={<CgTrash size={16} />}
       variant={"Icon-Outlined-Secondary"}
     />
   );

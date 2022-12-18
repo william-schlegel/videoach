@@ -84,28 +84,26 @@ model VerificationToken {
 }
 
 model Club {
-  id         String           @id @default(cuid())
+  id         String            @id @default(cuid())
   name       String
   address    String
   managerId  String
-  manager    User             @relation(fields: [managerId], references: [id], onDelete: Cascade, name: "Manager")
+  manager    User              @relation(fields: [managerId], references: [id], onDelete: Cascade, name: "Manager")
   sites      Site[]
   activities Activity[]
-  members    User[]           @relation(name: "Member")
-  calendarId String?
-  calendar   OpeningCalendar? @relation(fields: [calendarId], references: [id], onDelete: Cascade)
+  members    User[]            @relation(name: "Member")
+  calendars  OpeningCalendar[]
 }
 
 model Site {
-  id           String           @id @default(cuid())
+  id           String            @id @default(cuid())
   name         String
   address      String
   clubId       String
-  club         Club             @relation(fields: [clubId], references: [id], onDelete: Cascade)
+  club         Club              @relation(fields: [clubId], references: [id], onDelete: Cascade)
   rooms        Room[]
-  openWithClub Boolean          @default(true)
-  calendarId   String?
-  calendar     OpeningCalendar? @relation(fields: [calendarId], references: [id], onDelete: Cascade)
+  openWithClub Boolean           @default(true)
+  calendars    OpeningCalendar[]
 }
 
 enum RoomReservation {
@@ -115,17 +113,16 @@ enum RoomReservation {
 }
 
 model Room {
-  id           String           @id @default(cuid())
+  id           String            @id @default(cuid())
   name         String
-  reservation  RoomReservation  @default(NONE)
+  reservation  RoomReservation   @default(NONE)
   capacity     Int
-  unavailable  Boolean          @default(false)
-  openWithClub Boolean          @default(true)
-  openWithSite Boolean          @default(true)
-  calendarId   String?
-  calendar     OpeningCalendar? @relation(fields: [calendarId], references: [id], onDelete: Cascade)
+  unavailable  Boolean           @default(false)
+  openWithClub Boolean           @default(true)
+  openWithSite Boolean           @default(true)
+  calendars    OpeningCalendar[]
   siteId       String
-  site         Site             @relation(fields: [siteId], references: [id], onDelete: Cascade)
+  site         Site              @relation(fields: [siteId], references: [id], onDelete: Cascade)
 }
 
 // activity group may be standard (default group) or belong to a specific user
@@ -167,13 +164,12 @@ enum DayName {
 }
 
 model DayOpeningTime {
-  id            String            @id @default(cuid())
-  name          DayName
-  openingTimeId String
-  wholeDay      Boolean           @default(false)
-  closed        Boolean           @default(false)
-  workingHours  OpeningTime[]
-  calendar      OpeningCalendar[]
+  id           String            @id @default(cuid())
+  name         DayName
+  wholeDay     Boolean           @default(false)
+  closed       Boolean           @default(false)
+  workingHours OpeningTime[]
+  calendar     OpeningCalendar[]
 }
 
 model OpeningTime {

@@ -16,6 +16,7 @@ export const siteRouter = router({
   getSiteById: protectedProcedure.input(z.string()).query(({ ctx, input }) => {
     return ctx.prisma.site.findUnique({
       where: { id: input },
+      include: { rooms: true },
     });
   }),
   getSitesForClub: protectedProcedure
@@ -61,11 +62,40 @@ export const siteRouter = router({
         },
       })
     ),
+  updateSiteCalendar: protectedProcedure
+    .input(
+      z.object({
+        id: z.string().cuid(),
+        calendarId: z.string().cuid(),
+      })
+    )
+    .mutation(({ ctx, input }) =>
+      ctx.prisma.site.update({
+        where: { id: input.id },
+        data: {
+          calendars: { connect: { id: input.calendarId } },
+        },
+      })
+    ),
   deleteSite: protectedProcedure
     .input(z.string().cuid())
     .mutation(({ ctx, input }) =>
       ctx.prisma.site.delete({ where: { id: input } })
     ),
+  getRoomById: protectedProcedure.input(z.string()).query(({ ctx, input }) => {
+    return ctx.prisma.room.findUnique({
+      where: { id: input },
+    });
+  }),
+  getRoomsForSite: protectedProcedure
+    .input(z.string())
+    .query(({ ctx, input }) => {
+      return ctx.prisma.room.findMany({
+        where: { siteId: input },
+        orderBy: { name: "asc" },
+      });
+    }),
+
   createRoom: protectedProcedure
     .input(
       z.object({

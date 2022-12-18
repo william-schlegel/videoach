@@ -44,5 +44,15 @@
   "enter-info-new-site": "Saisissez les informations relatives à votre nouveau site d'activités",
   "update-site-name": "Mettre à jour le site {{siteName}}",
   "update-site": "Mettre à jour le site d'activité",
-  "back-to-clubs": "Retour à mes clubs"
+  "back-to-clubs": "Retour à mes clubs",
+  "manage-rooms": "Gérer les salles",
+  "manage-my-rooms_zero": "Je n'ai encore aucune salle sur ce site",
+  "manage-my-rooms_one": "Gérer ma salle pour ce site",
+  "manage-my-rooms_other": "Gérer mes salles pour ce site",
+  "create-room": "Créer une salle",
+  "create-new-room": "Créer une nouvelle salle",
+  "enter-info-new-room": "Saisissez les informations relatives à cette nouvelle salle",
+  "update-room-name": "Mettre à jour la salle {{roomName}}",
+  "update-room": "Mettre à jour la salle",
+  "back-to-sites": "Retour à mes sites"
 }

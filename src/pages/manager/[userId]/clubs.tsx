@@ -17,6 +17,7 @@ import AddActivity from "@modals/manageActivity";
 import Link from "next/link";
 import { useRouter } from "next/router";
 import { CreateClubCalendar } from "@modals/manageCalendar";
+import CalendarWeek from "@root/src/components/calendarWeek";
 
 const ManageClubs = ({
   userId,
@@ -82,6 +83,7 @@ type ClubContentProps = {
 
 export function ClubContent({ userId, clubId }: ClubContentProps) {
   const clubQuery = trpc.clubs.getClubById.useQuery(clubId);
+  const calendarQuery = trpc.calendars.getCalendarForClub.useQuery(clubId);
   const utils = trpc.useContext();
   const { t } = useTranslation("club");
   const router = useRouter();
@@ -91,18 +93,24 @@ export function ClubContent({ userId, clubId }: ClubContentProps) {
   const path = root.reduce((a, r) => a.concat(`${r}/`), "");
 
   if (clubQuery.isLoading) return <Spinner />;
-
+  console.log("calendarQuery", calendarQuery);
   return (
     <>
-      <div className="flex items-center gap-4">
+      <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           <h2>{clubQuery.data?.name}</h2>
           <p>({clubQuery.data?.address})</p>
         </div>
-        <UpdateClub clubId={clubId} />
-        <DeleteClub clubId={clubId} />
-        <CreateClubCalendar clubId={clubId} />
+        <div className="flex items-center gap-2">
+          <UpdateClub clubId={clubId} />
+          <DeleteClub clubId={clubId} />
+          <CreateClubCalendar clubId={clubId} />
+        </div>
       </div>
+      <CalendarWeek
+        calendar={calendarQuery.data}
+        isLoading={calendarQuery.isLoading}
+      />
       <div className="flex flex-wrap gap-4">
         <div className="flex-1 rounded border border-primary p-4 ">
           <div className="mb-4 flex flex-row items-center gap-4">
