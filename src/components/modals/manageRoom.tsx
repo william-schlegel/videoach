@@ -2,23 +2,28 @@ import {
   useForm,
   type SubmitHandler,
   type SubmitErrorHandler,
+  type FieldValues,
+  type FieldErrorsImpl,
+  type UseFormRegister,
+  type UseFormGetValues,
+  type Path,
 } from "react-hook-form";
 import Modal, { type TModalVariant } from "../ui/modal";
 import SimpleForm from "../ui/simpleform";
 import { CgAdd, CgPen, CgTrash } from "react-icons/cg";
-import { type PropsWithoutRef } from "react";
+import { useState, type PropsWithoutRef } from "react";
 import { RoomReservation } from "@prisma/client";
 import Confirmation from "@ui/confirmation";
 import { useTranslation } from "next-i18next";
 import { trpc } from "@trpcclient/trpc";
+import Spinner from "@ui/spinner";
+import Toast from "@ui/toast";
 
 type RoomFormValues = {
-  id?: string | undefined;
   name: string;
   reservation: RoomReservation;
   capacity: number;
   unavailable: boolean;
-  openWithClub: boolean;
 };
 
 type CreateRoomProps = {
@@ -30,17 +35,21 @@ export const RESERVATIONS = [
   { value: RoomReservation.NONE, label: "no-reservation" },
   { value: RoomReservation.POSSIBLE, label: "reservation-possible" },
   { value: RoomReservation.MANDATORY, label: "reservation-mandatory" },
-];
+] as const;
 
 export const CreateRoom = ({
   siteId,
   variant = "Icon-Outlined-Primary",
 }: CreateRoomProps) => {
+  const [error, setError] = useState("");
   const utils = trpc.useContext();
   const createRoom = trpc.sites.createRoom.useMutation({
     onSuccess: () => {
       utils.sites.getRoomsForSite.invalidate(siteId);
       reset();
+    },
+    onError(err) {
+      setError(err.message);
     },
   });
   const {
@@ -70,46 +79,18 @@ export const CreateRoom = ({
   };
 
   return (
-    <Modal
-      title={t("new-room")}
-      handleSubmit={handleSubmit(onSubmit, onError)}
-      buttonIcon={<CgAdd size={24} />}
-      variant={variant}
-    >
-      <h3>{t("new-room")}</h3>
-      <SimpleForm
-        errors={errors}
-        register={register}
-        fields={[
-          {
-            label: t("room-name"),
-            name: "name",
-            required: t("room-name-mandatory"),
-          },
-          {
-            label: t("capacity"),
-            name: "capacity",
-            type: "number",
-          },
-          {
-            name: "reservation",
-            component: (
-              <select
-                className="select-bordered select w-full"
-                value={getValues("reservation")}
-                {...register("reservation")}
-              >
-                {RESERVATIONS.map((reservation) => (
-                  <option key={reservation.value} value={reservation.value}>
-                    {t(reservation.label)}
-                  </option>
-                ))}
-              </select>
-            ),
-          },
-        ]}
-      />
-    </Modal>
+    <>
+      <Modal
+        title={t("new-room")}
+        handleSubmit={handleSubmit(onSubmit, onError)}
+        buttonIcon={<CgAdd size={24} />}
+        variant={variant}
+      >
+        <h3>{t("new-room")}</h3>
+        <RoomForm register={register} errors={errors} getValues={getValues} />
+      </Modal>
+      {error !== "" ? <Toast message={error} variant="Toast-Error" /> : null}{" "}
+    </>
   );
 };
 
@@ -122,12 +103,22 @@ type PropsUpdateDelete = {
 export const UpdateRoom = ({
   siteId,
   roomId,
-  variant = "Icon-Outlined-Secondary",
+  variant = "Icon-Outlined-Primary",
 }: PropsUpdateDelete) => {
+  const [error, setError] = useState("");
   const utils = trpc.useContext();
+  const queryRoom = trpc.sites.getRoomById.useQuery(roomId, {
+    onSuccess(data) {
+      if (data) reset(data);
+    },
+    onError(err) {
+      setError(err.message);
+    },
+  });
   const updateRoom = trpc.sites.updateRoom.useMutation({
     onSuccess: () => {
       utils.sites.getRoomsForSite.invalidate(siteId);
+      utils.sites.getRoomById.invalidate(roomId);
       reset();
     },
   });
@@ -155,62 +146,22 @@ export const UpdateRoom = ({
   };
 
   return (
-    <Modal
-      title={t("update-room")}
-      handleSubmit={handleSubmit(onSubmit, onError)}
-      buttonIcon={<CgPen size={24} />}
-      variant={variant}
-    >
-      <h3>{t("update-room")}</h3>
-      <SimpleForm
-        errors={errors}
-        register={register}
-        fields={[
-          {
-            label: t("room-name"),
-            name: "name",
-            required: t("room-name-mandatory"),
-          },
-          {
-            label: t("capacity"),
-            name: "capacity",
-            type: "number",
-          },
-          {
-            name: "reservation",
-            component: (
-              <select
-                className="select-bordered select w-full"
-                value={getValues("reservation")}
-                {...register("reservation")}
-              >
-                {RESERVATIONS.map((reservation) => (
-                  <option key={reservation.value} value={reservation.value}>
-                    {t(reservation.label)}
-                  </option>
-                ))}
-              </select>
-            ),
-          },
-          {
-            name: "unavailable",
-            component: (
-              <div className="form-control">
-                <label className="label cursor-pointer justify-start gap-4">
-                  <input
-                    type="checkbox"
-                    className="checkbox-primary checkbox"
-                    {...register("unavailable")}
-                    defaultChecked={false}
-                  />
-                  <span className="label-text">{t("room-unavailable")}</span>
-                </label>
-              </div>
-            ),
-          },
-        ]}
-      />
-    </Modal>
+    <>
+      <Modal
+        title={t("update-room")}
+        handleSubmit={handleSubmit(onSubmit, onError)}
+        buttonIcon={<CgPen size={16} />}
+        variant={variant}
+      >
+        <h3>{t("update-room")}</h3>
+        {queryRoom.isLoading ? (
+          <Spinner />
+        ) : (
+          <RoomForm register={register} errors={errors} getValues={getValues} />
+        )}
+      </Modal>
+      {error !== "" ? <Toast message={error} variant="Toast-Error" /> : null}
+    </>
   );
 };
 
@@ -240,3 +191,67 @@ export const DeleteRoom = ({
     />
   );
 };
+
+type RoomFormProps<T extends FieldValues> = {
+  errors?: FieldErrorsImpl;
+  register: UseFormRegister<T>;
+  getValues: UseFormGetValues<T>;
+};
+
+function RoomForm<T extends FieldValues>({
+  errors,
+  register,
+  getValues,
+}: RoomFormProps<T>): JSX.Element {
+  const { t } = useTranslation("club");
+  return (
+    <SimpleForm
+      errors={errors}
+      register={register}
+      fields={[
+        {
+          label: t("room-name"),
+          name: "name",
+          required: t("room-name-mandatory"),
+        },
+        {
+          label: t("capacity"),
+          name: "capacity",
+          type: "number",
+        },
+        {
+          name: "reservation",
+          component: (
+            <select
+              className="select-bordered select w-full"
+              defaultValue={getValues("reservation" as Path<T>)}
+              {...register("reservation" as Path<T>)}
+            >
+              {RESERVATIONS.map((reservation) => (
+                <option key={reservation.value} value={reservation.value}>
+                  {t(reservation.label)}
+                </option>
+              ))}
+            </select>
+          ),
+        },
+        {
+          name: "unavailable",
+          component: (
+            <div className="form-control">
+              <label className="label cursor-pointer justify-start gap-4">
+                <input
+                  type="checkbox"
+                  className="checkbox-primary checkbox"
+                  {...register("unavailable" as Path<T>)}
+                  defaultChecked={false}
+                />
+                <span className="label-text">{t("room-unavailable")}</span>
+              </label>
+            </div>
+          ),
+        },
+      ]}
+    />
+  );
+}

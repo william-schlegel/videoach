@@ -25,7 +25,7 @@ function CalendarWeek({ calendar, isLoading }: Props) {
   if (!calendar) return <div>{t("no-calendar")}</div>;
   console.log("calendar :>> ", calendar);
   return (
-    <div className="mb-2 rounded border border-primary p-1">
+    <div className="rounded border border-primary p-1">
       <table className="w-full table-auto">
         <thead>
           <tr>

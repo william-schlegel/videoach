@@ -18,6 +18,8 @@
   "site_other": "Sites",
   "site-deletion": "Supprimer ce site d'activité",
   "site-deletion-message": "Voulez-vou réellement supprimer ce site d'activité ?\nCette action est irréversible",
+  "site-name": "Nom du site",
+  "site-address": "Adresse du site",
   "activity_zero": "Aucune activité",
   "activity_one": "Activité",
   "activity_other": "Activités",
@@ -54,5 +56,7 @@
   "enter-info-new-room": "Saisissez les informations relatives à cette nouvelle salle",
   "update-room-name": "Mettre à jour la salle {{roomName}}",
   "update-room": "Mettre à jour la salle",
-  "back-to-sites": "Retour à mes sites"
+  "back-to-sites": "Retour à mes sites",
+  "room-closed": "Salle fermée",
+  "manage-club-activities": "Gérer les a  ctivités du club"
 }

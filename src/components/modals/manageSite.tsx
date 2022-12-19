@@ -160,20 +160,21 @@ function SiteForm<T extends FieldValues>({
   errors,
   register,
 }: SiteFormProps<T>): JSX.Element {
+  const { t } = useTranslation("club");
   return (
     <SimpleForm
       errors={errors}
       register={register}
       fields={[
         {
-          label: "Nom du site",
+          label: t("site-name"),
           name: "name",
-          required: "Le nom est obligatoire",
+          required: t("name-mandatory"),
         },
         {
-          label: "Adresse",
+          label: t("site-address"),
           name: "address",
-          required: "Adresse obligatoire",
+          required: t("address-mandatory"),
         },
       ]}
     />

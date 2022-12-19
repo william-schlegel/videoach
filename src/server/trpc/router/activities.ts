@@ -30,6 +30,7 @@ export const activityRouter = router({
             { userId: input },
           ],
         },
+        include: { activities: true },
         orderBy: {
           name: "asc",
         },

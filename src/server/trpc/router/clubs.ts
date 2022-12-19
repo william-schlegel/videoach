@@ -13,7 +13,7 @@ export const clubRouter = router({
             rooms: true,
           },
         },
-        activities: true,
+        activities: { include: { group: true } },
       },
     });
   }),

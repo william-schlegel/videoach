@@ -273,102 +273,111 @@ export const CreateSiteCalendar = ({ siteId }: SiteCalendarProps) => {
   );
 };
 
-// type PropsUpdateDelete = {
-//   calendarId: string;
-// };
+type RoomCalendarProps = {
+  clubId: string;
+  siteId: string;
+  roomId: string;
+};
 
-// export const UpdateCalendar = ({
-//   calendarId,
-// }: PropsWithoutRef<PropsUpdateDelete>) => {
-//   const { data: sessionData } = useSession();
-//   const utils = trpc.useContext();
-//   const {
-//     register,
-//     handleSubmit,
-//     formState: { errors },
-//     reset,
-//   } = useForm<TimeFormValues>();
-//   const { t } = useTranslation("club");
-//   // const queryClub = trpc.clubs.getClubById.useQuery(clubId, {
-//   //   onSuccess(data) {
-//   //     reset({
-//   //       address: data?.address,
-//   //       name: data?.name,
-//   //     });
-//   //   },
-//   // });
-//   // const updateClub = trpc.clubs.updateClub.useMutation({
-//   //   onSuccess: () => {
-//   //     utils.clubs.getClubsForManager.invalidate(sessionData?.user?.id ?? "");
-//   //     utils.clubs.getClubById.invalidate(clubId);
-//   //   },
-//   // });
+export const CreateRoomCalendar = ({
+  roomId,
+  siteId,
+  clubId,
+}: RoomCalendarProps) => {
+  const { t } = useTranslation("calendar");
+  const [sameAsClub, setSameAsClub] = useState(true);
+  const [sameAsSite, setSameAsSite] = useState(true);
+  const { calendar, updateCalendar } = useFormCalendar();
+  const utils = trpc.useContext();
 
-//   const onSubmit: SubmitHandler<TimeFormValues> = (data) => {
-//     console.log("data :>> ", data);
-//     // updateClub.mutate({ id: clubId, ...data });
-//   };
+  const saveCalendar = trpc.calendars.createCalendar.useMutation({
+    onSuccess() {
+      utils.calendars.getCalendarForRoom.invalidate({
+        clubId,
+        roomId,
+        siteId,
+      });
+    },
+  });
+  const updateRoomCal = trpc.sites.updateRoomCalendar.useMutation({
+    onSuccess() {
+      utils.calendars.getCalendarForRoom.invalidate({
+        clubId,
+        roomId,
+        siteId,
+      });
+    },
+  });
+  const updateRoom = trpc.sites.updateRoom.useMutation({
+    onSuccess() {
+      utils.calendars.getCalendarForRoom.invalidate({
+        clubId,
+        roomId,
+        siteId,
+      });
+    },
+  });
 
-//   const onError: SubmitErrorHandler<TimeFormValues> = (errors) => {
-//     console.log("errors", errors);
-//   };
+  function onSubmit() {
+    if (sameAsClub || sameAsSite) {
+      updateRoom.mutate({
+        id: roomId,
+        openWithClub: sameAsClub,
+        openWithSite: sameAsSite,
+      });
+    } else {
+      saveCalendar.mutate(calendar, {
+        onSuccess(data) {
+          if (data.id)
+            updateRoomCal.mutate({
+              id: roomId,
+              calendarId: data.id,
+            });
+        },
+      });
+    }
+  }
 
-//   return (
-//     <Modal
-//       title={t("update-calendar")}
-//       handleSubmit={handleSubmit(onSubmit, onError)}
-//       submitButtonText="Enregistrer"
-//       errors={errors}
-//       buttonIcon={<CgPen size={24} />}
-//       variant={ModalVariant.ICON_OUTLINED_PRIMARY}
-//     >
-//       {/* <SimpleForm
-//         errors={errors}
-//         register={register}
-//         isLoading={queryClub.isLoading}
-//         fields={[
-//           {
-//             label: t("club-name"),
-//             name: "name",
-//             required: t("name-mandatory"),
-//           },
-//           {
-//             label: t("club-address"),
-//             name: "address",
-//             required: t("address-mandatory"),
-//           },
-//         ]}
-//       /> */}
-//     </Modal>
-//   );
-// };
-
-// export const DeleteClub = ({
-//   calendarId,
-// }: PropsWithoutRef<PropsUpdateDelete>) => {
-//   const utils = trpc.useContext();
-//   const { data: sessionData } = useSession();
-//   const { t } = useTranslation("club");
-
-//   // const deleteClub = trpc.clubs.deleteClub.useMutation({
-//   //   onSuccess: () => {
-//   //     utils.clubs.getClubsForManager.invalidate(sessionData?.user?.id ?? "");
-//   //     utils.clubs.getClubById.invalidate(clubId);
-//   //   },
-//   // });
-
-//   return (
-//     <Confirmation
-//       message={t("club-deletion-message")}
-//       title={t("club-deletion")}
-//       onConfirm={() => {
-//         //deleteClub.mutate(clubId);
-//         console.log("delete calendar :>> ", calendarId);
-//       }}
-//       buttonIcon={<CgTrash size={24} />}
-//       variant={ModalVariant.ICON_OUTLINED_SECONDARY}
-//     />
-//   );
-// };
-
-// export default CreateCalendar;
+  return (
+    <Modal
+      title={t("create-site-calendar")}
+      handleSubmit={onSubmit}
+      submitButtonText={t("save-calendar")}
+      buttonIcon={<CgTime size={16} />}
+      variant="Icon-Outlined-Secondary"
+      className="w-2/3 max-w-xl"
+    >
+      <h3>{t("create-room-calendar")}</h3>
+      <div className="form-control">
+        <label className="label cursor-pointer justify-start gap-4">
+          <input
+            type="checkbox"
+            className="checkbox-primary checkbox"
+            checked={sameAsClub}
+            onChange={(e) => setSameAsClub(e.target.checked)}
+          />
+          <span className="label-text">{t("same-as-club")}</span>
+        </label>
+      </div>
+      {sameAsClub ? null : (
+        <div className="form-control">
+          <label className="label cursor-pointer justify-start gap-4">
+            <input
+              type="checkbox"
+              className="checkbox-primary checkbox"
+              checked={sameAsSite}
+              onChange={(e) => setSameAsSite(e.target.checked)}
+            />
+            <span className="label-text">{t("same-as-site")}</span>
+          </label>
+        </div>
+      )}{" "}
+      {!sameAsClub && !sameAsSite ? (
+        <FormCalendar
+          calendarValues={calendar}
+          onCalendarChange={updateCalendar}
+        />
+      ) : null}
+    </Modal>
+  );
+};

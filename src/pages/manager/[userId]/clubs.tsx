@@ -1,6 +1,6 @@
-import { Role } from "@prisma/client";
+import { type ActivityGroup, Role } from "@prisma/client";
 import { useSession } from "next-auth/react";
-import { useState } from "react";
+import { type ReactNode, useState } from "react";
 import { trpc } from "@trpcclient/trpc";
 import { CreateClub, DeleteClub, UpdateClub } from "@modals/manageClub";
 import Spinner from "@ui/spinner";
@@ -18,6 +18,8 @@ import Link from "next/link";
 import { useRouter } from "next/router";
 import { CreateClubCalendar } from "@modals/manageCalendar";
 import CalendarWeek from "@root/src/components/calendarWeek";
+import { useDroppable, useDraggable } from "@dnd-kit/core";
+import CollapsableGroup from "@ui/collapsableGroup";
 
 const ManageClubs = ({
   userId,
@@ -82,8 +84,16 @@ type ClubContentProps = {
 };
 
 export function ClubContent({ userId, clubId }: ClubContentProps) {
-  const clubQuery = trpc.clubs.getClubById.useQuery(clubId);
+  const clubQuery = trpc.clubs.getClubById.useQuery(clubId, {
+    onSuccess(data) {
+      const groups = new Map();
+      for (const act of data?.activities || [])
+        groups.set(act.group.id, act.group);
+      setGroups(Array.from(groups.values()));
+    },
+  });
   const calendarQuery = trpc.calendars.getCalendarForClub.useQuery(clubId);
+  const [groups, setGroups] = useState<ActivityGroup[]>([]);
   const utils = trpc.useContext();
   const { t } = useTranslation("club");
   const router = useRouter();
@@ -95,7 +105,7 @@ export function ClubContent({ userId, clubId }: ClubContentProps) {
   if (clubQuery.isLoading) return <Spinner />;
   console.log("calendarQuery", calendarQuery);
   return (
-    <>
+    <div className="flex flex-col gap-4">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           <h2>{clubQuery.data?.name}</h2>
@@ -113,7 +123,7 @@ export function ClubContent({ userId, clubId }: ClubContentProps) {
       />
       <div className="flex flex-wrap gap-4">
         <div className="flex-1 rounded border border-primary p-4 ">
-          <div className="mb-4 flex flex-row items-center gap-4">
+          <div className="flex flex-row items-center gap-4">
             <h3>{t("site", { count: clubQuery?.data?.sites?.length ?? 0 })}</h3>
             <Link className="btn-secondary btn" href={`${path}${clubId}/sites`}>
               {t("manage-sites")}
@@ -123,12 +133,12 @@ export function ClubContent({ userId, clubId }: ClubContentProps) {
             <div key={site.id} className="my-2 flex items-center gap-4">
               <span>{site.address}</span>
               <div className="rounded-full border border-neutral bg-base-100 px-4 py-2 text-neutral">
-                {t("room", { count: site.rooms.length })}
                 {site.rooms.length > 0 && (
-                  <span className="text-lg text-primary">
+                  <span className="mr-2 text-lg text-primary">
                     {site.rooms.length}
                   </span>
                 )}
+                {t("room", { count: site.rooms.length })}
               </div>
             </div>
           ))}
@@ -162,7 +172,91 @@ export function ClubContent({ userId, clubId }: ClubContentProps) {
           </div>
         </div>
       </div>
-    </>
+      <div className="flex flex-col gap-2 rounded border border-primary p-4">
+        <h3>{t("manage-club-activities")}</h3>
+        <div className="flex flex-1 flex-wrap gap-2">
+          {groups.map((gp) => (
+            <CollapsableGroup key={gp.id} groupName={gp.name}>
+              {clubQuery.data?.activities
+                ?.filter((a) => a.groupId === gp.id)
+                ?.map((a) => (
+                  <DraggableElement key={a.id} elementId={a.id}>
+                    {a.name}
+                  </DraggableElement>
+                ))}
+            </CollapsableGroup>
+          ))}
+        </div>
+        <div className="flex flex-col gap-2">
+          {clubQuery.data?.sites?.map((site) => (
+            <div key={site.id} className="rounded border border-primary p-2">
+              <h4>{site.name}</h4>
+              {site.rooms?.map((room) => (
+                <DroppableArea
+                  key={room.id}
+                  areaId={room.id}
+                  title={room.name}
+                ></DroppableArea>
+              ))}
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+type DroppableAreaProps = {
+  areaId: string;
+  title: string;
+  children?: ReactNode;
+};
+
+function DroppableArea({ areaId, children, title }: DroppableAreaProps) {
+  const { isOver, setNodeRef } = useDroppable({
+    id: areaId,
+  });
+
+  return (
+    <div
+      ref={setNodeRef}
+      className={`min-h-12 relative m-1 rounded border border-neutral ${
+        isOver ? "bg-base-300" : "bg-base-100"
+      }`}
+    >
+      <span className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 text-secondary">
+        {title}
+      </span>
+      {children}
+    </div>
+  );
+}
+
+type DraggableElementProps = {
+  elementId: string;
+  children: ReactNode;
+};
+
+function DraggableElement({ elementId, children }: DraggableElementProps) {
+  const { attributes, listeners, setNodeRef, transform } = useDraggable({
+    id: elementId,
+  });
+  const style = transform
+    ? {
+        transform: `translate3d(${transform.x}px, ${transform.y}px, 0)`,
+      }
+    : undefined;
+
+  return (
+    <button
+      ref={setNodeRef}
+      className={`z-50 rounded-full border border-neutral bg-base-100 px-4 py-1`}
+      style={style}
+      {...listeners}
+      {...attributes}
+    >
+      {children}
+    </button>
   );
 }
 

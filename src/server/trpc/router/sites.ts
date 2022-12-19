@@ -2,15 +2,16 @@ import { RoomReservation } from "@prisma/client";
 import { z } from "zod";
 import { router, protectedProcedure } from "../trpc";
 
-const RoomObject = {
+const RoomObject = z.object({
+  id: z.string().cuid(),
+  siteId: z.string().cuid(),
   name: z.string(),
   reservation: z.nativeEnum(RoomReservation),
   capacity: z.number(),
   unavailable: z.boolean(),
-  openWithClub: z.boolean(),
-  openingTime: z.date().optional(),
-  closingTime: z.date().optional(),
-};
+  openWithClub: z.boolean().default(true),
+  openWithSite: z.boolean().default(true),
+});
 
 export const siteRouter = router({
   getSiteById: protectedProcedure.input(z.string()).query(({ ctx, input }) => {
@@ -53,15 +54,15 @@ export const siteRouter = router({
         address: z.string(),
       })
     )
-    .mutation(({ ctx, input }) =>
-      ctx.prisma.site.update({
+    .mutation(({ ctx, input }) => {
+      return ctx.prisma.site.update({
         where: { id: input.id },
         data: {
           name: input.name,
           address: input.address,
         },
-      })
-    ),
+      });
+    }),
   updateSiteCalendar: protectedProcedure
     .input(
       z.object({
@@ -82,6 +83,7 @@ export const siteRouter = router({
     .mutation(({ ctx, input }) =>
       ctx.prisma.site.delete({ where: { id: input } })
     ),
+  /**  ------------------- ROOMS -------------------- **/
   getRoomById: protectedProcedure.input(z.string()).query(({ ctx, input }) => {
     return ctx.prisma.room.findUnique({
       where: { id: input },
@@ -97,47 +99,41 @@ export const siteRouter = router({
     }),
 
   createRoom: protectedProcedure
-    .input(
-      z.object({
-        siteId: z.string().cuid(),
-        ...RoomObject,
-      })
-    )
+    .input(RoomObject.omit({ id: true }))
     .mutation(({ ctx, input }) =>
       ctx.prisma.room.create({
         data: { ...input },
       })
     ),
-  createRooms: protectedProcedure
-    .input(
-      z.array(
-        z.object({
-          siteId: z.string().cuid(),
-          ...RoomObject,
-        })
-      )
-    )
-    .mutation(({ ctx, input }) =>
-      ctx.prisma.room.createMany({
-        data: [...input],
-      })
-    ),
   updateRoom: protectedProcedure
+    .input(RoomObject.partial())
+    .mutation(({ ctx, input }) => {
+      console.log("input", input);
+      return ctx.prisma.room.update({
+        where: { id: input.id },
+        data: input,
+      });
+    }),
+  deleteRoom: protectedProcedure
+    .input(z.string().cuid())
+    .mutation(({ ctx, input }) =>
+      ctx.prisma.room.delete({ where: { id: input } })
+    ),
+  updateRoomCalendar: protectedProcedure
     .input(
       z.object({
         id: z.string().cuid(),
-        ...RoomObject,
+        openWithClub: z.boolean().optional(),
+        openWithSite: z.boolean().optional(),
+        calendarId: z.string().cuid().optional(),
       })
     )
     .mutation(({ ctx, input }) =>
       ctx.prisma.room.update({
         where: { id: input.id },
-        data: input,
+        data: {
+          calendars: { connect: { id: input.calendarId } },
+        },
       })
-    ),
-  deleteRoom: protectedProcedure
-    .input(z.string().cuid())
-    .mutation(({ ctx, input }) =>
-      ctx.prisma.room.delete({ where: { id: input } })
     ),
 });

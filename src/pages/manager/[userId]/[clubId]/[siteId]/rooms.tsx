@@ -14,9 +14,14 @@ import nextI18nConfig from "@root/next-i18next.config.mjs";
 import { useTranslation } from "next-i18next";
 import Link from "next/link";
 import { useRouter } from "next/router";
-import { CreateSiteCalendar } from "@modals/manageCalendar";
+import { CreateRoomCalendar } from "@modals/manageCalendar";
 import CalendarWeek from "@root/src/components/calendarWeek";
-import { CreateRoom } from "@modals/manageRoom";
+import {
+  CreateRoom,
+  DeleteRoom,
+  RESERVATIONS,
+  UpdateRoom,
+} from "@modals/manageRoom";
 
 const ManageRooms = ({
   clubId,
@@ -24,7 +29,6 @@ const ManageRooms = ({
 }: InferGetServerSidePropsType<typeof getServerSideProps>) => {
   const { data: sessionData } = useSession();
   const [roomId, setRoomId] = useState("");
-  const clubQuery = trpc.clubs.getClubById.useQuery(clubId);
   const siteQuery = trpc.sites.getSiteById.useQuery(siteId);
   const roomQuery = trpc.sites.getRoomsForSite.useQuery(siteId, {
     onSuccess(data) {
@@ -69,19 +73,26 @@ const ManageRooms = ({
             {roomQuery.data?.map((room) => (
               <li key={room.id}>
                 <button
-                  className={`w-full text-center ${
+                  className={`flex w-full justify-between text-center ${
                     roomId === room.id ? "active" : ""
                   }`}
                   onClick={() => setRoomId(room.id)}
                 >
-                  {room.name}
+                  <span>{room.name}</span>
+                  {room.unavailable ? (
+                    <span className="badge-error badge">
+                      {t("room-closed")}
+                    </span>
+                  ) : null}
                 </button>
               </li>
             ))}
           </ul>
         )}
         {roomId === "" ? null : (
-          <div className="w-full rounded border border-primary p-4">&nbsp;</div>
+          <div className="w-full rounded border border-primary p-4">
+            <RoomContent clubId={clubId} roomId={roomId} siteId={siteId} />
+          </div>
         )}
       </div>
     </div>
@@ -89,6 +100,76 @@ const ManageRooms = ({
 };
 
 export default ManageRooms;
+
+type RoomContentProps = {
+  clubId: string;
+  siteId: string;
+  roomId: string;
+};
+
+export function RoomContent({ clubId, siteId, roomId }: RoomContentProps) {
+  const roomQuery = trpc.sites.getRoomById.useQuery(roomId);
+  const calendarQuery = trpc.calendars.getCalendarForRoom.useQuery({
+    roomId,
+    siteId,
+    clubId,
+    openWithClub: roomQuery.data?.openWithClub,
+    openWithSite: roomQuery.data?.openWithSite,
+  });
+  const { t } = useTranslation("club");
+
+  if (roomQuery.isLoading) return <Spinner />;
+
+  return (
+    <>
+      <div className="flex items-center justify-between">
+        <h2>{roomQuery.data?.name}</h2>
+        {roomQuery.data?.unavailable ? (
+          <div className="alert alert-error w-fit shadow-lg">
+            <div>
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                className="h-6 w-6 flex-shrink-0 stroke-current"
+                fill="none"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth="2"
+                  d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"
+                />
+              </svg>
+              <span>{t("room-closed")}</span>
+            </div>
+          </div>
+        ) : null}
+        <div className="flex items-center gap-2">
+          <UpdateRoom siteId={siteId} roomId={roomId} />
+          <DeleteRoom roomId={roomId} siteId={siteId} />
+          <CreateRoomCalendar roomId={roomId} clubId={clubId} siteId={siteId} />
+        </div>
+      </div>
+      <CalendarWeek
+        calendar={calendarQuery.data}
+        isLoading={calendarQuery.isLoading}
+      />
+      <div className="flex items-center gap-2">
+        <label className="label">{t("reservation")}</label>
+        <span>
+          {t(
+            RESERVATIONS.find((r) => r.value === roomQuery.data?.reservation)
+              ?.label || "?"
+          )}
+        </span>
+      </div>
+      <div className="flex items-center gap-2">
+        <label className="label">{t("capacity")}</label>
+        <span>{roomQuery.data?.capacity}</span>
+      </div>
+    </>
+  );
+}
 
 export const getServerSideProps = async ({
   locale,

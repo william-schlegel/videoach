@@ -16,7 +16,9 @@
   "closed": "Fermé",
   "create-club-calendar": "Créer des horaires d'ouverture pour ce club",
   "create-site-calendar": "Créer des horaires d'ouverture pour ce site",
+  "create-room-calendar": "Créer des horaires d'ouverture pour cette salle",
   "same-as-club": "Mêmes horaires que le club",
+  "same-as-site": "Mêmes horaires que le site d'activité",
   "save-calendar": "Enregistrer ce calendrier",
   "no-calendar": "Pas d'horaires d'ouverture définis"
 }

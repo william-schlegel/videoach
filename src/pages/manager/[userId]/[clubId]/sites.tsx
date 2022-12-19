@@ -17,6 +17,7 @@ import Link from "next/link";
 import { useRouter } from "next/router";
 import { CreateSiteCalendar } from "@modals/manageCalendar";
 import CalendarWeek from "@root/src/components/calendarWeek";
+import { CgCalendarDates } from "react-icons/cg";
 
 const ManageSites = ({
   userId,
@@ -98,7 +99,12 @@ type SiteContentProps = {
 };
 
 export function SiteContent({ clubId, siteId }: SiteContentProps) {
-  const siteQuery = trpc.sites.getSiteById.useQuery(siteId);
+  const siteQuery = trpc.sites.getSiteById.useQuery(siteId, {
+    onSuccess(data) {
+      if (roomId === "" && data?.rooms?.length)
+        setRoomId(data?.rooms?.[0]?.id ?? "");
+    },
+  });
   const calendarQuery = trpc.calendars.getCalendarForSite.useQuery({
     siteId,
     clubId,
@@ -107,6 +113,8 @@ export function SiteContent({ clubId, siteId }: SiteContentProps) {
 
   const { t } = useTranslation("club");
   const router = useRouter();
+  const [roomId, setRoomId] = useState("");
+  const actualRoom = siteQuery.data?.rooms?.find((r) => r.id === roomId);
 
   const root = router.asPath.split("/");
   root.pop();
@@ -139,11 +147,33 @@ export function SiteContent({ clubId, siteId }: SiteContentProps) {
               {t("manage-rooms")}
             </Link>
           </div>
-          {siteQuery?.data?.rooms?.map((room) => (
-            <div key={room.id} className="my-2 flex items-center gap-4">
-              <span>{room.name}</span>
+          <div className="flex gap-4">
+            <ul className="menu w-1/4 bg-base-100">
+              {siteQuery?.data?.rooms?.map((room) => (
+                <li key={room.id}>
+                  <button
+                    className={`flex w-full items-center justify-between text-center ${
+                      roomId === room.id ? "active" : ""
+                    }`}
+                    onClick={() => setRoomId(room.id)}
+                  >
+                    <span>{room.name}</span>
+                    {room.reservation !== "NONE" && (
+                      <CgCalendarDates size={16} className="text-secondary" />
+                    )}
+                  </button>
+                </li>
+              ))}
+            </ul>
+            <div className="flex-1 rounded border border-primary p-4 ">
+              Planning des activités
             </div>
-          ))}
+            {actualRoom?.reservation !== "NONE" ? (
+              <div className="flex-1 rounded border border-primary p-4 ">
+                Planning de réservation
+              </div>
+            ) : null}
+          </div>
         </div>
       </div>
     </>
