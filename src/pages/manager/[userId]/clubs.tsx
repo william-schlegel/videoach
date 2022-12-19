@@ -18,8 +18,14 @@ import Link from "next/link";
 import { useRouter } from "next/router";
 import { CreateClubCalendar } from "@modals/manageCalendar";
 import CalendarWeek from "@root/src/components/calendarWeek";
-import { useDroppable, useDraggable } from "@dnd-kit/core";
+import {
+  useDroppable,
+  useDraggable,
+  DndContext,
+  type DragEndEvent,
+} from "@dnd-kit/core";
 import CollapsableGroup from "@ui/collapsableGroup";
+import { CgClose } from "react-icons/cg";
 
 const ManageClubs = ({
   userId,
@@ -51,7 +57,7 @@ const ManageClubs = ({
         {clubQuery.isLoading ? (
           <Spinner />
         ) : (
-          <ul className="menu w-1/4 bg-base-100">
+          <ul className="menu w-1/4 overflow-hidden rounded bg-base-100">
             {clubQuery.data?.map((club) => (
               <li key={club.id}>
                 <button
@@ -66,11 +72,7 @@ const ManageClubs = ({
             ))}
           </ul>
         )}
-        {clubId === "" ? null : (
-          <div className="w-full rounded border border-primary p-4">
-            <ClubContent userId={userId} clubId={clubId} />
-          </div>
-        )}
+        {clubId === "" ? null : <ClubContent userId={userId} clubId={clubId} />}
       </div>
     </div>
   );
@@ -93,6 +95,16 @@ export function ClubContent({ userId, clubId }: ClubContentProps) {
     },
   });
   const calendarQuery = trpc.calendars.getCalendarForClub.useQuery(clubId);
+  const addActivity = trpc.activities.affectToRoom.useMutation({
+    onSuccess() {
+      utils.clubs.getClubById.invalidate(clubId);
+    },
+  });
+  const removeActivity = trpc.activities.removeFromRoom.useMutation({
+    onSuccess() {
+      utils.clubs.getClubById.invalidate(clubId);
+    },
+  });
   const [groups, setGroups] = useState<ActivityGroup[]>([]);
   const utils = trpc.useContext();
   const { t } = useTranslation("club");
@@ -102,10 +114,19 @@ export function ClubContent({ userId, clubId }: ClubContentProps) {
   root.pop();
   const path = root.reduce((a, r) => a.concat(`${r}/`), "");
 
+  function handleDragEnd(e: DragEndEvent) {
+    const roomId = e.over?.id.toString();
+    const activityId = e.active.id.toString();
+    if (roomId && activityId) addActivity.mutate({ activityId, roomId });
+  }
+
+  function handledeleteActivity(roomId: string, activityId: string) {
+    removeActivity.mutate({ activityId, roomId });
+  }
+
   if (clubQuery.isLoading) return <Spinner />;
-  console.log("calendarQuery", calendarQuery);
   return (
-    <div className="flex flex-col gap-4">
+    <div className="flex w-full flex-col gap-4">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           <h2>{clubQuery.data?.name}</h2>
@@ -113,8 +134,8 @@ export function ClubContent({ userId, clubId }: ClubContentProps) {
         </div>
         <div className="flex items-center gap-2">
           <UpdateClub clubId={clubId} />
-          <DeleteClub clubId={clubId} />
           <CreateClubCalendar clubId={clubId} />
+          <DeleteClub clubId={clubId} />
         </div>
       </div>
       <CalendarWeek
@@ -173,34 +194,60 @@ export function ClubContent({ userId, clubId }: ClubContentProps) {
         </div>
       </div>
       <div className="flex flex-col gap-2 rounded border border-primary p-4">
-        <h3>{t("manage-club-activities")}</h3>
-        <div className="flex flex-1 flex-wrap gap-2">
-          {groups.map((gp) => (
-            <CollapsableGroup key={gp.id} groupName={gp.name}>
-              {clubQuery.data?.activities
-                ?.filter((a) => a.groupId === gp.id)
-                ?.map((a) => (
-                  <DraggableElement key={a.id} elementId={a.id}>
-                    {a.name}
-                  </DraggableElement>
-                ))}
-            </CollapsableGroup>
-          ))}
-        </div>
-        <div className="flex flex-col gap-2">
-          {clubQuery.data?.sites?.map((site) => (
-            <div key={site.id} className="rounded border border-primary p-2">
-              <h4>{site.name}</h4>
-              {site.rooms?.map((room) => (
-                <DroppableArea
-                  key={room.id}
-                  areaId={room.id}
-                  title={room.name}
-                ></DroppableArea>
-              ))}
-            </div>
-          ))}
-        </div>
+        <DndContext onDragEnd={handleDragEnd}>
+          <h3>{t("manage-club-activities")}</h3>
+          <div className="flex flex-1 flex-wrap gap-2">
+            {groups.map((gp) => (
+              <CollapsableGroup key={gp.id} groupName={gp.name}>
+                {clubQuery.data?.activities
+                  ?.filter((a) => a.groupId === gp.id)
+                  ?.map((a) => (
+                    <DraggableElement key={a.id} elementId={a.id}>
+                      {a.name}
+                    </DraggableElement>
+                  ))}
+              </CollapsableGroup>
+            ))}
+          </div>
+          <div className="flex flex-col gap-2">
+            {clubQuery.data?.sites?.map((site) => (
+              <div key={site.id} className="collapse-arrow collapse">
+                <input type="checkbox" defaultChecked={true} />
+                <h4 className="collapse-title">{site.name}</h4>
+                <div className="collapse-content">
+                  {site.rooms?.map((room) => (
+                    <DroppableArea
+                      key={room.id}
+                      areaId={room.id}
+                      title={room.name}
+                    >
+                      {room.activities?.map((a) => (
+                        <span
+                          key={a.id}
+                          className="z-10 flex items-center gap-2 rounded-full border border-neutral bg-base-100 px-2 py-1"
+                        >
+                          {a.name}
+                          <div
+                            className="tooltip"
+                            data-tip={t("remove-activity")}
+                          >
+                            <CgClose
+                              size={16}
+                              className="cursor-pointer rounded-full bg-base-100 text-secondary hover:bg-secondary hover:text-secondary-content"
+                              onClick={() =>
+                                handledeleteActivity(room.id, a.id)
+                              }
+                            />
+                          </div>
+                        </span>
+                      ))}
+                    </DroppableArea>
+                  ))}
+                </div>
+              </div>
+            ))}
+          </div>
+        </DndContext>
       </div>
     </div>
   );
@@ -220,11 +267,11 @@ function DroppableArea({ areaId, children, title }: DroppableAreaProps) {
   return (
     <div
       ref={setNodeRef}
-      className={`min-h-12 relative m-1 rounded border border-neutral ${
+      className={`min-h-16 relative m-1 flex flex-wrap items-center gap-2 rounded border border-neutral p-2 ${
         isOver ? "bg-base-300" : "bg-base-100"
       }`}
     >
-      <span className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 text-secondary">
+      <span className="absolute right-4 text-secondary opacity-70">
         {title}
       </span>
       {children}
@@ -242,21 +289,21 @@ function DraggableElement({ elementId, children }: DraggableElementProps) {
     id: elementId,
   });
   const style = transform
-    ? {
-        transform: `translate3d(${transform.x}px, ${transform.y}px, 0)`,
-      }
+    ? { transform: `translate3d(${transform.x}px, ${transform.y}px, 0)` }
     : undefined;
 
   return (
-    <button
+    <div
       ref={setNodeRef}
-      className={`z-50 rounded-full border border-neutral bg-base-100 px-4 py-1`}
+      className={`z-50 ${
+        transform ? "cursor-grabbing" : "cursor-grab"
+      } rounded-full border border-neutral bg-base-100 px-4 py-1`}
       style={style}
       {...listeners}
       {...attributes}
     >
       {children}
-    </button>
+    </div>
   );
 }
 

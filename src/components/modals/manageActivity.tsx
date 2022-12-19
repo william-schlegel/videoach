@@ -57,7 +57,7 @@ const AddActivity = ({
       <div className="flex flex-1 gap-4">
         <div className="flex flex-col gap-2">
           <h4>Groupe</h4>
-          <ul className="menu rounded-md border border-secondary bg-base-100">
+          <ul className="menu overflow-hidden rounded border border-secondary bg-base-100">
             {queryGroups.data?.map((group) => (
               <li key={group.id}>
                 <div className={`flex ${groupId === group.id ? "active" : ""}`}>

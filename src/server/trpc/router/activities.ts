@@ -153,4 +153,38 @@ export const activityRouter = router({
 
       return ctx.prisma.activityGroup.delete({ where: { id: input.groupId } });
     }),
+  affectToRoom: protectedProcedure
+    .input(
+      z.object({
+        roomId: z.string().cuid(),
+        activityId: z.string().cuid(),
+      })
+    )
+    .mutation(({ ctx, input }) =>
+      ctx.prisma.activity.update({
+        where: { id: input.activityId },
+        data: {
+          rooms: {
+            connect: { id: input.roomId },
+          },
+        },
+      })
+    ),
+  removeFromRoom: protectedProcedure
+    .input(
+      z.object({
+        roomId: z.string().cuid(),
+        activityId: z.string().cuid(),
+      })
+    )
+    .mutation(({ ctx, input }) =>
+      ctx.prisma.activity.update({
+        where: { id: input.activityId },
+        data: {
+          rooms: {
+            disconnect: { id: input.roomId },
+          },
+        },
+      })
+    ),
 });

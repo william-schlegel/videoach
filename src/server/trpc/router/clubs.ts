@@ -10,7 +10,11 @@ export const clubRouter = router({
       include: {
         sites: {
           include: {
-            rooms: true,
+            rooms: {
+              include: {
+                activities: true,
+              },
+            },
           },
         },
         activities: { include: { group: true } },

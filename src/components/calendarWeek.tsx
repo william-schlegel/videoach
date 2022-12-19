@@ -23,7 +23,6 @@ function CalendarWeek({ calendar, isLoading }: Props) {
 
   if (isLoading) return <Spinner />;
   if (!calendar) return <div>{t("no-calendar")}</div>;
-  console.log("calendar :>> ", calendar);
   return (
     <div className="rounded border border-primary p-1">
       <table className="w-full table-auto">

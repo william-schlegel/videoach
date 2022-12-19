@@ -69,7 +69,7 @@ const ManageRooms = ({
         {roomQuery.isLoading ? (
           <Spinner />
         ) : (
-          <ul className="menu w-1/4 bg-base-100">
+          <ul className="menu w-1/4 overflow-hidden rounded bg-base-100">
             {roomQuery.data?.map((room) => (
               <li key={room.id}>
                 <button
@@ -90,9 +90,7 @@ const ManageRooms = ({
           </ul>
         )}
         {roomId === "" ? null : (
-          <div className="w-full rounded border border-primary p-4">
-            <RoomContent clubId={clubId} roomId={roomId} siteId={siteId} />
-          </div>
+          <RoomContent clubId={clubId} roomId={roomId} siteId={siteId} />
         )}
       </div>
     </div>
@@ -121,7 +119,7 @@ export function RoomContent({ clubId, siteId, roomId }: RoomContentProps) {
   if (roomQuery.isLoading) return <Spinner />;
 
   return (
-    <>
+    <div className="flex w-full flex-col gap-4">
       <div className="flex items-center justify-between">
         <h2>{roomQuery.data?.name}</h2>
         {roomQuery.data?.unavailable ? (
@@ -146,8 +144,8 @@ export function RoomContent({ clubId, siteId, roomId }: RoomContentProps) {
         ) : null}
         <div className="flex items-center gap-2">
           <UpdateRoom siteId={siteId} roomId={roomId} />
-          <DeleteRoom roomId={roomId} siteId={siteId} />
           <CreateRoomCalendar roomId={roomId} clubId={clubId} siteId={siteId} />
+          <DeleteRoom roomId={roomId} siteId={siteId} />
         </div>
       </div>
       <CalendarWeek
@@ -167,7 +165,7 @@ export function RoomContent({ clubId, siteId, roomId }: RoomContentProps) {
         <label className="label">{t("capacity")}</label>
         <span>{roomQuery.data?.capacity}</span>
       </div>
-    </>
+    </div>
   );
 }
 

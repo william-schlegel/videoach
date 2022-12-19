@@ -65,7 +65,7 @@ const ManageSites = ({
         {siteQuery.isLoading ? (
           <Spinner />
         ) : (
-          <ul className="menu w-1/4 bg-base-100">
+          <ul className="menu w-1/4 overflow-hidden rounded bg-base-100">
             {siteQuery.data?.map((site) => (
               <li key={site.id}>
                 <button
@@ -81,9 +81,7 @@ const ManageSites = ({
           </ul>
         )}
         {siteId === "" ? null : (
-          <div className="w-full rounded border border-primary p-4">
-            <SiteContent userId={userId} clubId={clubId} siteId={siteId} />
-          </div>
+          <SiteContent userId={userId} clubId={clubId} siteId={siteId} />
         )}
       </div>
     </div>
@@ -101,7 +99,7 @@ type SiteContentProps = {
 export function SiteContent({ clubId, siteId }: SiteContentProps) {
   const siteQuery = trpc.sites.getSiteById.useQuery(siteId, {
     onSuccess(data) {
-      if (roomId === "" && data?.rooms?.length)
+      if (!actualRoom && data?.rooms?.length)
         setRoomId(data?.rooms?.[0]?.id ?? "");
     },
   });
@@ -123,7 +121,7 @@ export function SiteContent({ clubId, siteId }: SiteContentProps) {
   if (siteQuery.isLoading) return <Spinner />;
 
   return (
-    <>
+    <div className="flex w-full flex-col gap-4">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-4">
           <h2>{siteQuery.data?.name}</h2>
@@ -131,8 +129,8 @@ export function SiteContent({ clubId, siteId }: SiteContentProps) {
         </div>
         <div className="flex items-center gap-2">
           <UpdateSite siteId={siteId} />
-          <DeleteSite clubId={clubId} siteId={siteId} />
           <CreateSiteCalendar siteId={siteId} />
+          <DeleteSite clubId={clubId} siteId={siteId} />
         </div>
       </div>
       <CalendarWeek
@@ -148,7 +146,7 @@ export function SiteContent({ clubId, siteId }: SiteContentProps) {
             </Link>
           </div>
           <div className="flex gap-4">
-            <ul className="menu w-1/4 bg-base-100">
+            <ul className="menu w-1/4 overflow-hidden rounded bg-base-100">
               {siteQuery?.data?.rooms?.map((room) => (
                 <li key={room.id}>
                   <button
@@ -176,7 +174,7 @@ export function SiteContent({ clubId, siteId }: SiteContentProps) {
           </div>
         </div>
       </div>
-    </>
+    </div>
   );
 }
 

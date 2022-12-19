@@ -207,7 +207,7 @@ export const CreateClubCalendar = ({ clubId }: ClubCalendarProps) => {
       handleSubmit={onSubmit}
       submitButtonText={t("save-calendar")}
       buttonIcon={<CgTime size={16} />}
-      variant="Icon-Outlined-Secondary"
+      variant="Icon-Outlined-Primary"
       className="w-2/3 max-w-xl"
     >
       <h3>{t("create-club-calendar")}</h3>
@@ -248,7 +248,7 @@ export const CreateSiteCalendar = ({ siteId }: SiteCalendarProps) => {
       handleSubmit={onSubmit}
       submitButtonText={t("save-calendar")}
       buttonIcon={<CgTime size={16} />}
-      variant="Icon-Outlined-Secondary"
+      variant="Icon-Outlined-Primary"
       className="w-2/3 max-w-xl"
     >
       <h3>{t("create-site-calendar")}</h3>
@@ -340,11 +340,11 @@ export const CreateRoomCalendar = ({
 
   return (
     <Modal
-      title={t("create-site-calendar")}
+      title={t("create-room-calendar")}
       handleSubmit={onSubmit}
       submitButtonText={t("save-calendar")}
       buttonIcon={<CgTime size={16} />}
-      variant="Icon-Outlined-Secondary"
+      variant="Icon-Outlined-Primary"
       className="w-2/3 max-w-xl"
     >
       <h3>{t("create-room-calendar")}</h3>

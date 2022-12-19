@@ -58,5 +58,6 @@
   "update-room": "Mettre à jour la salle",
   "back-to-sites": "Retour à mes sites",
   "room-closed": "Salle fermée",
-  "manage-club-activities": "Gérer les a  ctivités du club"
+  "manage-club-activities": "Gérer les activités du club",
+  "remove-activity": "Retirer l'activité de cette salle"
 }

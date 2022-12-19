@@ -2,7 +2,6 @@ import Head from "next/head";
 import { type ReactNode } from "react";
 import Footer from "./footer";
 import Navbar from "./navbar";
-import { DndContext } from "@dnd-kit/core";
 
 type Props = {
   children: ReactNode;
@@ -19,9 +18,7 @@ export default function Layout({ children }: Props) {
       <div className="flex h-screen flex-1 flex-col" data-theme="cupcake">
         <Navbar />
 
-        <main className="h-full bg-gray-100">
-          <DndContext>{children}</DndContext>
-        </main>
+        <main className="h-full bg-base-200 pb-4">{children}</main>
         <Footer />
       </div>
     </>

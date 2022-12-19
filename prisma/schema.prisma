@@ -123,6 +123,7 @@ model Room {
   calendars    OpeningCalendar[]
   siteId       String
   site         Site              @relation(fields: [siteId], references: [id], onDelete: Cascade)
+  activities   Activity[]
 }
 
 // activity group may be standard (default group) or belong to a specific user
@@ -142,6 +143,7 @@ model Activity {
   group   ActivityGroup @relation(fields: [groupId], references: [id], onDelete: Cascade)
   clubId  String
   club    Club          @relation(fields: [clubId], references: [id], onDelete: Cascade)
+  rooms   Room[]
 }
 
 model OpeningCalendar {
