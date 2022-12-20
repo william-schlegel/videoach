@@ -142,76 +142,74 @@ export function ClubContent({ userId, clubId }: ClubContentProps) {
         calendar={calendarQuery.data}
         isLoading={calendarQuery.isLoading}
       />
-      <div className="flex flex-wrap gap-4">
-        <div className="flex-1 rounded border border-primary p-4 ">
-          <div className="flex flex-row items-center gap-4">
-            <h3>{t("site", { count: clubQuery?.data?.sites?.length ?? 0 })}</h3>
-            <Link className="btn-secondary btn" href={`${path}${clubId}/sites`}>
-              {t("manage-sites")}
-            </Link>
-          </div>
-          {clubQuery?.data?.sites?.map((site) => (
-            <div key={site.id} className="my-2 flex items-center gap-4">
-              <span>{site.address}</span>
-              <div className="rounded-full border border-neutral bg-base-100 px-4 py-2 text-neutral">
-                {site.rooms.length > 0 && (
-                  <span className="mr-2 text-lg text-primary">
-                    {site.rooms.length}
-                  </span>
-                )}
-                {t("room", { count: site.rooms.length })}
-              </div>
-            </div>
-          ))}
-        </div>
-        <div className="flex-1 rounded border border-primary p-4 ">
-          <div className="mb-4 flex flex-row items-center gap-4">
-            <h3>
-              {t("activity", {
-                count: clubQuery?.data?.activities.length ?? 0,
-              })}
-            </h3>
-            <AddActivity
-              clubId={clubId}
-              userId={userId}
-              onSuccess={() => {
-                utils.clubs.getClubById.invalidate(clubId);
-              }}
-              withAdd
-              withUpdate
-            />
-          </div>
-          <div className="flex flex-wrap gap-1">
-            {clubQuery?.data?.activities?.map((activity) => (
-              <span
-                key={activity.id}
-                className="rounded-full border border-neutral bg-base-100 px-4 py-2 text-neutral"
+      <DndContext onDragEnd={handleDragEnd}>
+        <div className="flex flex-wrap gap-4">
+          <div className="flex-1 rounded border border-primary p-4 ">
+            <div className="flex flex-row items-center justify-between gap-4">
+              <h3>
+                {t("site", { count: clubQuery?.data?.sites?.length ?? 0 })}
+              </h3>
+              <Link
+                className="btn-secondary btn"
+                href={`${path}${clubId}/sites`}
               >
-                {activity.name}
-              </span>
+                {t("manage-sites")}
+              </Link>
+            </div>
+            {clubQuery?.data?.sites?.map((site) => (
+              <div key={site.id} className="my-2 flex items-center gap-4">
+                <span>{site.address}</span>
+                <div className="rounded-full border border-neutral bg-base-100 px-4 py-2 text-neutral">
+                  {site.rooms.length > 0 && (
+                    <span className="mr-2 text-lg text-primary">
+                      {site.rooms.length}
+                    </span>
+                  )}
+                  {t("room", { count: site.rooms.length })}
+                </div>
+              </div>
             ))}
+          </div>
+          <div className="flex-1 rounded border border-primary p-4 ">
+            <div className="mb-4 flex flex-row items-center justify-between gap-4">
+              <h3>
+                {t("activity", {
+                  count: clubQuery?.data?.activities.length ?? 0,
+                })}
+              </h3>
+              <AddActivity
+                clubId={clubId}
+                userId={userId}
+                onSuccess={() => {
+                  utils.clubs.getClubById.invalidate(clubId);
+                }}
+                withAdd
+                withUpdate
+              />
+            </div>
+            <div className="flex flex-1 flex-wrap gap-2">
+              {groups.map((gp) => (
+                <CollapsableGroup key={gp.id} groupName={gp.name}>
+                  {clubQuery.data?.activities
+                    ?.filter((a) => a.groupId === gp.id)
+                    ?.map((a) => (
+                      <DraggableElement key={a.id} elementId={a.id}>
+                        {a.name}
+                      </DraggableElement>
+                    ))}
+                </CollapsableGroup>
+              ))}
+            </div>
           </div>
         </div>
-      </div>
-      <div className="flex flex-col gap-2 rounded border border-primary p-4">
-        <DndContext onDragEnd={handleDragEnd}>
+        <div className="flex flex-col gap-2 rounded border border-primary p-4">
           <h3>{t("manage-club-activities")}</h3>
-          <div className="flex flex-1 flex-wrap gap-2">
-            {groups.map((gp) => (
-              <CollapsableGroup key={gp.id} groupName={gp.name}>
-                {clubQuery.data?.activities
-                  ?.filter((a) => a.groupId === gp.id)
-                  ?.map((a) => (
-                    <DraggableElement key={a.id} elementId={a.id}>
-                      {a.name}
-                    </DraggableElement>
-                  ))}
-              </CollapsableGroup>
-            ))}
-          </div>
           <div className="flex flex-col gap-2">
             {clubQuery.data?.sites?.map((site) => (
-              <div key={site.id} className="collapse-arrow collapse">
+              <div
+                key={site.id}
+                className="collapse-arrow rounded-box collapse border border-secondary bg-base-100"
+              >
                 <input type="checkbox" defaultChecked={true} />
                 <h4 className="collapse-title">{site.name}</h4>
                 <div className="collapse-content">
@@ -247,8 +245,8 @@ export function ClubContent({ userId, clubId }: ClubContentProps) {
               </div>
             ))}
           </div>
-        </DndContext>
-      </div>
+        </div>
+      </DndContext>
     </div>
   );
 }

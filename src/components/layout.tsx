@@ -1,3 +1,4 @@
+import useLocalStorage from "@lib/useLocalstorage";
 import Head from "next/head";
 import { type ReactNode } from "react";
 import Footer from "./footer";
@@ -7,7 +8,10 @@ type Props = {
   children: ReactNode;
 };
 
+export type Themes = "light" | "dark" | "cupcake" | "cyberpunk";
+
 export default function Layout({ children }: Props) {
+  const [theme, setTheme] = useLocalStorage<Themes>("theme", "cupcake");
   return (
     <>
       <Head>
@@ -15,10 +19,15 @@ export default function Layout({ children }: Props) {
         <meta name="description" content="Management de clubs de sport" />
         <link rel="icon" href="/favicon.ico" />
       </Head>
-      <div className="flex h-screen flex-1 flex-col" data-theme="cupcake">
-        <Navbar />
-
-        <main className="h-full bg-base-200 pb-4">{children}</main>
+      <div
+        className="flex h-screen flex-1 flex-col bg-base-200"
+        data-theme={theme}
+      >
+        <Navbar
+          theme={theme}
+          onChangeTheme={(newTheme) => setTheme(newTheme)}
+        />
+        <main className="bg-base-200 pb-4">{children}</main>
         <Footer />
       </div>
     </>

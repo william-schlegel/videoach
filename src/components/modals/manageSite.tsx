@@ -64,9 +64,10 @@ export const CreateSite = ({ clubId }: CreateSiteProps) => {
 
 type UpdateSiteProps = {
   siteId: string;
+  clubId: string;
 };
 
-export const UpdateSite = ({ siteId }: UpdateSiteProps) => {
+export const UpdateSite = ({ siteId, clubId }: UpdateSiteProps) => {
   const utils = trpc.useContext();
   const {
     register,
@@ -82,6 +83,7 @@ export const UpdateSite = ({ siteId }: UpdateSiteProps) => {
   const updateSite = trpc.sites.updateSite.useMutation({
     onSuccess: () => {
       utils.sites.getSiteById.invalidate(siteId);
+      utils.sites.getSitesForClub.invalidate(clubId);
     },
   });
   const { t } = useTranslation("club");

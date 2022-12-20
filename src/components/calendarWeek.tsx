@@ -59,12 +59,12 @@ function CalendarWeek({ calendar, isLoading }: Props) {
               return (
                 <td
                   key={ot.id}
-                  className="flex justify-center gap-2 bg-primary text-primary-content"
+                  className="bg-primary text-center text-primary-content"
                 >
                   {ot.workingHours.map((wh) => (
                     <Fragment key={wh.id}>
-                      <span> {wh.opening} </span>
-                      <span> {wh.closing} </span>
+                      <span>{wh.opening}</span>
+                      <span className="ml-2">{wh.closing}</span>
                     </Fragment>
                   ))}
                 </td>

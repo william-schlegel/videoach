@@ -128,7 +128,7 @@ export function SiteContent({ clubId, siteId }: SiteContentProps) {
           <p>({siteQuery.data?.address})</p>
         </div>
         <div className="flex items-center gap-2">
-          <UpdateSite siteId={siteId} />
+          <UpdateSite clubId={clubId} siteId={siteId} />
           <CreateSiteCalendar siteId={siteId} />
           <DeleteSite clubId={clubId} siteId={siteId} />
         </div>
@@ -139,7 +139,7 @@ export function SiteContent({ clubId, siteId }: SiteContentProps) {
       />
       <div className="flex flex-wrap gap-4">
         <div className="flex-1 rounded border border-primary p-4 ">
-          <div className="mb-4 flex flex-row items-center gap-4">
+          <div className="mb-4 flex flex-row items-center justify-between gap-4">
             <h3>{t("room", { count: siteQuery?.data?.rooms?.length ?? 0 })}</h3>
             <Link className="btn-secondary btn" href={`${path}${siteId}/rooms`}>
               {t("manage-rooms")}

@@ -22,6 +22,7 @@ import {
   RESERVATIONS,
   UpdateRoom,
 } from "@modals/manageRoom";
+import { CgClose } from "react-icons/cg";
 
 const ManageRooms = ({
   clubId,
@@ -123,23 +124,9 @@ export function RoomContent({ clubId, siteId, roomId }: RoomContentProps) {
       <div className="flex items-center justify-between">
         <h2>{roomQuery.data?.name}</h2>
         {roomQuery.data?.unavailable ? (
-          <div className="alert alert-error w-fit shadow-lg">
-            <div>
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                className="h-6 w-6 flex-shrink-0 stroke-current"
-                fill="none"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth="2"
-                  d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"
-                />
-              </svg>
-              <span>{t("room-closed")}</span>
-            </div>
+          <div className="alert alert-error w-fit">
+            <CgClose size={16} />
+            <span>{t("room-closed")}</span>
           </div>
         ) : null}
         <div className="flex items-center gap-2">
@@ -152,18 +139,23 @@ export function RoomContent({ clubId, siteId, roomId }: RoomContentProps) {
         calendar={calendarQuery.data}
         isLoading={calendarQuery.isLoading}
       />
-      <div className="flex items-center gap-2">
-        <label className="label">{t("reservation")}</label>
-        <span>
-          {t(
-            RESERVATIONS.find((r) => r.value === roomQuery.data?.reservation)
-              ?.label || "?"
-          )}
-        </span>
+      <div className="flex items-center gap-4">
+        <div className="flex items-center gap-2">
+          <label className="label">{t("reservation")}</label>
+          <span>
+            {t(
+              RESERVATIONS.find((r) => r.value === roomQuery.data?.reservation)
+                ?.label || "?"
+            )}
+          </span>
+        </div>
+        <div className="flex items-center gap-2">
+          <label className="label">{t("capacity")}</label>
+          <span>{roomQuery.data?.capacity}</span>
+        </div>
       </div>
-      <div className="flex items-center gap-2">
-        <label className="label">{t("capacity")}</label>
-        <span>{roomQuery.data?.capacity}</span>
+      <div className="flex-1 rounded border border-primary p-4 ">
+        Planning de la salle
       </div>
     </div>
   );

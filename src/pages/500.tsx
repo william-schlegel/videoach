@@ -6,7 +6,7 @@ import nextI18nConfig from "@root/next-i18next.config.mjs";
 function Page404() {
   const { t } = useTranslation("common");
   return (
-    <div className="grid h-full w-full items-center bg-neutral">
+    <div className="grid h-screen w-full items-center bg-neutral">
       <div className="flex items-center justify-center gap-4">
         <span className="text-3xl font-bold text-primary">404</span>
         <span className="text-secondary">{t("error-500")}</span>

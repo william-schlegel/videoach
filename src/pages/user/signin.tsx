@@ -12,7 +12,7 @@ export default function SignIn({
 }: InferGetServerSidePropsType<typeof getServerSideProps>) {
   const { t } = useTranslation("auth");
   return (
-    <div className="grid h-full place-items-center">
+    <div className="grid h-screen place-items-center">
       <div className="card w-96 bg-base-100 shadow-xl">
         <div className="card-body">
           <h2 className="card-title">{t("connect")}</h2>
