@@ -89,7 +89,7 @@ export const CreateRoom = ({
         <h3>{t("new-room")}</h3>
         <RoomForm register={register} errors={errors} getValues={getValues} />
       </Modal>
-      {error !== "" ? <Toast message={error} variant="Toast-Error" /> : null}{" "}
+      {error !== "" ? <Toast message={error} variant="Toast-Error" /> : null}
     </>
   );
 };

@@ -146,7 +146,7 @@ const NewActivity = ({ clubId, groupId }: NewActivityProps) => {
   return (
     <Modal title="Nouvelle activité" handleSubmit={addNewActivity}>
       <h3>
-        Créer une nouvelle activité dans le groupe{" "}
+        Créer une nouvelle activité dans le groupe
         <span className="text-primary">{groupQuery.data?.name}</span>
       </h3>
       <input value={name} onChange={(e) => setName(e.target.value)} />
@@ -200,7 +200,7 @@ function UpdateActivity({
       buttonSize="btn-sm"
     >
       <h3>
-        Modifier l&apos;activité{" "}
+        Modifier l&apos;activité
         <span className="text-primary">{initialName}</span>
       </h3>
       <input value={name} onChange={(e) => setName(e.target.value)} />

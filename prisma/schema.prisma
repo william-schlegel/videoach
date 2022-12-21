@@ -180,3 +180,15 @@ model OpeningTime {
   closing String // format HH:MM
   day     DayOpeningTime[]
 }
+
+model Pricing {
+  id          String   @id @default(cuid())
+  roleTarget  Role
+  title       String
+  description String
+  free        Boolean? @default(false)
+  highlighted Boolean? @default(false)
+  monthly     Float?   @default(0)
+  yearly      Float?   @default(0)
+  options     String[]
+}

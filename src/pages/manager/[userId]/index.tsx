@@ -54,7 +54,7 @@ const ManagerClubs = ({
   return (
     <main className="container mx-auto my-2 flex flex-col gap-2">
       <h1 className="flex justify-between">
-        {t("manager-dashboard")}{" "}
+        {t("manager-dashboard")}
         <Link className="btn-secondary btn" href={`${userId}/clubs`}>
           {t("manage-club")}
         </Link>

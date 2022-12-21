@@ -5,13 +5,16 @@
     "find-club": "Trouver un club",
     "activity": "Activités",
     "planning": "Planning",
-    "coachs": "Coachs",
+    "find-coach": "Trouver un coach",
     "reservation": "Réserver",
     "my-info": "Mes informations",
     "disconnect": "Se déconnecter",
     "connect": "Se connecter",
     "create-account": "Créer un compte",
     "error-404": "Page introuvable",
-    "error-500": "Erreur interne serveur"
+    "error-500": "Erreur interne serveur",
+    "manager-offer": "Offre manager",
+    "coach-offer": "Offre coach",
+    "pricing-definition": "Définition des tarifs"
   }
 }

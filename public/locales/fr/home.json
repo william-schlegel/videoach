@@ -1,0 +1,34 @@
+{
+  "title": "Rejoignez la communauté des clubs de sport",
+  "hero-text": "Lorem ipsum dolor sit amet consectetur adipisicing elit. Doloribus culpa incidunt perferendis possimus recusandae deleniti ab neque soluta! At, nam excepturi possimus odit ipsam accusamus esse obcaecati vero id reiciendis.",
+  "btn-visitor": "Je cherche un club de sport",
+  "btn-manager": "J'ai un club à gérer",
+  "btn-coach": "Je suis coach",
+  "find-club": "Trouver un club autour de chez moi",
+  "find-coach": "Trouver un coach autour de chez moi",
+  "manager-title": "Vous devez gérer un club de sport",
+  "manager-text": "Lorem ipsum dolor sit amet consectetur adipisicing elit. Doloribus culpa incidunt perferendis possimus recusandae deleniti ab neque soluta! At, nam excepturi possimus odit ipsam accusamus esse obcaecati vero id reiciendis.",
+  "pricing": {
+    "usage": "Tarifs d'utilisation",
+    "monthly": "Par mois",
+    "yearly": "Par an",
+    "select": "Sélectionner ce plan",
+    "price-monthly": "{{price}}€/mois",
+    "price-yearly": "{{price}}€/an"
+  },
+  "features": {
+    "manager": "Des outils pour le gérant de club",
+    "management": {
+      "title": "Gestion de club",
+      "description": "Toute la gestion de votre ou vos clubs, les activités, les plannings, les salles et les sites d'activité\nGestion de vos membres et de vos coachs"
+    },
+    "communication": {
+      "title": "Des outils de communication",
+      "description": "Restez en contact permanent avec vos membres et vos coachs avec des outils de communication efficaces\nUne messagerie instanténnée dédiée\nDes notifications d'évènements ou de changements de planning"
+    },
+    "page": {
+      "title": "Page de présentation",
+      "description": "Une page de présentation des clubs et de leurs activités\nPersonnalisable au travers de nombreuses options\nAccessible depuis votre adresse existante"
+    }
+  }
+}

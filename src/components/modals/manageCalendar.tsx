@@ -371,7 +371,7 @@ export const CreateRoomCalendar = ({
             <span className="label-text">{t("same-as-site")}</span>
           </label>
         </div>
-      )}{" "}
+      )}
       {!sameAsClub && !sameAsSite ? (
         <FormCalendar
           calendarValues={calendar}

@@ -1,4 +1,4 @@
-import { Role } from "@prisma/client";
+import { type Role } from "@prisma/client";
 import { signIn, signOut, useSession } from "next-auth/react";
 import Image from "next/image";
 import Link from "next/link";
@@ -16,22 +16,23 @@ const MENUS: MenuDefinitionType[] = [
   {
     label: "navigation.dashboard",
     page: "/",
-    access: [
-      Role.ADMIN,
-      Role.COACH,
-      Role.MANAGER,
-      Role.MANAGER_COACH,
-      Role.MEMBER,
-    ],
+    access: ["ADMIN", "COACH", "MANAGER", "MANAGER_COACH", "MEMBER"],
   },
-  { label: "navigation.find-club", page: "/club", access: [] },
-  { label: "navigation.activity", page: "/activites" },
-  { label: "navigation.planning", page: "/planning" },
-  { label: "navigation.coachs", page: "/coachs" },
+  { label: "navigation.find-club", page: "/#find-club", access: [] },
+  { label: "navigation.activity", page: "/activites", access: ["MEMBER"] },
+  { label: "navigation.planning", page: "/planning", access: ["MEMBER"] },
+  { label: "navigation.find-coach", page: "/#find-coach", access: [] },
+  { label: "navigation.manager-offer", page: "/manager", access: [] },
+  { label: "navigation.coach-offer", page: "/coach", access: [] },
+  {
+    label: "navigation.pricing-definition",
+    page: "/pricing",
+    access: ["ADMIN"],
+  },
   {
     label: "navigation.reservation",
     page: "/reservation",
-    access: [Role.MEMBER],
+    access: ["MEMBER"],
   },
 ];
 
@@ -160,6 +161,7 @@ const Menu: FC = () => {
       {MENUS.map((menu) => {
         if (
           Array.isArray(menu.access) &&
+          menu.access.length &&
           (!sessionData?.user?.role ||
             !menu.access.includes(sessionData.user.role))
         )

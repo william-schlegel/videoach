@@ -3,6 +3,7 @@ import { activityRouter } from "./activities";
 import { calendarRouter } from "./calendar";
 import { clubRouter } from "./clubs";
 import { dashboardRouter } from "./dashboard";
+import { pricingRouter } from "./pricing";
 import { siteRouter } from "./sites";
 import { userRouter } from "./users";
 
@@ -13,6 +14,7 @@ export const appRouter = router({
   activities: activityRouter,
   dashboards: dashboardRouter,
   calendars: calendarRouter,
+  pricings: pricingRouter,
 });
 
 // export type definition of API

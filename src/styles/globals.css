@@ -22,3 +22,42 @@
     @apply input-bordered input w-full;
   }
 }
+
+.bg-gradient-home-hero {
+  --hero-bg-opacity: 0.3;
+  object-fit: fill;
+  background: linear-gradient(
+        hsl(var(--b1) / var(--hero-bg-opacity)),
+        hsl(var(--b1) / var(--hero-bg-opacity))
+      )
+      0px 0px / 100% 100% no-repeat no-repeat,
+    radial-gradient(
+        circle at 50% 50%,
+        hsl(var(--s)) 0%,
+        rgba(0, 0, 0, 0) 65%,
+        rgba(0, 0, 0, 0) 100%
+      ) -35% -65% / 100% 150% no-repeat no-repeat,
+    radial-gradient(
+        ellipse at 50% 50%,
+        hsl(var(--a)) 0%,
+        rgba(0, 0, 0, 0) 65%,
+        rgba(0, 0, 0, 0) 100%
+      )
+      25% 25% / 110% 110% no-repeat no-repeat,
+    conic-gradient(
+        from 30deg at 0% 0%,
+        hsl(var(--a)) 0%,
+        hsl(var(--er)) 45%,
+        rgba(0, 0, 0, 0) 70%
+      )
+      0px 0px / 100% 100% no-repeat no-repeat,
+    linear-gradient(-6deg, hsl(var(--in)) 0%, 40%, hsl(var(--in)) 100%) 0px 0px /
+      100% 100% no-repeat no-repeat;
+}
+
+.image-home-hero {
+  mask-image: url(/images/image-home-mask.svg);
+  mask-repeat: no-repeat;
+  -webkit-mask-image: url(/images/image-home-mask.svg);
+  -webkit-mask-repeat: no-repeat;
+}
