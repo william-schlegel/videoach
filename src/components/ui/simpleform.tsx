@@ -38,7 +38,7 @@ export default function SimpleForm<T extends FieldValues>({
   register,
   onSubmit,
   children,
-  className,
+  className = "",
   isLoading = false,
 }: SimpleFormProps<T>): JSX.Element {
   return (
@@ -62,8 +62,6 @@ export default function SimpleForm<T extends FieldValues>({
                     {...register(fn as Path<T>, {
                       required: field.required ?? false,
                     })}
-                    // value={field.value || field.initialValue}
-                    // defaultValue={field.defaultValue}
                     type={field.type || "text"}
                     disabled={field.disabled}
                   />

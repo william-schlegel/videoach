@@ -5,15 +5,10 @@ import { router, publicProcedure, protectedProcedure } from "../trpc";
 
 export const userRouter = router({
   getUserById: publicProcedure.input(z.string()).query(({ ctx, input }) => {
-    return ctx.prisma.user.findFirst({
+    return ctx.prisma.user.findUnique({
       where: { id: input },
     });
   }),
-  getAllCoachs: publicProcedure.query(({ ctx }) =>
-    ctx.prisma.user.findMany({
-      where: { role: { in: ["COACH", "MANAGER_COACH"] } },
-    })
-  ),
   updateUser: protectedProcedure
     .input(
       z.object({

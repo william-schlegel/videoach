@@ -33,7 +33,7 @@ const Home = () => {
   // const [clubSearch, setClubSearch] = useState<ClubSearchResult[]>([]);
   // const [coachSearch, setCoachSearch] = useState<CoachSearchResult[]>([]);
   const clubSearch = trpc.clubs.getAllClubs.useQuery();
-  const coachSearch = trpc.users.getAllCoachs.useQuery();
+  const coachSearch = trpc.coachs.getAllCoachs.useQuery();
 
   type clubItem = typeof clubSearch.data extends (infer U)[] | undefined
     ? U

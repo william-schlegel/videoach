@@ -62,5 +62,22 @@
   "manage-club-activities": "Affecter les activités aux salles",
   "remove-activity": "Retirer l'activité de cette salle",
   "room-deletion": "Supprimer cette salle",
-  "room-deletion-message": "Voulez-vous réellement supprimer cette salle ?\nCette action est irréversible"
+  "room-deletion-message": "Voulez-vous réellement supprimer cette salle ?\nCette action est irréversible",
+  "select-activities": "Sélectionner les activités du club",
+  "save-activities": "Enregistrer",
+  "select-club-activities": "Sélectionner les activités proposées dans ce club",
+  "group": "Groupe",
+  "activities": "Activités",
+  "new-activity": "Nouvelle activité",
+  "create-activity-group": "Créer une nouvelle activité dans le groupe",
+  "activity-name-mandatory": "Le nom doit être renseigné",
+  "update-activity": "Modifier l'activité",
+  "activity-deletion": "Supprimer l'activité",
+  "activity-deletion-message": "Voulez-vous supprimer cette activité ?\nCette action est irréversible",
+  "activity-deletion-confirmation": "Supprimer définitivement",
+  "update-group": "Modifier le groupe",
+  "group-name-mandatory": "Le nom doit être renseigné",
+  "group-deletion": "Supprimer le groupe",
+  "group-deletion-message": "Voulez-vous supprimer ce groupe ?\nCette action est irréversible",
+  "group-deletion-confirmation": "Supprimer définitivement"
 }

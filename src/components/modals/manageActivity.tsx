@@ -3,6 +3,7 @@ import Modal from "../ui/modal";
 import { CgAdd, CgPen, CgTrash } from "react-icons/cg";
 import { useState } from "react";
 import Confirmation from "../ui/confirmation";
+import { useTranslation } from "next-i18next";
 
 type AddActivityProps = {
   userId: string;
@@ -37,6 +38,7 @@ const AddActivity = ({
       onSuccess();
     },
   });
+  const { t } = useTranslation("club");
 
   const onSubmit = () => {
     updateClubActivities.mutate({
@@ -47,16 +49,16 @@ const AddActivity = ({
 
   return (
     <Modal
-      title="Sélectionner les activités du club"
+      title={t("select-activities")}
       handleSubmit={onSubmit}
-      submitButtonText="Enregistrer"
+      submitButtonText={t("save-activities")}
       buttonIcon={<CgAdd size={16} />}
       className="w-11/12 max-w-5xl"
     >
-      <h3>Sélectionner les activités proposées dans ce club</h3>
+      <h3>{t("select-club-activities")}</h3>
       <div className="flex flex-1 gap-4">
         <div className="flex flex-col gap-2">
-          <h4>Groupe</h4>
+          <h4>{t("group")}</h4>
           <ul className="menu overflow-hidden rounded border border-secondary bg-base-100">
             {queryGroups.data?.map((group) => (
               <li key={group.id}>
@@ -81,7 +83,7 @@ const AddActivity = ({
           {withAdd ? <NewGroup userId={userId} /> : null}
         </div>
         <div className="flex flex-grow flex-col gap-2">
-          <h4>Activités</h4>
+          <h4>{t("activities")}</h4>
           <div className="flex flex-wrap gap-2">
             {queryClubActivities.data?.activities
               .filter((a) => a.groupId === groupId)
@@ -129,6 +131,7 @@ const NewActivity = ({ clubId, groupId }: NewActivityProps) => {
   });
   const [name, setName] = useState("");
   const [error, setError] = useState(false);
+  const { t } = useTranslation("club");
 
   function addNewActivity() {
     if (name === "") {
@@ -144,14 +147,14 @@ const NewActivity = ({ clubId, groupId }: NewActivityProps) => {
   }
 
   return (
-    <Modal title="Nouvelle activité" handleSubmit={addNewActivity}>
+    <Modal title={t("new-activity")} handleSubmit={addNewActivity}>
       <h3>
-        Créer une nouvelle activité dans le groupe
+        {t("create-activity-group")}
         <span className="text-primary">{groupQuery.data?.name}</span>
       </h3>
       <input value={name} onChange={(e) => setName(e.target.value)} />
       {error && (
-        <p className="text-sm text-error">Le nom doit être renseigné</p>
+        <p className="text-sm text-error">{t("activity-name-mandatory")}</p>
       )}
     </Modal>
   );
@@ -176,6 +179,7 @@ function UpdateActivity({
   });
   const [name, setName] = useState(initialName);
   const [error, setError] = useState(false);
+  const { t } = useTranslation("club");
 
   function update() {
     if (name === "") {
@@ -193,19 +197,19 @@ function UpdateActivity({
 
   return (
     <Modal
-      title="Modifier l'activité"
+      title={t("update-activity")}
       handleSubmit={update}
       buttonIcon={<CgPen size={12} />}
       variant={"Icon-Outlined-Primary"}
       buttonSize="btn-sm"
     >
       <h3>
-        Modifier l&apos;activité
+        {t("update-activity")}
         <span className="text-primary">{initialName}</span>
       </h3>
       <input value={name} onChange={(e) => setName(e.target.value)} />
       {error && (
-        <p className="text-sm text-error">Le nom doit être renseigné</p>
+        <p className="text-sm text-error">{t("activity-name-mandatory")}</p>
       )}
     </Modal>
   );
@@ -221,15 +225,16 @@ function DeleteActivity({ clubId, activityId }: DeleteActivityProps) {
   const deleteActivity = trpc.activities.deleteActivity.useMutation({
     onSuccess: () => utils.activities.getActivitiesForClub.invalidate(),
   });
+  const { t } = useTranslation("club");
 
   return (
     <Confirmation
-      title="Supprimer l'activité"
-      message="Voulez-vous supprimer cette activité ?\nCette action est irréversible"
+      title={t("activity-deletion")}
+      message={t("activity-deletion-message")}
       onConfirm={() => deleteActivity.mutate({ clubId, activityId })}
       buttonIcon={<CgTrash size={12} />}
       variant={"Icon-Outlined-Secondary"}
-      textConfirmation="Supprimer définitivement"
+      textConfirmation={t("activity-deletion-confirmation")}
       buttonSize="btn-sm"
     />
   );
@@ -285,6 +290,7 @@ function UpdateGroup({ userId, id, initialName }: UpdateGroupProps) {
   });
   const [name, setName] = useState(initialName);
   const [error, setError] = useState(false);
+  const { t } = useTranslation("club");
 
   function update() {
     if (name === "") {
@@ -300,18 +306,18 @@ function UpdateGroup({ userId, id, initialName }: UpdateGroupProps) {
 
   return (
     <Modal
-      title="Modifier le groupe"
+      title={t("update-group")}
       handleSubmit={update}
       buttonIcon={<CgPen size={12} />}
       variant={"Icon-Outlined-Secondary"}
       buttonSize="btn-sm"
     >
       <h3>
-        Modifier le groupe <span className="text-primary">{initialName}</span>
+        {t("update-group")} <span className="text-primary">{initialName}</span>
       </h3>
       <input value={name} onChange={(e) => setName(e.target.value)} />
       {error && (
-        <p className="text-sm text-error">Le nom doit être renseigné</p>
+        <p className="text-sm text-error">{t("group-name-mandatory")}</p>
       )}
     </Modal>
   );
@@ -328,15 +334,16 @@ function DeleteGroup({ groupId, userId }: DeleteGroupProps) {
     onSuccess: () =>
       utils.activities.getActivityGroupsForUser.invalidate(userId),
   });
+  const { t } = useTranslation("club");
 
   return (
     <Confirmation
-      title="Supprimer le groupe"
-      message="Voulez-vous supprimer ce groupe et les activités attachées ?\nCette action est irréversible"
+      title={t("group-deletion")}
+      message={t("group-deletion-message")}
       onConfirm={() => deleteGroup.mutate({ groupId })}
       buttonIcon={<CgTrash size={12} />}
       variant={"Icon-Outlined-Secondary"}
-      textConfirmation="Supprimer définitivement"
+      textConfirmation={t("group-deletion-confirmation")}
       buttonSize="btn-sm"
     />
   );

@@ -142,9 +142,6 @@ export default function Navbar({ theme, onChangeTheme }: NavbarProps) {
             <li>
               <div onClick={() => signIn()}>{t("navigation.connect")}</div>
             </li>
-            <li>
-              <Link href="/user/signin">{t("navigation.create-account")}</Link>
-            </li>
           </ul>
         )}
       </div>

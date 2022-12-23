@@ -24,6 +24,9 @@ import {
   DndContext,
   type DragEndEvent,
   type Data,
+  useSensor,
+  PointerSensor,
+  useSensors,
 } from "@dnd-kit/core";
 import CollapsableGroup from "@ui/collapsableGroup";
 import { CgClose } from "react-icons/cg";
@@ -115,16 +118,29 @@ export function ClubContent({ userId, clubId }: ClubContentProps) {
   root.pop();
   const path = root.reduce((a, r) => a.concat(`${r}/`), "");
 
+  const sensors = useSensors(
+    useSensor(PointerSensor, {
+      activationConstraint: {
+        distance: 10,
+      },
+    })
+  );
+
   function handleDragEnd(e: DragEndEvent) {
     const roomId = e.over?.id.toString();
     const activityId = e.active.data.current?.activityId;
     const actualRoom = e.active.data.current?.roomId;
+    if (actualRoom === roomId) return;
     if (actualRoom && actualRoom !== roomId && activityId)
       removeActivity.mutate({ activityId, roomId: actualRoom });
     if (roomId && activityId) addActivity.mutate({ activityId, roomId });
   }
 
   function handledeleteActivity(roomId: string, activityId: string) {
+    console.log("remove activity { activityId, roomId }", {
+      activityId,
+      roomId,
+    });
     removeActivity.mutate({ activityId, roomId });
   }
 
@@ -146,7 +162,7 @@ export function ClubContent({ userId, clubId }: ClubContentProps) {
         calendar={calendarQuery.data}
         isLoading={calendarQuery.isLoading}
       />
-      <DndContext onDragEnd={handleDragEnd}>
+      <DndContext onDragEnd={handleDragEnd} sensors={sensors}>
         <div className="flex flex-wrap gap-4">
           <div className="flex-1 rounded border border-primary p-4 ">
             <div className="flex flex-row items-center justify-between gap-4">
@@ -241,9 +257,10 @@ export function ClubContent({ userId, clubId }: ClubContentProps) {
                             <CgClose
                               size={16}
                               className="cursor-pointer rounded-full bg-base-100 text-secondary hover:bg-secondary hover:text-secondary-content"
-                              onClick={() =>
-                                handledeleteActivity(room.id, a.id)
-                              }
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handledeleteActivity(room.id, a.id);
+                              }}
                             />
                           </div>
                         </DraggableElement>

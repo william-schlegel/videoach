@@ -23,12 +23,7 @@ export const activityRouter = router({
     .query(({ ctx, input }) => {
       return ctx.prisma.activityGroup.findMany({
         where: {
-          OR: [
-            {
-              default: true,
-            },
-            { userId: input },
-          ],
+          OR: [{ default: true }, { userId: input }],
         },
         include: { activities: true },
         orderBy: {

@@ -21,12 +21,6 @@ datasource db {
 //   url      = env("DATABASE_URL")
 // }
 
-model Example {
-  id        String   @id @default(cuid())
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-}
-
 // Necessary for Next auth
 model Account {
   id                String  @id @default(cuid())
@@ -66,17 +60,19 @@ enum Role {
 }
 
 model User {
-  id             String          @id @default(cuid())
-  name           String?
-  email          String?         @unique
-  emailVerified  DateTime?
-  image          String?
-  accounts       Account[]
-  sessions       Session[]
-  activityGroups ActivityGroup[]
-  managedClubs   Club[]          @relation("Manager")
-  clubs          Club[]          @relation("Member")
-  role           Role            @default(MEMBER)
+  id                  String               @id @default(cuid())
+  name                String?
+  email               String?              @unique
+  emailVerified       DateTime?
+  image               String?
+  accounts            Account[]
+  sessions            Session[]
+  activityGroups      ActivityGroup[]
+  managedClubs        Club[]               @relation("Manager")
+  clubs               Club[]               @relation("Member")
+  role                Role                 @default(MEMBER)
+  certificationGroups CertificationGroup[]
+  certifications      Certification[]
 }
 
 model VerificationToken {
@@ -138,27 +134,31 @@ model Room {
 
 // activity group may be standard (default group) or belong to a specific user
 model ActivityGroup {
-  id         String     @id @default(cuid())
-  name       String
-  default    Boolean    @default(false)
-  activities Activity[]
-  user       User?      @relation(fields: [userId], references: [id], onDelete: Cascade)
-  userId     String?
+  id             String          @id @default(cuid())
+  name           String
+  default        Boolean         @default(false)
+  activities     Activity[]
+  user           User?           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId         String?
+  certifications Certification[]
 
   @@index([userId])
 }
 
 model Activity {
-  id      String        @id @default(cuid())
-  name    String
-  groupId String
-  group   ActivityGroup @relation(fields: [groupId], references: [id], onDelete: Cascade)
-  clubId  String
-  club    Club          @relation(fields: [clubId], references: [id], onDelete: Cascade)
-  rooms   Room[]
+  id                   String              @id @default(cuid())
+  name                 String
+  groupId              String
+  group                ActivityGroup       @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  clubId               String
+  club                 Club                @relation(fields: [clubId], references: [id], onDelete: Cascade)
+  rooms                Room[]
+  certificationGroupId String?
+  certificationGroup   CertificationGroup? @relation(fields: [certificationGroupId], references: [id])
 
   @@index([groupId])
   @@index([clubId])
+  @@index([certificationGroupId])
 }
 
 model OpeningCalendar {
@@ -197,13 +197,69 @@ model OpeningTime {
 }
 
 model Pricing {
-  id          String   @id @default(cuid())
+  id          String          @id @default(cuid())
   roleTarget  Role
   title       String
   description String
-  free        Boolean? @default(false)
-  highlighted Boolean? @default(false)
-  monthly     Float?   @default(0)
-  yearly      Float?   @default(0)
-  options     String?
+  free        Boolean?        @default(false)
+  highlighted Boolean?        @default(false)
+  monthly     Float?          @default(0)
+  yearly      Float?          @default(0)
+  options     PricingOption[]
+}
+
+model PricingOption {
+  id        String  @id @default(cuid())
+  name      String
+  weight    Int // for sorting
+  pricingId String
+  pricing   Pricing @relation(fields: [pricingId], references: [id], onDelete: Cascade)
+
+  @@index([pricingId])
+}
+
+model CertificationGroup {
+  id             String                @id @default(cuid())
+  name           String
+  default        Boolean               @default(false)
+  user           User?                 @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId         String?
+  certifications Certification[]
+  activities     Activity[]
+  hasModules     Boolean               @default(false)
+  modules        CertificationModule[]
+
+  @@index([userId])
+}
+
+model Certification {
+  id                   String                @id @default(cuid())
+  name                 String
+  certificationGroupId String
+  certificationGroup   CertificationGroup    @relation(fields: [certificationGroupId], references: [id])
+  obtainedIn           DateTime
+  documentUrl          String?
+  user                 User                  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId               String
+  activityGroupId      String?
+  activityGroup        ActivityGroup?        @relation(fields: [activityGroupId], references: [id])
+  modules              CertificationModule[]
+
+  @@index([userId])
+  @@index([activityGroupId])
+  @@index([certificationGroupId])
+}
+
+model CertificationModule {
+  id                   String             @id @default(cuid())
+  name                 String
+  certificationId      String?
+  certification        Certification?     @relation(fields: [certificationId], references: [id], onDelete: Cascade)
+  obtainedIn           DateTime?
+  documentUrl          String?
+  certificationGroupId String
+  certificationGroup   CertificationGroup @relation(fields: [certificationGroupId], references: [id], onDelete: Cascade)
+
+  @@index([certificationId])
+  @@index([certificationGroupId])
 }

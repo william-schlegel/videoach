@@ -34,4 +34,26 @@ export const dashboardRouter = router({
       });
       return clubData;
     }),
+  getCoachDataForUserId: protectedProcedure
+    .input(z.string())
+    .query(async ({ ctx, input }) => {
+      if (
+        ctx.session.user.role !== Role.ADMIN &&
+        ctx.session.user.role !== Role.COACH &&
+        ctx.session.user.role !== Role.MANAGER_COACH
+      )
+        throw new TRPCError({
+          code: "UNAUTHORIZED",
+          message: "You cannot read coach data",
+        });
+      const clubData = await ctx.prisma.user.findUnique({
+        where: { id: input },
+        include: {
+          clubs: true,
+          certifications: true,
+          activityGroups: true,
+        },
+      });
+      return clubData;
+    }),
 });

@@ -1,0 +1,14 @@
+{
+  "coach-only": "Cette page est réservée aux coachs",
+  "manage-my-certifications_zero": "Gérer ma certification",
+  "manage-my-certifications_other": "Gérer mes certification",
+  "select-certifications": "Sélectionnez vos certifications",
+  "save-certifications": "Enregistrer les certifications",
+  "modules": "Modules",
+  "new-group": "Nouveau certificateur",
+  "create-new-group": "Créer un nouvel organisme de certification",
+  "group-name-mandatory": "Le nom est obligatoire",
+  "update-group": "Modifier le nom de l'organisme de certification",
+  "group-deletion-message": "Voulez-vous supprimer ce groupe ?\nCette action est irréversible",
+  "group-deletion-confirmation": "Supprimer définitivement"
+}

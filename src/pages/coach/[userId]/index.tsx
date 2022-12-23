@@ -11,52 +11,25 @@ import { unstable_getServerSession } from "next-auth";
 import { useTranslation } from "next-i18next";
 import { serverSideTranslations } from "next-i18next/serverSideTranslations";
 import Link from "next/link";
-import { useMemo } from "react";
-import {
-  CgOrganisation,
-  CgPin,
-  CgHeart,
-  CgUser,
-  CgSquare,
-} from "react-icons/cg";
+import { CgOrganisation, CgHeart, CgAwards } from "react-icons/cg";
 
-const ManagerClubs = ({
+const CoachDashboard = ({
   userId,
 }: InferGetServerSidePropsType<typeof getServerSideProps>) => {
-  const managerQuery = trpc.dashboards.getManagerDataForUserId.useQuery(userId);
+  const coachQuery = trpc.dashboards.getCoachDataForUserId.useQuery(userId);
   const { t } = useTranslation("dashboard");
-  const siteCount = useMemo(
-    () =>
-      managerQuery.data?.reduce(
-        (acc, c) => {
-          acc.sites += c.sites.length;
-          acc.rooms += c.sites.reduce((ss, s) => (ss += s._count.rooms), 0);
-          return acc;
-        },
-        { sites: 0, rooms: 0 }
-      ) ?? { sites: 0, rooms: 0 },
-    [managerQuery.data]
-  );
-  const activityCount = useMemo(
-    () =>
-      managerQuery.data?.reduce((acc, r) => (acc += r.activities.length), 0) ??
-      0,
-    [managerQuery.data]
-  );
-  const memberCount = useMemo(
-    () =>
-      managerQuery.data?.reduce((acc, r) => (acc += r.members.length), 0) ?? 0,
-    [managerQuery.data]
-  );
+  const clubCount = coachQuery.data?.clubs?.length ?? 0;
+  const certificationCount = 0; //coachQuery.data?.certifications?.length ?? 0;
+  const activityCount = coachQuery.data?.activityGroups?.length ?? 0;
 
-  if (managerQuery.isLoading) return <Spinner />;
+  if (coachQuery.isLoading) return <Spinner />;
 
   return (
     <main className="container mx-auto my-2 flex flex-col gap-2">
       <h1 className="flex justify-between">
-        {t("manager-dashboard")}
-        <Link className="btn-secondary btn" href={`${userId}/clubs`}>
-          {t("manage-club")}
+        {t("coach-dashboard")}
+        <Link className="btn-secondary btn" href={`${userId}/certifications`}>
+          {t("manage-certifications")}
         </Link>
       </h1>
       <section className="stats shadow">
@@ -64,30 +37,17 @@ const ManagerClubs = ({
           <div className="stat-figure text-primary">
             <CgOrganisation size={48} />
           </div>
-          <div className="stat-title">
-            {t("clubs", { count: managerQuery.data?.length ?? 0 })}
-          </div>
-          <div className="stat-value text-primary">
-            {managerQuery.data?.length}
-          </div>
+          <div className="stat-title">{t("clubs", { count: clubCount })}</div>
+          <div className="stat-value text-primary">{clubCount}</div>
         </div>
         <div className="stat">
           <div className="stat-figure text-primary">
-            <CgPin size={48} />
+            <CgAwards size={48} />
           </div>
           <div className="stat-title">
-            {t("sites", { count: siteCount.sites })}
+            {t("sites", { count: certificationCount })}
           </div>
-          <div className="stat-value text-primary">{siteCount.sites}</div>
-        </div>
-        <div className="stat">
-          <div className="stat-figure text-primary">
-            <CgSquare size={48} />
-          </div>
-          <div className="stat-title">
-            {t("rooms", { count: siteCount.rooms })}
-          </div>
-          <div className="stat-value text-primary">{siteCount.rooms}</div>
+          <div className="stat-value text-primary">{certificationCount}</div>
         </div>
         <div className="stat">
           <div className="stat-figure text-primary">
@@ -98,25 +58,16 @@ const ManagerClubs = ({
           </div>
           <div className="stat-value text-primary">{activityCount}</div>
         </div>
-        <div className="stat">
-          <div className="stat-figure text-primary">
-            <CgUser size={48} />
-          </div>
-          <div className="stat-title">
-            {t("members", { count: memberCount })}
-          </div>
-          <div className="stat-value text-primary">{memberCount}</div>
-        </div>
       </section>
       <section className="grid grid-cols-2 gap-2">
         <article className="rounded-md border border-primary p-2">
           <h2>{t("planning")}</h2>
         </article>
         <article className="rounded-md border border-primary p-2">
-          <h2>{t("event")}</h2>
+          <h2>{t("schedule")}</h2>
         </article>
         <article className="rounded-md border border-primary p-2">
-          <h2>{t("chat-members-coachs")}</h2>
+          <h2>{t("chat-members")}</h2>
         </article>
         <article className="rounded-md border border-primary p-2">
           <h2>{t("note")}</h2>
@@ -126,7 +77,7 @@ const ManagerClubs = ({
   );
 };
 
-export default ManagerClubs;
+export default CoachDashboard;
 
 export const getServerSideProps = async ({
   locale,
@@ -134,10 +85,7 @@ export const getServerSideProps = async ({
   res,
 }: GetServerSidePropsContext) => {
   const session = await unstable_getServerSession(req, res, authOptions);
-  if (
-    session?.user?.role !== Role.MANAGER &&
-    session?.user?.role !== Role.ADMIN
-  )
+  if (session?.user?.role !== Role.COACH && session?.user?.role !== Role.ADMIN)
     return {
       redirect: "/",
       permanent: false,

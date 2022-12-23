@@ -13,6 +13,7 @@ async function main() {
       role: "MANAGER",
     },
   });
+  console.log("william", william);
   await prisma.activityGroup.deleteMany();
   await prisma.activityGroup.createMany({
     data: [
@@ -27,12 +28,20 @@ async function main() {
       { name: "Raquette", default: true },
     ],
   });
+  await prisma.certificationGroup.deleteMany();
+  await prisma.certificationGroup.createMany({
+    data: [{ name: "LESMILLS", default: true }],
+  });
+
   const groups = await prisma.activityGroup.findMany();
+  const certifications = await prisma.certificationGroup.findMany();
   await prisma.club.create({
     data: {
       name: "Moving",
       address: "Mours",
-      managerId: william.id,
+      manager: {
+        connect: { id: william.id },
+      },
       sites: {
         create: {
           name: "Club Moving",
@@ -87,10 +96,12 @@ async function main() {
             {
               name: "Body Combat",
               groupId: groups.find((g) => g.name === "Fitness").id,
+              certificationGroupId: certifications[0].id,
             },
             {
               name: "Body Attack",
               groupId: groups.find((g) => g.name === "Cardio").id,
+              certificationGroupId: certifications[0].id,
             },
             {
               name: "Hiit",
@@ -126,7 +137,9 @@ async function main() {
     data: {
       name: "610 Crew",
       address: "Conflans Ste Honorine",
-      managerId: william.id,
+      manager: {
+        connect: { id: william.id },
+      },
       sites: {
         create: {
           name: "Eragny",

@@ -12,7 +12,6 @@ const PricingObject = z.object({
   highlighted: z.boolean().optional().default(false),
   monthly: z.number().optional().default(0),
   yearly: z.number().optional().default(0),
-  options: z.array(z.string()),
 });
 
 export const pricingRouter = router({

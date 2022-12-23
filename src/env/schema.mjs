@@ -25,8 +25,11 @@ export const serverSchema = z.object({
   FACEBOOK_SECRET: z.string(),
   GOOGLE_ID: z.string(),
   GOOGLE_SECRET: z.string(),
-  EMAIL_FROM: z.string(),
-  EMAIL_SERVER: z.string(),
+  EMAIL_FROM: z.string().email(),
+  EMAIL_SERVER_USER: z.string(),
+  EMAIL_SERVER_PASSWORD: z.string(),
+  EMAIL_SERVER_HOST: z.string(),
+  EMAIL_SERVER_PORT: z.enum(["25", "587", "465", "2525", "25025"]),
 });
 
 /**

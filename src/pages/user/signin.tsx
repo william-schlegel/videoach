@@ -22,7 +22,11 @@ export default function SignIn({
     formState: { errors },
   } = useForm<EmailFormValues>();
 
-  console.log("providers", providers);
+  function handleSubmit() {
+    signIn("email", {
+      callbackUrl: "/user/magic-link",
+    });
+  }
 
   return (
     <div className="grid h-screen place-items-center">
@@ -55,12 +59,12 @@ export default function SignIn({
               },
             ]}
           />
-          <button
-            className="btn-outline btn w-full"
-            onClick={() => signIn("email")}
-          >
-            {t("connect-with-account")} {"Email"}
-          </button>
+          <div className="flex flex-col gap-4">
+            <p>{t("magic-link")}</p>
+            <button className="btn-outline btn w-full" onClick={handleSubmit}>
+              {t("connect-with-account")} {"Email"}
+            </button>
+          </div>
         </div>
       </div>
     </div>
