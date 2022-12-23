@@ -6,9 +6,10 @@ generator client {
 }
 
 datasource db {
-  url      = env("DATABASE_URL")
-  provider = "postgresql"
-  // relationMode = "prisma"
+  url          = env("DATABASE_URL")
+  provider     = "mysql"
+  // provider = "postgresql"
+  relationMode = "prisma"
 }
 
 // datasource db {
@@ -43,6 +44,7 @@ model Account {
   user              User    @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([provider, providerAccountId])
+  @@index([userId])
 }
 
 model Session {
@@ -51,6 +53,8 @@ model Session {
   userId       String
   expires      DateTime
   user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
 }
 
 enum Role {
@@ -93,6 +97,8 @@ model Club {
   activities Activity[]
   members    User[]            @relation(name: "Member")
   calendars  OpeningCalendar[]
+
+  @@index([managerId])
 }
 
 model Site {
@@ -104,6 +110,8 @@ model Site {
   rooms        Room[]
   openWithClub Boolean           @default(true)
   calendars    OpeningCalendar[]
+
+  @@index([clubId])
 }
 
 enum RoomReservation {
@@ -124,6 +132,8 @@ model Room {
   siteId       String
   site         Site              @relation(fields: [siteId], references: [id], onDelete: Cascade)
   activities   Activity[]
+
+  @@index([siteId])
 }
 
 // activity group may be standard (default group) or belong to a specific user
@@ -134,6 +144,8 @@ model ActivityGroup {
   activities Activity[]
   user       User?      @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId     String?
+
+  @@index([userId])
 }
 
 model Activity {
@@ -144,6 +156,9 @@ model Activity {
   clubId  String
   club    Club          @relation(fields: [clubId], references: [id], onDelete: Cascade)
   rooms   Room[]
+
+  @@index([groupId])
+  @@index([clubId])
 }
 
 model OpeningCalendar {
@@ -190,5 +205,5 @@ model Pricing {
   highlighted Boolean? @default(false)
   monthly     Float?   @default(0)
   yearly      Float?   @default(0)
-  options     String[]
+  options     String?
 }

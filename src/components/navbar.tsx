@@ -9,7 +9,7 @@ import { type Themes } from "./layout";
 type MenuDefinitionType = {
   label: string;
   page: string;
-  access?: Role[];
+  access: ("VISITOR" | Role)[];
 };
 
 const MENUS: MenuDefinitionType[] = [
@@ -18,12 +18,12 @@ const MENUS: MenuDefinitionType[] = [
     page: "/",
     access: ["ADMIN", "COACH", "MANAGER", "MANAGER_COACH", "MEMBER"],
   },
-  { label: "navigation.find-club", page: "/#find-club", access: [] },
+  { label: "navigation.find-club", page: "/#find-club", access: ["VISITOR"] },
   { label: "navigation.activity", page: "/activites", access: ["MEMBER"] },
   { label: "navigation.planning", page: "/planning", access: ["MEMBER"] },
-  { label: "navigation.find-coach", page: "/#find-coach", access: [] },
-  { label: "navigation.manager-offer", page: "/manager", access: [] },
-  { label: "navigation.coach-offer", page: "/coach", access: [] },
+  { label: "navigation.find-coach", page: "/#find-coach", access: ["VISITOR"] },
+  { label: "navigation.manager-offer", page: "/manager", access: ["VISITOR"] },
+  { label: "navigation.coach-offer", page: "/coach", access: ["VISITOR"] },
   {
     label: "navigation.pricing-definition",
     page: "/pricing",
@@ -160,19 +160,17 @@ const Menu: FC = () => {
     <>
       {MENUS.map((menu) => {
         if (
-          Array.isArray(menu.access) &&
-          menu.access.length &&
-          (!sessionData?.user?.role ||
-            !menu.access.includes(sessionData.user.role))
+          menu.access.includes(sessionData?.user?.role) ||
+          (!sessionData && menu.access.includes("VISITOR"))
         )
-          return null;
-        return (
-          <li key={menu.page}>
-            <Link className="justify-between" href={menu.page}>
-              {t(menu.label)}
-            </Link>
-          </li>
-        );
+          return (
+            <li key={menu.page}>
+              <Link className="justify-between" href={menu.page}>
+                {t(menu.label)}
+              </Link>
+            </li>
+          );
+        return null;
       })}
     </>
   );

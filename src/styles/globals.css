@@ -2,6 +2,12 @@
 @tailwind components;
 @tailwind utilities;
 
+@base {
+  body {
+    @apply scroll-smooth;
+  }
+}
+
 @layer components {
   h1 {
     @apply py-4 text-4xl font-bold text-primary;

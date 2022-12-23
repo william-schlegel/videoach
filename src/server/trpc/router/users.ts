@@ -9,6 +9,11 @@ export const userRouter = router({
       where: { id: input },
     });
   }),
+  getAllCoachs: publicProcedure.query(({ ctx }) =>
+    ctx.prisma.user.findMany({
+      where: { role: { in: ["COACH", "MANAGER_COACH"] } },
+    })
+  ),
   updateUser: protectedProcedure
     .input(
       z.object({

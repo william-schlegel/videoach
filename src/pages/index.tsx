@@ -7,10 +7,43 @@ import { unstable_getServerSession } from "next-auth/next";
 import Image from "next/image.js";
 import { useTranslation } from "next-i18next";
 import { useRouter } from "next/router.js";
+import { CgSearch } from "react-icons/cg";
+import Map from "react-map-gl";
+import { env } from "../env/client.mjs";
+// import { useState } from "react";
+import { trpc } from "@trpcclient/trpc";
+
+// type ClubSearchResult = {
+//   name: string;
+//   distance: number;
+//   activities: string[];
+// };
+
+// type CoachSearchResult = {
+//   image: string;
+//   rating: number;
+//   name: string;
+//   distance: number;
+//   certifications: string[];
+// };
 
 const Home = () => {
   const { t } = useTranslation("home");
   const router = useRouter();
+  // const [clubSearch, setClubSearch] = useState<ClubSearchResult[]>([]);
+  // const [coachSearch, setCoachSearch] = useState<CoachSearchResult[]>([]);
+  const clubSearch = trpc.clubs.getAllClubs.useQuery();
+  const coachSearch = trpc.users.getAllCoachs.useQuery();
+
+  type clubItem = typeof clubSearch.data extends (infer U)[] | undefined
+    ? U
+    : never;
+
+  function getGroups(club: clubItem) {
+    const grps = club.activities.map((a) => a.group.name).flat();
+    const set = new Set(grps);
+    return Array.from(set);
+  }
 
   return (
     <div>
@@ -30,7 +63,7 @@ const Home = () => {
             <div className="flex flex-wrap gap-2">
               <button
                 className="btn-accent btn"
-                onClick={() => router.push("/#find-club")}
+                onClick={() => router.push("#find-club")}
               >
                 {t("btn-visitor")}
               </button>
@@ -42,7 +75,7 @@ const Home = () => {
               </button>
               <button
                 className="btn-secondary btn"
-                onClick={() => router.push("/#find-coach")}
+                onClick={() => router.push("/coach")}
               >
                 {t("btn-coach")}
               </button>
@@ -50,19 +83,174 @@ const Home = () => {
           </div>
         </div>
       </section>
-      <section id="find-club" className="min-h-[80vh] bg-base-200">
-        <div className="container mx-auto">
+      <section id="find-club" className="bg-base-200">
+        <div className="container mx-auto p-4">
           <h2>{t("find-club")}</h2>
+          <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
+            <div className="flex flex-col items-center">
+              <div className="form-control w-full max-w-sm">
+                <label className="label">
+                  <span className="label-text">{t("my-address")}</span>
+                </label>
+                <input type="text" className="input-bordered input w-full" />
+              </div>
+              <div className="form-control w-full max-w-xs">
+                <label className="label">
+                  <span className="label-text">{t("search-radius")}</span>
+                </label>
+                <label className="input-group">
+                  <input
+                    type="number"
+                    className="input-bordered input w-full text-end"
+                    defaultValue={50}
+                  />
+                  <span>Km</span>
+                </label>
+              </div>
+              <button className="btn-primary btn flex items-center gap-4">
+                {t("search-club")}
+                <CgSearch size={16} />
+              </button>
+              <div className="mt-8 max-h-60 w-full border border-primary">
+                <table className="table-zebra table w-full">
+                  <thead>
+                    <tr>
+                      <th>{t("club")}</th>
+                      <th>{t("distance")}</th>
+                      <th>{t("activities")}</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {clubSearch.data?.map((res) => (
+                      <tr key={res.name}>
+                        <td>{res.name}</td>
+                        <td>{/*res.distance*/ "(tbd)"}&nbsp;km</td>
+                        <td className="flex flex-wrap gap-2">
+                          {getGroups(res).map((g) => (
+                            <span key={g}>{g}</span>
+                          ))}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+            <div className="min-h-[50vh]">
+              <div className="h-full border border-primary">
+                <Map
+                  initialViewState={{
+                    longitude: 2.1942669,
+                    latitude: 49.0912333,
+                    zoom: 12,
+                  }}
+                  style={{ width: "100%", height: "100%" }}
+                  mapStyle="mapbox://styles/mapbox/streets-v9"
+                  mapboxAccessToken={env.NEXT_PUBLIC_MAPBOX_TOKEN}
+                  attributionControl={false}
+                />
+              </div>
+            </div>
+          </div>
         </div>
       </section>
-      <section id="find-coach" className="min-h-[80vh] bg-base-100">
-        <div className="container mx-auto">
+      <section id="find-coach" className="bg-base-100">
+        <div className="container mx-auto p-4">
           <h2>{t("find-coach")}</h2>
+          <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
+            <div className="flex flex-col items-center">
+              <div className="form-control w-full max-w-sm">
+                <label className="label">
+                  <span className="label-text">{t("my-address")}</span>
+                </label>
+                <input type="text" className="input-bordered input w-full" />
+              </div>
+              <div className="form-control w-full max-w-xs">
+                <label className="label">
+                  <span className="label-text">{t("search-radius")}</span>
+                </label>
+                <label className="input-group">
+                  <input
+                    type="number"
+                    className="input-bordered input w-full text-end"
+                    defaultValue={50}
+                  />
+                  <span>Km</span>
+                </label>
+              </div>
+              <button className="btn-primary btn flex items-center gap-4">
+                {t("search-club")}
+                <CgSearch size={16} />
+              </button>
+              <div className="mt-8 max-h-60 w-full border border-primary">
+                <table className="table-zebra table w-full">
+                  <thead>
+                    <tr>
+                      <th>{t("coach")}</th>
+                      <th>{t("distance")}</th>
+                      <th>{t("rating")}</th>
+                      <th>{t("certifications")}</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {coachSearch.data?.map((res) => (
+                      <tr key={res.name}>
+                        <td>{res.name}</td>
+                        <td>{/*res.distance*/ "(tbd)"}&nbsp;km</td>
+                        <td>
+                          <div className="rating rating-xs">
+                            {Array.from({ length: 5 }, (v, k) => k).map((i) => (
+                              <Star
+                                key={`STAR-${i}`}
+                                checked={i === 5 /*res.rating*/}
+                              />
+                            ))}
+                          </div>
+                        </td>
+                        <td className="flex flex-wrap gap-2">
+                          {/*res.certifications.map((cert) => (
+                            <span key={cert}>{cert}</span>
+                          ))*/}
+                          tbd
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+            <div className="min-h-[50vh]">
+              <div className="h-full border border-primary">
+                <Map
+                  initialViewState={{
+                    longitude: 2.1942669,
+                    latitude: 49.0912333,
+                    zoom: 12,
+                  }}
+                  style={{ width: "100%", height: "100%" }}
+                  mapStyle="mapbox://styles/mapbox/streets-v9"
+                  mapboxAccessToken={env.NEXT_PUBLIC_MAPBOX_TOKEN}
+                  attributionControl={false}
+                />
+              </div>
+            </div>
+          </div>
         </div>
       </section>
     </div>
   );
 };
+
+function Star({ checked }: { checked: boolean }) {
+  return (
+    <input
+      type="radio"
+      name="coach-rating"
+      className="mask mask-star-2 bg-accent"
+      checked={checked}
+    />
+  );
+}
 
 export default Home;
 

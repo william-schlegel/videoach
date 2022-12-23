@@ -8,27 +8,50 @@
   "find-coach": "Trouver un coach autour de chez moi",
   "manager-title": "Vous devez gérer un club de sport",
   "manager-text": "Lorem ipsum dolor sit amet consectetur adipisicing elit. Doloribus culpa incidunt perferendis possimus recusandae deleniti ab neque soluta! At, nam excepturi possimus odit ipsam accusamus esse obcaecati vero id reiciendis.",
+  "coach-title": "Vous êtes coach sportif",
+  "coach-text": "Lorem ipsum dolor sit amet consectetur adipisicing elit. Doloribus culpa incidunt perferendis possimus recusandae deleniti ab neque soluta! At, nam excepturi possimus odit ipsam accusamus esse obcaecati vero id reiciendis.",
+  "my-address": "Mon adresse",
+  "search-radius": "Rayon de recherche",
+  "search-club": "Rechercher les clubs",
   "pricing": {
     "usage": "Tarifs d'utilisation",
     "monthly": "Par mois",
     "yearly": "Par an",
     "select": "Sélectionner ce plan",
     "price-monthly": "{{price}}€/mois",
-    "price-yearly": "{{price}}€/an"
+    "price-yearly": "{{price}}€/an",
+    "try-offer": "Vous bénéficiez de 30j d'éssai gratuit lors de votre inscription !"
   },
   "features": {
     "manager": "Des outils pour le gérant de club",
+    "coach": "Des outils pour le coach",
     "management": {
       "title": "Gestion de club",
       "description": "Toute la gestion de votre ou vos clubs, les activités, les plannings, les salles et les sites d'activité\nGestion de vos membres et de vos coachs"
     },
     "communication": {
-      "title": "Des outils de communication",
-      "description": "Restez en contact permanent avec vos membres et vos coachs avec des outils de communication efficaces\nUne messagerie instanténnée dédiée\nDes notifications d'évènements ou de changements de planning"
+      "title": "Outils de communication",
+      "description": "Restez en contact permanent avec vos membres et vos coachs avec des outils de communication efficaces\nUne messagerie instantanée dédiée\nDes notifications d'évènements ou de changements de planning"
+    },
+    "coach-communication": {
+      "title": "Outils de communication",
+      "description": "Restez en contact permanent avec vos élèves avec des outils de communication efficaces\nUne messagerie instantanée dédiée\nDes notifications de messages dans leur application mobile"
     },
     "page": {
       "title": "Page de présentation",
       "description": "Une page de présentation des clubs et de leurs activités\nPersonnalisable au travers de nombreuses options\nAccessible depuis votre adresse existante"
+    },
+    "mobile": {
+      "title": "Application mobile",
+      "description": "Une application mobile pour rester proche des membres\nRéservations de cours ou de salles\nprésentation des évènements et des activités\nnotifications de changement\nOutils de communication"
+    },
+    "coaching": {
+      "title": "Coaching",
+      "description": "Suivez votre planning de coaching\nrenseignez vos certifications\nFaites vous connaître des clubs\nSoyez visible sur la coaching market place pour des remplacements"
+    },
+    "video": {
+      "title": "Coaching vidéo",
+      "description": "Faites connaître vos vidéos de coaching\nGérez les abonnements à vos programmes"
     }
   }
 }

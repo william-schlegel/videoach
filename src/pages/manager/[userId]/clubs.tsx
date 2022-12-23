@@ -23,6 +23,7 @@ import {
   useDraggable,
   DndContext,
   type DragEndEvent,
+  type Data,
 } from "@dnd-kit/core";
 import CollapsableGroup from "@ui/collapsableGroup";
 import { CgClose } from "react-icons/cg";
@@ -116,7 +117,10 @@ export function ClubContent({ userId, clubId }: ClubContentProps) {
 
   function handleDragEnd(e: DragEndEvent) {
     const roomId = e.over?.id.toString();
-    const activityId = e.active.id.toString();
+    const activityId = e.active.data.current?.activityId;
+    const actualRoom = e.active.data.current?.roomId;
+    if (actualRoom && actualRoom !== roomId && activityId)
+      removeActivity.mutate({ activityId, roomId: actualRoom });
     if (roomId && activityId) addActivity.mutate({ activityId, roomId });
   }
 
@@ -193,7 +197,11 @@ export function ClubContent({ userId, clubId }: ClubContentProps) {
                   {clubQuery.data?.activities
                     ?.filter((a) => a.groupId === gp.id)
                     ?.map((a) => (
-                      <DraggableElement key={a.id} elementId={a.id}>
+                      <DraggableElement
+                        key={a.id}
+                        elementId={a.id}
+                        data={{ activityId: a.id, roomId: "" }}
+                      >
                         {a.name}
                       </DraggableElement>
                     ))}
@@ -220,9 +228,10 @@ export function ClubContent({ userId, clubId }: ClubContentProps) {
                       title={room.name}
                     >
                       {room.activities?.map((a) => (
-                        <span
+                        <DraggableElement
                           key={a.id}
-                          className="z-10 flex items-center gap-2 rounded-full border border-neutral bg-base-100 px-2 py-1"
+                          elementId={`${a.id} ${room.id}`}
+                          data={{ activityId: a.id, roomId: room.id }}
                         >
                           {a.name}
                           <div
@@ -237,7 +246,7 @@ export function ClubContent({ userId, clubId }: ClubContentProps) {
                               }
                             />
                           </div>
-                        </span>
+                        </DraggableElement>
                       ))}
                     </DroppableArea>
                   ))}
@@ -257,7 +266,7 @@ type DroppableAreaProps = {
   children?: ReactNode;
 };
 
-function DroppableArea({ areaId, children, title }: DroppableAreaProps) {
+function DroppableArea({ areaId, title, children }: DroppableAreaProps) {
   const { isOver, setNodeRef } = useDroppable({
     id: areaId,
   });
@@ -279,12 +288,18 @@ function DroppableArea({ areaId, children, title }: DroppableAreaProps) {
 
 type DraggableElementProps = {
   elementId: string;
+  data: Data<{ activityId: string; roomId: string }>;
   children: ReactNode;
 };
 
-function DraggableElement({ elementId, children }: DraggableElementProps) {
+function DraggableElement({
+  elementId,
+  children,
+  data,
+}: DraggableElementProps) {
   const { attributes, listeners, setNodeRef, transform } = useDraggable({
     id: elementId,
+    data,
   });
   const style = transform
     ? { transform: `translate3d(${transform.x}px, ${transform.y}px, 0)` }
@@ -295,7 +310,7 @@ function DraggableElement({ elementId, children }: DraggableElementProps) {
       ref={setNodeRef}
       className={`z-50 ${
         transform ? "cursor-grabbing" : "cursor-grab"
-      } rounded-full border border-neutral bg-base-100 px-4 py-1`}
+      } flex items-center gap-2 rounded-full border border-neutral bg-base-100 px-4 py-1`}
       style={style}
       {...listeners}
       {...attributes}

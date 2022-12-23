@@ -1,7 +1,5 @@
-import { paramCase } from "param-case";
-import { type ReactNode, useRef, useMemo } from "react";
+import { type ReactNode, useRef, useId } from "react";
 import { type FieldErrors } from "react-hook-form";
-import { v4 as uuidv4 } from "uuid";
 import { type ButtonSize, type TIconButtonVariant } from "./buttonIcon";
 
 export type TModalVariant =
@@ -41,7 +39,7 @@ export default function Modal({
   buttonSize = "btn-md",
 }: Props) {
   const closeRef = useRef<HTMLInputElement>(null);
-  const modalId = useMemo(() => paramCase(uuidv4()), []);
+  const modalId = useId();
 
   const close = () => {
     if (!closeRef.current) return;

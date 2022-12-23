@@ -1,14 +1,14 @@
-import { Pricing } from "@prisma/client";
+import { type Pricing as ModelPricing } from "@prisma/client";
 import { useTranslation } from "next-i18next";
-import { useState } from "react";
+import { type ReactNode, useState } from "react";
 import { CgChevronRight } from "react-icons/cg";
 
 type Props = {
-  pricing: Pricing;
+  pricing: ModelPricing;
   onSelect: (id: string, monthly: boolean) => void;
 };
 
-function Pricing({ pricing, onSelect }: Props) {
+export function Pricing({ pricing, onSelect }: Props) {
   const [monthlyPrice, setMonthlyPrice] = useState(true);
   const { t } = useTranslation("home");
   return (
@@ -74,4 +74,14 @@ function Pricing({ pricing, onSelect }: Props) {
   );
 }
 
-export default Pricing;
+type PricingContainerProps = {
+  children: ReactNode;
+};
+
+export function PricingContainer({ children }: PricingContainerProps) {
+  return (
+    <div className="flex flex-wrap items-stretch justify-center py-12">
+      {children}
+    </div>
+  );
+}

@@ -1,7 +1,7 @@
 import { Role } from "@prisma/client";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
-import { router, protectedProcedure } from "../trpc";
+import { router, protectedProcedure, publicProcedure } from "../trpc";
 
 export const clubRouter = router({
   getClubById: protectedProcedure.input(z.string()).query(({ ctx, input }) => {
@@ -29,6 +29,12 @@ export const clubRouter = router({
         orderBy: { name: "asc" },
       });
     }),
+  getAllClubs: publicProcedure.query(({ ctx }) =>
+    ctx.prisma.club.findMany({
+      orderBy: { name: "asc" },
+      include: { activities: { include: { group: true } } },
+    })
+  ),
   createClub: protectedProcedure
     .input(
       z.object({

@@ -11,19 +11,14 @@ import { appRouter } from "@trpcserver/router/_app";
 import { trpc } from "@trpcclient/trpc";
 import { Pricing, PricingContainer } from "@ui/pricing";
 import { useTranslation } from "next-i18next";
-import {
-  CgBell,
-  CgOrganisation,
-  CgSmartphone,
-  CgWebsite,
-} from "react-icons/cg";
+import { CgBell, CgScreen, CgUserList } from "react-icons/cg";
 import { Feature, FeatureContainer } from "@ui/features";
 
-function ManagerPage(
+function CoachPage(
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   props: InferGetServerSidePropsType<typeof getServerSideProps>
 ) {
-  const pricingQuery = trpc.pricings.getPricingForRole.useQuery("MANAGER");
+  const pricingQuery = trpc.pricings.getPricingForRole.useQuery("COACH");
   const { data } = pricingQuery;
   const { t } = useTranslation("home");
 
@@ -35,38 +30,32 @@ function ManagerPage(
       <section className="hero bg-base-100">
         <div className="hero-content py-48 text-center">
           <div className="max-w-md">
-            <h1 className="text-5xl font-bold">{t("manager-title")}</h1>
-            <p className="py-6 text-lg">{t("manager-text")}</p>
+            <h1 className="text-5xl font-bold">{t("coach-title")}</h1>
+            <p className="py-6 text-lg">{t("coach-text")}</p>
           </div>
         </div>
       </section>
       <section className="bg-base-100">
         <div className="container mx-auto">
-          <h2 className="pt-12">{t("features.manager")}</h2>
+          <h2 className="pt-12">{t("features.coach")}</h2>
           <FeatureContainer>
             <Feature
-              title={t("features.management.title")}
-              description={t("features.management.description")}
+              title={t("features.coaching.title")}
+              description={t("features.coaching.description")}
             >
-              <CgOrganisation size={64} className="text-accent" />
+              <CgUserList size={64} className="text-accent" />
             </Feature>
             <Feature
-              title={t("features.communication.title")}
-              description={t("features.communication.description")}
+              title={t("features.coach-communication.title")}
+              description={t("features.coach-communication.description")}
             >
               <CgBell size={64} className="text-accent" />
             </Feature>
             <Feature
-              title={t("features.page.title")}
-              description={t("features.page.description")}
+              title={t("features.video.title")}
+              description={t("features.video.description")}
             >
-              <CgWebsite size={64} className="text-accent" />
-            </Feature>
-            <Feature
-              title={t("features.mobile.title")}
-              description={t("features.mobile.description")}
-            >
-              <CgSmartphone size={64} className="text-accent" />
+              <CgScreen size={64} className="text-accent" />
             </Feature>
           </FeatureContainer>
         </div>
@@ -90,7 +79,7 @@ function ManagerPage(
   );
 }
 
-export default ManagerPage;
+export default CoachPage;
 
 export const getServerSideProps = async ({
   locale,
@@ -101,7 +90,7 @@ export const getServerSideProps = async ({
     transformer: superjson,
   });
 
-  ssg.pricings.getPricingForRole.prefetch("MANAGER");
+  ssg.pricings.getPricingForRole.prefetch("COACH");
 
   return {
     props: {
