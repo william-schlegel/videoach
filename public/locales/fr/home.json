@@ -13,6 +13,13 @@
   "my-address": "Mon adresse",
   "search-radius": "Rayon de recherche",
   "search-club": "Rechercher les clubs",
+  "search-coach": "Rechercher les coachs",
+  "club": "Club",
+  "distance": "Distance",
+  "activities": "Activités",
+  "coach": "Coach",
+  "rating": "Note",
+  "certifications": "Certifications",
   "pricing": {
     "usage": "Tarifs d'utilisation",
     "monthly": "Par mois",

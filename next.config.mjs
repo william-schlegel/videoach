@@ -22,7 +22,10 @@ const configNext = {
   swcMinify: true,
   i18n: config.i18n,
   images: {
-    domains: ["platform-lookaside.fbsbx.com"],
+    remotePatterns: [
+      { protocol: "https", hostname: "**.cloudfront.net" },
+      { protocol: "https", hostname: "platform-lookaside.fbsbx.com" },
+    ],
   },
 };
 export default defineNextConfig(configNext);

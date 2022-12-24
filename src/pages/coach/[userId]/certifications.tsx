@@ -13,7 +13,7 @@ import nextI18nConfig from "@root/next-i18next.config.mjs";
 import { useTranslation } from "next-i18next";
 import { Role } from "@prisma/client";
 import {
-  AddCertification,
+  CreateCertification,
   DeleteCertification,
   UpdateCertification,
 } from "@modals/manageCertification";
@@ -51,7 +51,7 @@ const ManageCertifications = ({
             count: certificationQuery.data?.certifications?.length ?? 0,
           })}
         </h1>
-        <AddCertification userId={userId} />
+        <CreateCertification userId={userId} />
       </div>
       <div className="flex gap-4">
         {certificationQuery.isLoading ? (

@@ -42,7 +42,7 @@ const Home = () => {
   function getGroups(club: clubItem) {
     const grps = club.activities.map((a) => a.group.name).flat();
     const set = new Set(grps);
-    return Array.from(set);
+    return Array.from(set).sort((a, b) => a.localeCompare(b));
   }
 
   return (
@@ -179,7 +179,7 @@ const Home = () => {
                 </label>
               </div>
               <button className="btn-primary btn flex items-center gap-4">
-                {t("search-club")}
+                {t("search-coach")}
                 <CgSearch size={16} />
               </button>
               <div className="mt-8 max-h-60 w-full border border-primary">

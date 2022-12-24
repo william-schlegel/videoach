@@ -45,7 +45,7 @@ const CoachDashboard = ({
             <CgAwards size={48} />
           </div>
           <div className="stat-title">
-            {t("sites", { count: certificationCount })}
+            {t("certifications", { count: certificationCount })}
           </div>
           <div className="stat-value text-primary">{certificationCount}</div>
         </div>

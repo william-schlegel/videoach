@@ -1,7 +1,7 @@
 import { trpc } from "../../utils/trpc";
 import Modal from "../ui/modal";
 import { CgAdd, CgPen, CgTrash } from "react-icons/cg";
-import { useState } from "react";
+import { PropsWithoutRef, useState } from "react";
 import Confirmation from "../ui/confirmation";
 import { useTranslation } from "next-i18next";
 import {
@@ -26,12 +26,13 @@ type CertificationFormValues = {
   modules: string[];
 };
 
-type AddCertificationProps = {
+type CreateCertificationProps = {
   userId: string;
 };
 
-export const AddCertification = ({ userId }: AddCertificationProps) => {
+export const CreateCertification = ({ userId }: CreateCertificationProps) => {
   const [groupId, setGroupId] = useState("");
+  const [moduleId, setModuleId] = useState("");
   const queryGroups = trpc.coachs.getCertificationGroupsForCoach.useQuery(
     userId,
     {
@@ -56,53 +57,72 @@ export const AddCertification = ({ userId }: AddCertificationProps) => {
 
   return (
     <Modal
-      title={t("select-certifications")}
+      title={t("create-certification")}
       handleSubmit={onSubmit}
       submitButtonText={t("save-certifications")}
       buttonIcon={<CgAdd size={16} />}
       className="w-11/12 max-w-5xl"
     >
-      <h3>{t("select-certifications")}</h3>
+      <h3>{t("create-certification")}</h3>
       <div className="flex flex-1 gap-4">
-        <div className="flex flex-col gap-2">
-          <h4>{t("group")}</h4>
-          <ul className="menu overflow-hidden rounded border border-secondary bg-base-100">
-            {queryGroups.data?.map((group) => (
-              <li key={group.id}>
-                <div className={`flex ${groupId === group.id ? "active" : ""}`}>
-                  <button onClick={() => setGroupId(group.id)}>
-                    {group.name}
-                    {!group.default && (
-                      <>
-                        <UpdateGroup
-                          id={group.id}
-                          coachId={userId}
-                          initialName={group.name}
-                        />
-                        <DeleteGroup groupId={group.id} coachId={userId} />
-                      </>
-                    )}
-                  </button>
-                </div>
-              </li>
-            ))}
-          </ul>
+        <div className="flex flex-col items-stretch justify-between gap-2">
+          <div>
+            <h4>{t("certification-provider")}</h4>
+            <ul className="menu overflow-hidden rounded border border-secondary bg-base-100">
+              {queryGroups.data?.map((group) => (
+                <li key={group.id}>
+                  <div
+                    className={`flex ${groupId === group.id ? "active" : ""}`}
+                  >
+                    <button
+                      className="flex w-full items-center justify-between"
+                      onClick={() => setGroupId(group.id)}
+                    >
+                      {group.name}
+                      {!group.default && (
+                        <div className="flex">
+                          <UpdateGroup
+                            id={group.id}
+                            coachId={userId}
+                            initialName={group.name}
+                          />
+                          <DeleteGroup groupId={group.id} coachId={userId} />
+                        </div>
+                      )}
+                    </button>
+                  </div>
+                </li>
+              ))}
+            </ul>
+          </div>
           <NewGroup userId={userId} />
         </div>
         {selectedGroup?.hasModules ? (
-          <div className="flex flex-col gap-4">
-            <ul className="menu overflow-hidden rounded border border-secondary bg-base-100">
-              {selectedGroup.modules.map((mod) => (
-                <li key={mod.id}>{mod.name}</li>
-              ))}
-            </ul>
+          <div className="flex flex-col items-stretch justify-between gap-2">
+            <div>
+              <h4>{t("modules")}</h4>
+              <ul className="menu overflow-hidden rounded border border-secondary bg-base-100">
+                {selectedGroup.modules.map((mod) => (
+                  <li key={mod.id}>
+                    <div
+                      className={`flex ${moduleId === mod.id ? "active" : ""}`}
+                    >
+                      <button
+                        className="flex w-full items-center justify-between"
+                        onClick={() => setModuleId(mod.id)}
+                      >
+                        {mod.name}
+                      </button>
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            </div>
             <NewModule groupId={groupId} />
           </div>
-        ) : (
-          <NewModule groupId={groupId} />
-        )}
+        ) : null}
         <div className="flex flex-grow flex-col gap-2">
-          <h4>{t("activities")}</h4>
+          <h4>{t("certifications")}</h4>
           <div className="flex flex-wrap gap-2">
             {queryCoachCertifications.data?.certifications
               .filter((c) => c.certificationGroupId === groupId)
@@ -135,7 +155,7 @@ export const UpdateCertification = ({
     formState: { errors },
     reset,
   } = useForm<CertificationFormValues>();
-  const { t } = useTranslation("club");
+  const { t } = useTranslation("coach");
   const queryCertification = trpc.coachs.getCertificationById.useQuery(
     certificationId,
     {
@@ -206,12 +226,13 @@ export const DeleteCertification = ({
   return (
     <Confirmation
       message={t("certification-deletion-message")}
-      title={t("certification-club-deletion")}
+      title={t("certification-deletion")}
       onConfirm={() => {
         deleteCertification.mutate(certificationId);
       }}
       buttonIcon={<CgTrash size={16} />}
       variant={"Icon-Outlined-Secondary"}
+      textConfirmation={t("certification-confirmation")}
     />
   );
 };
@@ -228,7 +249,7 @@ const NewGroup = ({ userId }: NewGroupProps) => {
   });
   const [name, setName] = useState("");
   const [error, setError] = useState(false);
-  const { t } = useTranslation("club");
+  const { t } = useTranslation("coach");
 
   function addNewGroup() {
     if (name === "") {
@@ -353,7 +374,7 @@ const NewModule = ({ groupId }: NewModuleProps) => {
   }
 
   return (
-    <Modal title={"new-module"} handleSubmit={addNewModule}>
+    <Modal title={t("new-module")} handleSubmit={addNewModule}>
       <h3>{t("create-new-module")}</h3>
       <input value={name} onChange={(e) => setName(e.target.value)} />
       {error && (
@@ -423,8 +444,8 @@ function DeleteModule({ groupId, moduleId }: DeleteModuleProps) {
 
   return (
     <Confirmation
-      title={t("group-deletion")}
-      message={t("group-deletion-message")}
+      title={t("module-deletion")}
+      message={t("module-deletion-message")}
       onConfirm={() => deleteModule.mutate(moduleId)}
       buttonIcon={<CgTrash size={12} />}
       variant={"Icon-Outlined-Secondary"}

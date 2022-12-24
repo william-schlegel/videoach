@@ -72,9 +72,7 @@ export default function Profile() {
           {
             label: t("my-email"),
             name: "email",
-            required: t("email-mandatory"),
             type: "email",
-            disabled: true,
           },
           {
             label: t("my-role"),
