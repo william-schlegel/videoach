@@ -24,5 +24,12 @@
     "add-option": "Ajouter cette option",
     "undelete": "Restaurer le tarif",
     "undelete-message": "Voulez vous restaurer ce tarif ?"
+  },
+  "user": {
+    "manage-users": "Gérer les utilisateurs",
+    "filter": "Filtrer les utilisateurs",
+    "search": "Chercher",
+    "plan": "Abonnement",
+    "payments": "Payments"
   }
 }

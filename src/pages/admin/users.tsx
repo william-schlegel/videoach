@@ -18,6 +18,7 @@ import {
   useForm,
 } from "react-hook-form";
 import { CgSearch } from "react-icons/cg";
+import { DeleteUser, UpdateUser } from "@modals/manageUser";
 
 type UserFilter = {
   name?: string;
@@ -63,7 +64,7 @@ function UserManagement() {
   return (
     <div className="container mx-auto">
       <div className="mb-4 flex flex-row items-center gap-4">
-        <h1>Gérer les utilisateurs</h1>
+        <h1>{t("user.manage-users")}</h1>
       </div>
       <div className="flex gap-4">
         {userQuery.isLoading ? (
@@ -74,7 +75,7 @@ function UserManagement() {
               <input type="checkbox" />
               <div className="collapse-title text-xl font-medium">
                 <span className="flex items-center gap-4">
-                  Fitrer
+                  {t("user.filter")}
                   <span className="badge-info badge">
                     {Object.keys(filter).length}
                   </span>
@@ -86,15 +87,15 @@ function UserManagement() {
                   register={register}
                   fields={[
                     {
-                      label: "Nom",
+                      label: t("auth:name"),
                       name: "name",
                     },
                     {
-                      label: "Email",
+                      label: t("auth:email"),
                       name: "email",
                     },
                     {
-                      label: "Role",
+                      label: t("auth:role"),
                       name: "role",
                       component: (
                         <select
@@ -119,7 +120,7 @@ function UserManagement() {
                   className="btn btn-primary btn-block mt-2 flex gap-4"
                 >
                   <CgSearch size={24} />
-                  Chercher
+                  {t("user.search")}
                 </button>
               </div>
             </div>
@@ -163,6 +164,8 @@ type UserContentProps = {
 
 export function UserContent({ userId }: UserContentProps) {
   const userQuery = trpc.users.getUserFullById.useQuery(userId);
+  const { t } = useTranslation("admin");
+
   return (
     <div className="flex w-full flex-col gap-4">
       <div className="flex items-center justify-between">
@@ -171,11 +174,18 @@ export function UserContent({ userId }: UserContentProps) {
           <p>({userQuery.data?.email})</p>
         </div>
         <div className="flex items-center gap-2">
-          {/* <UpdateClub clubId={clubId} />
-          <CreateClubCalendar clubId={clubId} />
-          <DeleteClub clubId={clubId} /> */}
+          <UpdateUser userId={userId} />
+          <DeleteUser userId={userId} />
         </div>
       </div>
+      <section className="grid grid-cols-2 gap-2">
+        <article className="rounded-md border border-primary p-2">
+          <h2>{t("user.plan")}</h2>
+        </article>
+        <article className="rounded-md border border-primary p-2">
+          <h2>{t("user.payments")}</h2>
+        </article>
+      </section>
     </div>
   );
 }

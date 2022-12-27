@@ -42,6 +42,15 @@ export const userRouter = router({
         include: {
           pricing: true,
           paiements: true,
+          managedClubs: {
+            include: {
+              members: true,
+              sites: true,
+              activities: true,
+            },
+          },
+          certifications: true,
+          clubs: true,
         },
       });
     }),
@@ -96,5 +105,15 @@ export const userRouter = router({
         where: { id: input.id },
         data: { ...input },
       });
+    }),
+  deleteUser: protectedProcedure
+    .input(z.string())
+    .mutation(({ ctx, input }) => {
+      if (ctx.session.user?.role !== Role.ADMIN)
+        throw new TRPCError({
+          code: "UNAUTHORIZED",
+          message: "Only an admin user can delete a user",
+        });
+      return ctx.prisma.user.delete({ where: { id: input } });
     }),
 });
