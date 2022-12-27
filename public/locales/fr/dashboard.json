@@ -19,5 +19,7 @@
   "event": "Evènements programmés",
   "note": "Notes",
   "certifications_one": "Certification",
-  "certifications_other": "Certifications"
+  "certifications_other": "Certifications",
+  "subscriptions": "Abonnements",
+  "kpi": "KPI"
 }

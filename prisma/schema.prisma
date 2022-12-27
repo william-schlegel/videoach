@@ -74,6 +74,22 @@ model User {
   role                Role                 @default(MEMBER)
   certificationGroups CertificationGroup[]
   certifications      Certification[]
+  pricingId           String?
+  pricing             Pricing?             @relation(fields: [pricingId], references: [id])
+  paiements           Paiement[]
+  dueDate             DateTime?
+
+  @@index([pricingId])
+}
+
+model Paiement {
+  id           String   @id @default(cuid())
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId       String
+  amount       Float
+  paiementDate DateTime
+
+  @@index([userId])
 }
 
 model VerificationToken {
@@ -198,15 +214,18 @@ model OpeningTime {
 }
 
 model Pricing {
-  id          String          @id @default(cuid())
-  roleTarget  Role
-  title       String
-  description String
-  free        Boolean?        @default(false)
-  highlighted Boolean?        @default(false)
-  monthly     Float?          @default(0)
-  yearly      Float?          @default(0)
-  options     PricingOption[]
+  id           String          @id @default(cuid())
+  roleTarget   Role
+  title        String
+  description  String
+  free         Boolean?        @default(false)
+  highlighted  Boolean?        @default(false)
+  monthly      Float?          @default(0)
+  yearly       Float?          @default(0)
+  options      PricingOption[]
+  deleted      Boolean?        @default(false)
+  deletionDate DateTime?
+  users        User[]
 }
 
 model PricingOption {

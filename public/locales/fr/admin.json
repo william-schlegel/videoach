@@ -1,0 +1,28 @@
+{
+  "admin-only": "Cette page est réservée aux administrateurs",
+  "pricing": {
+    "new-pricing": "Nouveau tarif",
+    "manage-my-pricing": "Gérer mes tarifs",
+    "update-pricing": "Modifier le tarif",
+    "delete-pricing": "Supprimer le tarif",
+    "name": "Nom du tarif",
+    "name-mandatory": "Nom obligatoire",
+    "description": "Description",
+    "description-mandatory": "La description est obligatoire",
+    "free": "Gratuit",
+    "role": "S'applique à",
+    "euro-per-month": "€/mois",
+    "euro-per-year": "€/an",
+    "tarif-mandatory": "Le prix est obligatoire",
+    "monthly": "Mensuel",
+    "yearly": "Annuel",
+    "highlighted": "Mis en avant",
+    "deletion": "Suppression du tarif",
+    "deletion-message": "Voulez vous supprimer ce tarif ?\nVous pourrez le réactiver si besoin",
+    "options": "Options liées au tarif",
+    "delete-option": "Supprimer cette option",
+    "add-option": "Ajouter cette option",
+    "undelete": "Restaurer le tarif",
+    "undelete-message": "Voulez vous restaurer ce tarif ?"
+  }
+}

@@ -12,6 +12,7 @@ import Map from "react-map-gl";
 import { env } from "../env/client.mjs";
 // import { useState } from "react";
 import { trpc } from "@trpcclient/trpc";
+import Rating from "@ui/rating";
 
 // type ClubSearchResult = {
 //   name: string;
@@ -198,14 +199,7 @@ const Home = () => {
                         <td>{res.name}</td>
                         <td>{/*res.distance*/ "(tbd)"}&nbsp;km</td>
                         <td>
-                          <div className="rating rating-xs">
-                            {Array.from({ length: 5 }, (v, k) => k).map((i) => (
-                              <Star
-                                key={`STAR-${i}`}
-                                checked={i === 5 /*res.rating*/}
-                              />
-                            ))}
-                          </div>
+                          <Rating note={4.9} /*res.rating*/ />
                         </td>
                         <td className="flex flex-wrap gap-2">
                           {/*res.certifications.map((cert) => (
@@ -240,17 +234,6 @@ const Home = () => {
     </div>
   );
 };
-
-function Star({ checked }: { checked: boolean }) {
-  return (
-    <input
-      type="radio"
-      name="coach-rating"
-      className="mask mask-star-2 bg-accent"
-      checked={checked}
-    />
-  );
-}
 
 export default Home;
 

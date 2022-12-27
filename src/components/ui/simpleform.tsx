@@ -11,14 +11,16 @@ import {
   type HTMLInputTypeAttribute,
 } from "react";
 import Spinner from "./spinner";
+import { useTranslation } from "next-i18next";
 
 type SimpleFormField<T> = {
-  label?: string | undefined;
+  label?: string;
   name: keyof T;
   required?: boolean | string;
-  component?: ReactNode | undefined;
+  component?: ReactNode;
   type?: HTMLInputTypeAttribute;
-  disabled?: boolean | undefined;
+  disabled?: boolean;
+  unit?: string;
 };
 
 type SimpleFormProps<T extends FieldValues> = {
@@ -41,6 +43,7 @@ export default function SimpleForm<T extends FieldValues>({
   className = "",
   isLoading = false,
 }: SimpleFormProps<T>): JSX.Element {
+  const { t } = useTranslation("common");
   return (
     <form
       className={`grid grid-cols-[auto_1fr] gap-2 ${className}`}
@@ -53,27 +56,58 @@ export default function SimpleForm<T extends FieldValues>({
           const fn = field.name as string;
           return (
             <Fragment key={fn}>
-              {field.label !== undefined ? <label>{field.label}</label> : null}
-              <div className={field.label === undefined ? "col-span-2" : ""}>
-                {field.component ? (
-                  field.component
-                ) : (
-                  <input
-                    {...register(fn as Path<T>, {
-                      required: field.required ?? false,
-                    })}
-                    type={field.type || "text"}
-                    disabled={field.disabled}
-                  />
-                )}
-                {errors && errors[fn] ? (
-                  <p className="text-sm text-error">
-                    {typeof field.required === "string"
-                      ? field.required
-                      : "Champ requis"}
-                  </p>
-                ) : null}
-              </div>
+              {field.type === "checkbox" ? (
+                <div className="form-control col-span-2">
+                  <label className="label cursor-pointer justify-start gap-4">
+                    <input
+                      type="checkbox"
+                      className="checkbox-primary checkbox"
+                      {...register(fn as Path<T>)}
+                      defaultChecked={false}
+                    />
+                    <span className="label-text">{field.label}</span>
+                  </label>
+                </div>
+              ) : (
+                <>
+                  {field.label !== undefined ? (
+                    <label>{field.label}</label>
+                  ) : null}
+                  <div
+                    className={field.label === undefined ? "col-span-2" : ""}
+                  >
+                    {field.component ? (
+                      field.component
+                    ) : field.unit !== undefined ? (
+                      <label className="input-group">
+                        <input
+                          {...register(fn as Path<T>, {
+                            required: field.required ?? false,
+                          })}
+                          type={field.type || "text"}
+                          disabled={field.disabled}
+                        />
+                        <span>{field.unit}</span>
+                      </label>
+                    ) : (
+                      <input
+                        {...register(fn as Path<T>, {
+                          required: field.required ?? false,
+                        })}
+                        type={field.type || "text"}
+                        disabled={field.disabled}
+                      />
+                    )}
+                    {errors && errors[fn] ? (
+                      <p className="text-sm text-error">
+                        {typeof field.required === "string"
+                          ? field.required
+                          : t("required")}
+                      </p>
+                    ) : null}
+                  </div>
+                </>
+              )}
             </Fragment>
           );
         })

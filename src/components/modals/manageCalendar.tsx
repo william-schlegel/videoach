@@ -1,10 +1,7 @@
-import { useEffect } from "react";
-import { useState } from "react";
-// import { useSession } from "next-auth/react";
+import { useEffect, useState } from "react";
 import { trpc } from "../../utils/trpc";
 import Modal from "../ui/modal";
 import { CgAdd, CgTime } from "react-icons/cg";
-// import Confirmation from "../ui/confirmation";
 import { useTranslation } from "next-i18next";
 import { DayName } from "@prisma/client";
 import ButtonIcon from "@ui/buttonIcon";

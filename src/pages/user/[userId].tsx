@@ -14,7 +14,7 @@ export const ROLE_LIST = [
   { label: "manager", value: Role.MANAGER },
   { label: "manager-coach", value: Role.MANAGER_COACH },
   { label: "admin", value: Role.ADMIN },
-];
+] as const;
 
 type FormValues = {
   name: string;
@@ -77,19 +77,24 @@ export default function Profile() {
           {
             label: t("my-role"),
             name: "role",
-            component: (
-              <select
-                className="select-bordered select w-full max-w-xs"
-                {...register("role")}
-                defaultValue={userQuery.data?.role}
-              >
-                {ROLE_LIST.filter((rl) => rl.value !== Role.ADMIN).map((rl) => (
-                  <option key={rl.value} value={rl.value}>
-                    {t(rl.label)}
-                  </option>
-                ))}
-              </select>
-            ),
+            component:
+              userQuery.data?.role === Role.ADMIN ? (
+                <div>{t("admin")}</div>
+              ) : (
+                <select
+                  className="select-bordered select w-full max-w-xs"
+                  {...register("role")}
+                  defaultValue={userQuery.data?.role}
+                >
+                  {ROLE_LIST.filter((rl) => rl.value !== Role.ADMIN).map(
+                    (rl) => (
+                      <option key={rl.value} value={rl.value}>
+                        {t(rl.label)}
+                      </option>
+                    )
+                  )}
+                </select>
+              ),
           },
         ]}
       >

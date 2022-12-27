@@ -25,8 +25,18 @@ const MENUS: MenuDefinitionType[] = [
   { label: "navigation.manager-offer", page: "/manager", access: ["VISITOR"] },
   { label: "navigation.coach-offer", page: "/coach", access: ["VISITOR"] },
   {
+    label: "navigation.users",
+    page: "/admin/users",
+    access: ["ADMIN"],
+  },
+  {
     label: "navigation.pricing-definition",
-    page: "/pricing",
+    page: "/admin/pricing",
+    access: ["ADMIN"],
+  },
+  {
+    label: "navigation.certifications",
+    page: "/admin/certifications",
     access: ["ADMIN"],
   },
   {

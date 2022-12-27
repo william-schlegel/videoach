@@ -27,7 +27,9 @@
     "select": "Sélectionner ce plan",
     "price-monthly": "{{price}}€/mois",
     "price-yearly": "{{price}}€/an",
-    "try-offer": "Vous bénéficiez de 30j d'éssai gratuit lors de votre inscription !"
+    "try-offer": "Vous bénéficiez de 30j d'éssai gratuit lors de votre inscription !",
+    "deleted": "Supprimé le {{date}}",
+    "free": "Gratuit !"
   },
   "features": {
     "manager": "Des outils pour le gérant de club",

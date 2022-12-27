@@ -56,4 +56,19 @@ export const dashboardRouter = router({
       });
       return clubData;
     }),
+  getAdminData: protectedProcedure.query(async ({ ctx }) => {
+    if (ctx.session.user.role !== Role.ADMIN)
+      throw new TRPCError({
+        code: "UNAUTHORIZED",
+        message: "You are not admin",
+      });
+    const clubs = await ctx.prisma.club.findMany({
+      include: { sites: { include: { _count: true } } },
+    });
+    const members = await ctx.prisma.user.findMany();
+    return {
+      clubs,
+      members,
+    };
+  }),
 });

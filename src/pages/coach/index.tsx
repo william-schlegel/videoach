@@ -68,7 +68,7 @@ function CoachPage(
             {data?.map((pricing) => (
               <Pricing
                 key={pricing.id}
-                pricing={pricing}
+                pricingId={pricing.id}
                 onSelect={handleSelectPricing}
               />
             ))}

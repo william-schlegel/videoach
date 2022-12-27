@@ -1,36 +1,49 @@
-import { type Pricing as ModelPricing } from "@prisma/client";
+import { trpc } from "@trpcclient/trpc";
 import { useTranslation } from "next-i18next";
 import { type ReactNode, useState } from "react";
 import { CgChevronRight } from "react-icons/cg";
+import Spinner from "./spinner";
 
 type Props = {
-  pricing: ModelPricing;
-  onSelect: (id: string, monthly: boolean) => void;
+  pricingId: string;
+  onSelect?: (id: string, monthly: boolean) => void;
 };
 
-export function Pricing({ pricing, onSelect }: Props) {
+export function Pricing({ pricingId, onSelect }: Props) {
+  const pricingQuery = trpc.pricings.getPricingById.useQuery(pricingId);
   const [monthlyPrice, setMonthlyPrice] = useState(true);
   const { t } = useTranslation("home");
+
+  if (pricingQuery.isLoading) return <Spinner />;
   return (
     <div
-      className={`card w-96 ${
-        pricing.highlighted
-          ? "bg-secondary text-secondary-content"
-          : "bg-base-100"
-      } shadow-xl`}
+      className={`card w-96 bg-base-100 ${
+        pricingQuery.data?.highlighted ? "border-4 border-primary" : ""
+      } shadow-xl ${
+        pricingQuery.data?.deleted ? "border-4 border-red-600" : ""
+      }`}
     >
       <div className="card-body items-center text-center">
-        <h2 className="card-title text-3xl font-bold">{pricing.title}</h2>
-        <p>{pricing.description}</p>
+        {pricingQuery.data?.deleted ? (
+          <div className="alert alert-warning">
+            {t("pricing.deleted", {
+              date: pricingQuery.data?.deletionDate?.toLocaleDateString(),
+            })}
+          </div>
+        ) : null}
+        <h2 className="card-title text-3xl font-bold">
+          {pricingQuery.data?.title}
+        </h2>
+        <p>{pricingQuery.data?.description}</p>
         <ul className="self-start py-8">
-          {pricing.options.map((option) => (
-            <li key={option} className="flex items-center gap-4">
+          {pricingQuery.data?.options.map((option) => (
+            <li key={option.id} className="flex items-center gap-4">
               <CgChevronRight size={16} className="text-accent" />
-              {option}
+              {option.name}
             </li>
           ))}
         </ul>
-        {pricing.free ? (
+        {pricingQuery.data?.free ? (
           <p className="py-4 text-xl font-bold text-accent">
             {t("pricing.free")}
           </p>
@@ -56,19 +69,27 @@ export function Pricing({ pricing, onSelect }: Props) {
             </div>
             <p className="py-4 text-xl font-bold text-accent">
               {monthlyPrice
-                ? t("pricing.price-monthly", { price: pricing.monthly })
-                : t("pricing.price-yearly", { price: pricing.yearly })}
+                ? t("pricing.price-monthly", {
+                    price: pricingQuery.data?.monthly,
+                  })
+                : t("pricing.price-yearly", {
+                    price: pricingQuery.data?.yearly,
+                  })}
             </p>
           </>
         )}
-        <div className="card-actions">
-          <button
-            className="btn-primary btn-block btn"
-            onClick={() => onSelect(pricing.id, monthlyPrice)}
-          >
-            {t("pricing.select")}
-          </button>
-        </div>
+        {typeof onSelect === "function" && (
+          <div className="card-actions">
+            <button
+              className="btn-primary btn-block btn"
+              onClick={() =>
+                onSelect(pricingQuery.data?.id ?? "", monthlyPrice)
+              }
+            >
+              {t("pricing.select")}
+            </button>
+          </div>
+        )}{" "}
       </div>
     </div>
   );

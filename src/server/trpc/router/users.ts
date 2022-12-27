@@ -3,16 +3,84 @@ import { Role } from "@prisma/client";
 import { z } from "zod";
 import { router, publicProcedure, protectedProcedure } from "../trpc";
 
+const UserFilter = z
+  .object({
+    name: z.string(),
+    email: z.string(),
+    role: z.nativeEnum(Role),
+    dueDate: z.date(),
+    dateOperation: z.enum(["gt", "lt"]),
+  })
+  .partial();
+
+type Filter = {
+  name?: object;
+  email?: object;
+  role?: Role;
+  dueDate?: object;
+};
+// Partial<Record<keyof z.infer<typeof UserFilter>, object | Role| string>>;
+
 export const userRouter = router({
-  getUserById: publicProcedure.input(z.string()).query(({ ctx, input }) => {
-    return ctx.prisma.user.findUnique({
-      where: { id: input },
-    });
-  }),
+  getUserById: publicProcedure
+    .input(z.string().cuid())
+    .query(({ ctx, input }) => {
+      return ctx.prisma.user.findUnique({
+        where: { id: input },
+      });
+    }),
+  getUserFullById: protectedProcedure
+    .input(z.string().cuid())
+    .query(({ ctx, input }) => {
+      if (ctx.session.user?.role !== Role.ADMIN)
+        throw new TRPCError({
+          code: "UNAUTHORIZED",
+          message: "Only an admin user can acceed full",
+        });
+      return ctx.prisma.user.findUnique({
+        where: { id: input },
+        include: {
+          pricing: true,
+          paiements: true,
+        },
+      });
+    }),
+  getAllUsers: protectedProcedure
+    .input(
+      z.object({
+        filter: UserFilter,
+        skip: z.number(),
+        take: z.number(),
+      })
+    )
+    .query(({ ctx, input }) => {
+      if (ctx.session.user?.role !== Role.ADMIN)
+        throw new TRPCError({
+          code: "UNAUTHORIZED",
+          message: "Only an admin user can acceed users",
+        });
+      const filter: Filter = {};
+      if (input.filter?.name) filter.name = { contains: input.filter.name };
+      if (input.filter?.email) filter.email = { contains: input.filter.email };
+      if (input.filter?.role) filter.role = input.filter.role;
+      if (input.filter?.dueDate)
+        filter.dueDate = {
+          [input.filter.dateOperation ?? "lt"]: input.filter.dueDate,
+        };
+      return ctx.prisma.$transaction([
+        ctx.prisma.user.count({ where: filter }),
+        ctx.prisma.user.findMany({
+          where: filter,
+          take: input.take,
+          skip: input.skip,
+        }),
+      ]);
+    }),
+
   updateUser: protectedProcedure
     .input(
       z.object({
-        id: z.string(),
+        id: z.string().cuid(),
         name: z.string().optional(),
         email: z.string().email().optional(),
         role: z.nativeEnum(Role),
