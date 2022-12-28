@@ -307,7 +307,7 @@ function UpdateGroup({ coachId, id, initialName }: UpdateGroupProps) {
       handleSubmit={update}
       buttonIcon={<i className="bx bx-edit bx-sm" />}
       variant={"Icon-Outlined-Primary"}
-      buttonSize="btn-sm"
+      buttonSize="sm"
     >
       <h3>
         {t("update-group")}
@@ -342,7 +342,7 @@ function DeleteGroup({ coachId, groupId }: DeleteGroupProps) {
       buttonIcon={<i className="bx bx-trash bx-xs" />}
       variant={"Icon-Outlined-Secondary"}
       textConfirmation={t("group-deletion-confirmation")}
-      buttonSize="btn-sm"
+      buttonSize="sm"
     />
   );
 }
@@ -416,7 +416,7 @@ function UpdateModule({ groupId, id, initialName }: UpdateModuleProps) {
       handleSubmit={update}
       buttonIcon={<i className="bx bx-edit bx-xs" />}
       variant={"Icon-Outlined-Secondary"}
-      buttonSize="btn-sm"
+      buttonSize="sm"
     >
       <h3>
         {t("update-module")} <span className="text-primary">{initialName}</span>
@@ -449,7 +449,7 @@ function DeleteModule({ groupId, moduleId }: DeleteModuleProps) {
       buttonIcon={<i className="bx bx-trash bx-xs" />}
       variant={"Icon-Outlined-Secondary"}
       textConfirmation={t("module-deletion-confirmation")}
-      buttonSize="btn-sm"
+      buttonSize="sm"
     />
   );
 }

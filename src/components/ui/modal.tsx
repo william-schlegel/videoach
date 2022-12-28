@@ -36,7 +36,7 @@ export default function Modal({
   onOpenModal,
   variant = "Primary",
   className = "",
-  buttonSize = "btn-md",
+  buttonSize = "md",
 }: Props) {
   const closeRef = useRef<HTMLInputElement>(null);
   const modalId = useId();

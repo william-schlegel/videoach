@@ -39,5 +39,11 @@
     "trial": "Essai",
     "manager-activity": "Activités de manager",
     "coach-activity": "Activités de coach"
+  },
+  "ag": {
+    "manage-ag": "Gérer les activités",
+    "groups": "Groupes d'activité",
+    "group-clubs": "Clubs qui utilisent ce groupe",
+    "group-activities": "Activités attachées à ce groupe"
   }
 }

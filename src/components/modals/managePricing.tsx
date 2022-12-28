@@ -437,7 +437,7 @@ function PricingForm({
               iconComponent={<i className="bx bx-plus bx-sm" />}
               title={t("pricing.add-option")}
               buttonVariant="Icon-Outlined-Primary"
-              buttonSize="btn-md"
+              buttonSize="md"
             />
           </button>
         </div>
@@ -479,7 +479,7 @@ const Option = ({ option, idx, onDelete }: OptionProps) => {
           iconComponent={<i className="bx bx-trash bx-xs" />}
           title={t("pricing.delete-option")}
           buttonVariant="Icon-Outlined-Secondary"
-          buttonSize="btn-sm"
+          buttonSize="sm"
         />
       </button>
     </li>

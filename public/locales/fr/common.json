@@ -15,9 +15,10 @@
     "error-500": "Erreur interne serveur",
     "manager-offer": "Offre manager",
     "coach-offer": "Offre coach",
-    "pricing-definition": "Définition des tarifs",
-    "certifications": "Gestion des certifications",
+    "pricing-definition": "Tarifs",
+    "certifications": "Certifications",
     "required": "Champ obligatoire",
-    "users": "Utilisateurs"
+    "users": "Utilisateurs",
+    "activity-groups": "Activités"
   }
 }

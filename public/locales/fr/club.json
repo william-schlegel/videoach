@@ -75,9 +75,11 @@
   "activity-deletion": "Supprimer l'activité",
   "activity-deletion-message": "Voulez-vous supprimer cette activité ?\nCette action est irréversible",
   "activity-deletion-confirmation": "Supprimer définitivement",
+  "new-group": "Nouveau groupe",
   "update-group": "Modifier le groupe",
   "group-name-mandatory": "Le nom doit être renseigné",
   "group-deletion": "Supprimer le groupe",
   "group-deletion-message": "Voulez-vous supprimer ce groupe ?\nCette action est irréversible",
-  "group-deletion-confirmation": "Supprimer définitivement"
+  "group-deletion-confirmation": "Supprimer définitivement",
+  "default": "Par défaut"
 }

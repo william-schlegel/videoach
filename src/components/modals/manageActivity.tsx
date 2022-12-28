@@ -1,8 +1,10 @@
 import { trpc } from "../../utils/trpc";
-import Modal from "../ui/modal";
+import Modal, { type TModalVariant } from "../ui/modal";
 import { useState } from "react";
 import Confirmation from "../ui/confirmation";
 import { useTranslation } from "next-i18next";
+import { type ButtonSize } from "@ui/buttonIcon";
+import Spinner from "@ui/spinner";
 
 type AddActivityProps = {
   userId: string;
@@ -67,11 +69,7 @@ const AddActivity = ({
                   </button>
                   {withUpdate && !group.default && (
                     <>
-                      <UpdateGroup
-                        id={group.id}
-                        userId={userId}
-                        initialName={group.name}
-                      />
+                      <UpdateGroup groupId={group.id} userId={userId} />
                       <DeleteGroup groupId={group.id} userId={userId} />
                     </>
                   )}
@@ -200,7 +198,7 @@ function UpdateActivity({
       handleSubmit={update}
       buttonIcon={<i className="bx bx-edit bx-xs" />}
       variant={"Icon-Outlined-Primary"}
-      buttonSize="btn-sm"
+      buttonSize="sm"
     >
       <h3>
         {t("update-activity")}
@@ -234,23 +232,27 @@ function DeleteActivity({ clubId, activityId }: DeleteActivityProps) {
       buttonIcon={<i className="bx bx-trash bx-xs" />}
       variant={"Icon-Outlined-Secondary"}
       textConfirmation={t("activity-deletion-confirmation")}
-      buttonSize="btn-sm"
+      buttonSize="sm"
     />
   );
 }
 
 type NewGroupProps = {
-  userId: string;
+  userId?: string;
+  variant?: TModalVariant;
 };
 
-const NewGroup = ({ userId }: NewGroupProps) => {
+export const NewGroup = ({ userId, variant = "Primary" }: NewGroupProps) => {
   const utils = trpc.useContext();
   const createGroup = trpc.activities.createGroup.useMutation({
     onSuccess: () =>
-      utils.activities.getActivityGroupsForUser.invalidate(userId),
+      userId
+        ? utils.activities.getActivityGroupsForUser.invalidate(userId)
+        : utils.activities.getAllActivityGroups.invalidate(),
   });
   const [name, setName] = useState("");
   const [error, setError] = useState(false);
+  const { t } = useTranslation("club");
 
   function addNewGroup() {
     if (name === "") {
@@ -261,11 +263,12 @@ const NewGroup = ({ userId }: NewGroupProps) => {
     createGroup.mutate({
       name,
       userId,
+      default: userId ? false : true,
     });
   }
 
   return (
-    <Modal title="Nouveau groupe" handleSubmit={addNewGroup}>
+    <Modal title={t("new-group")} variant={variant} handleSubmit={addNewGroup}>
       <h3>Créer un nouveau groupe d&apos;activités</h3>
       <input value={name} onChange={(e) => setName(e.target.value)} />
       {error && (
@@ -276,18 +279,33 @@ const NewGroup = ({ userId }: NewGroupProps) => {
 };
 
 type UpdateGroupProps = {
-  userId: string;
-  id: string;
-  initialName: string;
+  userId?: string;
+  groupId: string;
+  variant?: TModalVariant;
+  size?: ButtonSize;
 };
 
-function UpdateGroup({ userId, id, initialName }: UpdateGroupProps) {
+export function UpdateGroup({
+  userId,
+  groupId,
+  variant = "Icon-Outlined-Secondary",
+  size = "sm",
+}: UpdateGroupProps) {
   const utils = trpc.useContext();
+  const groupQuery = trpc.activities.getActivityGroupById.useQuery(groupId, {
+    onSuccess(data) {
+      setName(data?.name ?? "");
+      setDefaultGroup(data?.default ?? false);
+    },
+  });
   const updateGroup = trpc.activities.updateGroup.useMutation({
     onSuccess: () =>
-      utils.activities.getActivityGroupsForUser.invalidate(userId),
+      userId
+        ? utils.activities.getActivityGroupsForUser.invalidate(userId)
+        : utils.activities.getAllActivityGroups.invalidate(),
   });
-  const [name, setName] = useState(initialName);
+  const [name, setName] = useState("");
+  const [defaultGroup, setDefaultGroup] = useState(false);
   const [error, setError] = useState(false);
   const { t } = useTranslation("club");
 
@@ -298,8 +316,9 @@ function UpdateGroup({ userId, id, initialName }: UpdateGroupProps) {
     }
     setError(false);
     updateGroup.mutate({
-      id,
+      id: groupId,
       name,
+      default: userId ? false : defaultGroup ?? false,
     });
   }
 
@@ -307,31 +326,61 @@ function UpdateGroup({ userId, id, initialName }: UpdateGroupProps) {
     <Modal
       title={t("update-group")}
       handleSubmit={update}
-      buttonIcon={<i className="bx bx-edit bx-xs" />}
-      variant={"Icon-Outlined-Secondary"}
-      buttonSize="btn-sm"
+      buttonIcon={<i className={`bx bx-edit bx-${size}`} />}
+      variant={variant}
+      buttonSize={size}
     >
       <h3>
-        {t("update-group")} <span className="text-primary">{initialName}</span>
+        {t("update-group")}{" "}
+        <span className="text-primary">{groupQuery.data?.name}</span>
       </h3>
-      <input value={name} onChange={(e) => setName(e.target.value)} />
-      {error && (
-        <p className="text-sm text-error">{t("group-name-mandatory")}</p>
+      {groupQuery.isLoading ? (
+        <Spinner />
+      ) : (
+        <>
+          <input value={name} onChange={(e) => setName(e.target.value)} />
+          {error && (
+            <p className="text-sm text-error">{t("group-name-mandatory")}</p>
+          )}
+          {userId ? null : (
+            <div className="form-control">
+              <label className="label cursor-pointer justify-start gap-4">
+                <input
+                  type="checkbox"
+                  checked={defaultGroup}
+                  className="checkbox-primary checkbox"
+                  onChange={(e) => setDefaultGroup(e.currentTarget.checked)}
+                  disabled={!groupQuery.data?.userId}
+                />
+                <span className="label-text">{t("default")}</span>
+              </label>
+            </div>
+          )}
+        </>
       )}
     </Modal>
   );
 }
 
 type DeleteGroupProps = {
-  userId: string;
+  userId?: string;
   groupId: string;
+  variant?: TModalVariant;
+  size?: ButtonSize;
 };
 
-function DeleteGroup({ groupId, userId }: DeleteGroupProps) {
+export function DeleteGroup({
+  groupId,
+  userId,
+  size = "sm",
+  variant = "Icon-Outlined-Secondary",
+}: DeleteGroupProps) {
   const utils = trpc.useContext();
   const deleteGroup = trpc.activities.deleteGroup.useMutation({
     onSuccess: () =>
-      utils.activities.getActivityGroupsForUser.invalidate(userId),
+      userId
+        ? utils.activities.getActivityGroupsForUser.invalidate(userId)
+        : utils.activities.getAllActivityGroups.invalidate(),
   });
   const { t } = useTranslation("club");
 
@@ -340,10 +389,10 @@ function DeleteGroup({ groupId, userId }: DeleteGroupProps) {
       title={t("group-deletion")}
       message={t("group-deletion-message")}
       onConfirm={() => deleteGroup.mutate({ groupId })}
-      buttonIcon={<i className="bx bx-trash bx-xs" />}
-      variant={"Icon-Outlined-Secondary"}
+      buttonIcon={<i className={`bx bx-trash bx-${size}`} />}
+      variant={variant}
       textConfirmation={t("group-deletion-confirmation")}
-      buttonSize="btn-sm"
+      buttonSize={size}
     />
   );
 }

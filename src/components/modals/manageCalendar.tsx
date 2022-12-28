@@ -160,7 +160,7 @@ function FormCalendar({ calendarValues, onCalendarChange }: FormCalendarProps) {
                           title={t("more-times")}
                           iconComponent={<i className="bx bx-plus bx-sm" />}
                           buttonVariant="Icon-Outlined-Secondary"
-                          buttonSize="btn-sm"
+                          buttonSize="sm"
                         />
                       </td>
                     </>

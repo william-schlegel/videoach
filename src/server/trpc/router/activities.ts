@@ -31,6 +31,14 @@ export const activityRouter = router({
         },
       });
     }),
+  getAllActivityGroups: protectedProcedure.query(({ ctx }) => {
+    return ctx.prisma.activityGroup.findMany({
+      include: { user: true },
+      orderBy: {
+        name: "asc",
+      },
+    });
+  }),
   getActivitiesForClub: protectedProcedure
     .input(z.object({ clubId: z.string().cuid(), userId: z.string().cuid() }))
     .query(({ ctx, input }) => {
@@ -47,6 +55,39 @@ export const activityRouter = router({
         where: { id: input.clubId },
         select: {
           activities: true,
+        },
+      });
+    }),
+  getAllActivitiesForGroup: protectedProcedure
+    .input(z.string().cuid())
+    .query(({ ctx, input }) => {
+      if (ctx.session.user.role !== Role.ADMIN)
+        throw new TRPCError({
+          code: "UNAUTHORIZED",
+          message: "You are not authorized to query activities from this group",
+        });
+
+      return ctx.prisma.activity.findMany({
+        where: { groupId: input },
+        include: {
+          club: { select: { name: true } },
+        },
+      });
+    }),
+  getAllClubsForGroup: protectedProcedure
+    .input(z.string().cuid())
+    .query(({ ctx, input }) => {
+      if (ctx.session.user.role !== Role.ADMIN)
+        throw new TRPCError({
+          code: "UNAUTHORIZED",
+          message: "You are not authorized to query activities from this group",
+        });
+
+      return ctx.prisma.activity.findMany({
+        where: { club: { activities: { some: { groupId: input } } } },
+        distinct: "clubId",
+        select: {
+          club: { select: { name: true, id: true, _count: true } },
         },
       });
     }),
@@ -100,7 +141,8 @@ export const activityRouter = router({
     .input(
       z.object({
         name: z.string(),
-        userId: z.string().cuid(),
+        userId: z.string().cuid().optional().nullable(),
+        default: z.boolean().optional().default(false),
       })
     )
     .mutation(({ ctx, input }) =>
@@ -108,7 +150,7 @@ export const activityRouter = router({
         data: {
           name: input.name,
           userId: input.userId,
-          default: false,
+          default: input.default,
         },
       })
     ),
@@ -117,6 +159,7 @@ export const activityRouter = router({
       z.object({
         id: z.string().cuid(),
         name: z.string(),
+        default: z.boolean().optional().default(false),
       })
     )
     .mutation(({ ctx, input }) =>
@@ -124,6 +167,7 @@ export const activityRouter = router({
         where: { id: input.id },
         data: {
           name: input.name,
+          default: input.default,
         },
       })
     ),

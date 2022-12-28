@@ -23,7 +23,7 @@ function Confirmation({
   onCancel,
   buttonIcon,
   variant = "Secondary",
-  buttonSize = "btn-md",
+  buttonSize = "md",
 }: Props) {
   return (
     <Modal

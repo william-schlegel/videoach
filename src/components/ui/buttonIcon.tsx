@@ -6,7 +6,7 @@ export type TIconButtonVariant =
   | "Icon-Outlined-Primary"
   | "Icon-Outlined-Secondary";
 
-export type ButtonSize = "btn-xs" | "btn-sm" | "btn-md" | "btn-lg" | "btn-xl";
+export type ButtonSize = "xs" | "sm" | "md" | "lg";
 
 type Props = {
   title: string;
@@ -19,7 +19,7 @@ function ButtonIcon({
   title,
   iconComponent,
   buttonVariant = "Icon-Outlined-Primary",
-  buttonSize = "btn-md",
+  buttonSize = "md",
 }: Props) {
   const btnId = useId();
 
@@ -36,7 +36,7 @@ function ButtonIcon({
         htmlFor={btnId}
         className={`${primary ? "btn-primary" : "btn-secondary"} ${
           outlined ? "btn-outline" : ""
-        } btn gap-2 ${buttonSize} `}
+        } btn gap-2 btn-${buttonSize} `}
         tabIndex={0}
       >
         {iconComponent}
