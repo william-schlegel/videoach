@@ -43,11 +43,7 @@ export const userRouter = router({
           pricing: true,
           paiements: true,
           managedClubs: {
-            include: {
-              members: true,
-              sites: true,
-              activities: true,
-            },
+            select: { _count: true },
           },
           certifications: true,
           clubs: true,
@@ -115,5 +111,21 @@ export const userRouter = router({
           message: "Only an admin user can delete a user",
         });
       return ctx.prisma.user.delete({ where: { id: input } });
+    }),
+  updatePaiymentPeriod: protectedProcedure
+    .input(z.object({ userId: z.string().cuid(), monthlyPayment: z.boolean() }))
+    .mutation(({ ctx, input }) => {
+      if (
+        ctx.session.user?.id !== input.userId &&
+        ctx.session.user?.role !== Role.ADMIN
+      )
+        throw new TRPCError({
+          code: "UNAUTHORIZED",
+          message: "Only an admin or actual user can change periodicity",
+        });
+      return ctx.prisma.user.update({
+        where: { id: input.userId },
+        data: { monthlyPayment: input.monthlyPayment },
+      });
     }),
 });

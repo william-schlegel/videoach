@@ -17,7 +17,7 @@ import {
 } from "@modals/managePricing";
 import { Pricing as PricingComponent } from "@ui/pricing";
 import { CgTrash } from "react-icons/cg";
-import { ROLE_LIST } from "../user/[userId]";
+import { getRoleName } from "../user/[userId]";
 
 type GroupedData = {
   name: string;
@@ -38,9 +38,7 @@ function PricingManagement() {
       }
       setGroupedData(
         Array.from(gd).map((g) => ({
-          name: t(
-            `auth:${ROLE_LIST.find((r) => r.value === g[0])?.label}` ?? "?"
-          ),
+          name: t(`auth:${getRoleName(g[0] as Role)}`),
           items: g[1],
         }))
       );

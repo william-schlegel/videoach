@@ -76,8 +76,11 @@ model User {
   certifications      Certification[]
   pricingId           String?
   pricing             Pricing?             @relation(fields: [pricingId], references: [id])
+  monthlyPayment      Boolean              @default(false)
+  trialUntil          DateTime?
   paiements           Paiement[]
   dueDate             DateTime?
+  rating              Float                @default(0)
 
   @@index([pricingId])
 }

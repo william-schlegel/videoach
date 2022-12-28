@@ -16,6 +16,10 @@ export const ROLE_LIST = [
   { label: "admin", value: Role.ADMIN },
 ] as const;
 
+export function getRoleName(role: Role) {
+  return ROLE_LIST.find((r) => r.value === role)?.label ?? "???";
+}
+
 type FormValues = {
   name: string;
   email: string;
@@ -98,7 +102,7 @@ export default function Profile() {
           },
         ]}
       >
-        <button className="btn-primary btn" disabled={updateUser.isLoading}>
+        <button className="btn btn-primary" disabled={updateUser.isLoading}>
           {t("save-profile")}
         </button>
       </SimpleForm>

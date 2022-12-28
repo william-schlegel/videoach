@@ -12,6 +12,7 @@ import { useTranslation } from "next-i18next";
 import { serverSideTranslations } from "next-i18next/serverSideTranslations";
 import Link from "next/link";
 import { CgOrganisation, CgHeart, CgAwards } from "react-icons/cg";
+import { RxStar } from "react-icons/rx";
 
 const CoachDashboard = ({
   userId,
@@ -28,7 +29,7 @@ const CoachDashboard = ({
     <main className="container mx-auto my-2 flex flex-col gap-2">
       <h1 className="flex justify-between">
         {t("coach-dashboard")}
-        <Link className="btn-secondary btn" href={`${userId}/certifications`}>
+        <Link className="btn btn-secondary" href={`${userId}/certifications`}>
           {t("manage-certifications")}
         </Link>
       </h1>
@@ -57,6 +58,15 @@ const CoachDashboard = ({
             {t("activities", { count: activityCount })}
           </div>
           <div className="stat-value text-primary">{activityCount}</div>
+          <div className="stat">
+            <div className="stat-figure text-primary">
+              <RxStar size={48} />
+            </div>
+            <div className="stat-title">{t("dashboard:rating")}</div>
+            <div className="stat-value text-primary">
+              {coachQuery.data?.rating?.toFixed(1)}
+            </div>
+          </div>
         </div>
       </section>
       <section className="grid grid-cols-2 gap-2">

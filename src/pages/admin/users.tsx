@@ -6,10 +6,10 @@ import { serverSideTranslations } from "next-i18next/serverSideTranslations";
 import nextI18nConfig from "@root/next-i18next.config.mjs";
 import { useSession } from "next-auth/react";
 import { trpc } from "@trpcclient/trpc";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useTranslation } from "next-i18next";
 import Spinner from "@ui/spinner";
-import { ROLE_LIST } from "../user/[userId]";
+import { getRoleName, ROLE_LIST } from "../user/[userId]";
 import Pagination from "@ui/pagination";
 import SimpleForm from "@ui/simpleform";
 import {
@@ -19,6 +19,7 @@ import {
 } from "react-hook-form";
 import { CgSearch } from "react-icons/cg";
 import { DeleteUser, UpdateUser } from "@modals/manageUser";
+import { formatMoney } from "@lib/formatNumber";
 
 type UserFilter = {
   name?: string;
@@ -134,9 +135,14 @@ function UserManagement() {
                     onClick={() => setUserId(user.id)}
                   >
                     <span>{user.name}</span>
-                    <span className="badge-secondary badge">
-                      {ROLE_LIST.find((r) => r.value === user.role)?.label ??
-                        "?"}
+                    <span
+                      className={`${
+                        user.role === "MEMBER"
+                          ? "badge-secondary"
+                          : "badge-accent"
+                      } badge`}
+                    >
+                      {t(`auth:${getRoleName(user.role)}`)}
                     </span>
                   </button>
                 </li>
@@ -165,6 +171,29 @@ type UserContentProps = {
 export function UserContent({ userId }: UserContentProps) {
   const userQuery = trpc.users.getUserFullById.useQuery(userId);
   const { t } = useTranslation("admin");
+  const periodicityMutation = trpc.users.updatePaiymentPeriod.useMutation({
+    onSuccess() {
+      utils.users.getUserFullById.invalidate(userId);
+    },
+  });
+  const utils = trpc.useContext();
+  const isInTrial =
+    userQuery.data?.trialUntil &&
+    new Date(userQuery.data?.trialUntil) > new Date(Date.now());
+
+  const managerCount = useMemo(
+    () =>
+      userQuery.data?.managedClubs?.reduce(
+        (acc, c) => {
+          acc.sites += c._count.sites;
+          acc.activities += c._count.activities;
+          acc.members += c._count.members;
+          return acc;
+        },
+        { sites: 0, activities: 0, members: 0 }
+      ) ?? { sites: 0, activities: 0, members: 0 },
+    [userQuery.data]
+  );
 
   return (
     <div className="flex w-full flex-col gap-4">
@@ -179,8 +208,137 @@ export function UserContent({ userId }: UserContentProps) {
         </div>
       </div>
       <section className="grid grid-cols-2 gap-2">
-        <article className="rounded-md border border-primary p-2">
-          <h2>{t("user.plan")}</h2>
+        <article className="flex flex-col gap-2 rounded-md border border-primary p-2">
+          <h2 className="flex items-center justify-between gap-2">
+            {t("user.plan")}
+            <span className="badge-primary badge">
+              {t(`auth:${getRoleName(userQuery.data?.role ?? "MEMBER")}`)}
+            </span>
+          </h2>
+          {isInTrial && (
+            <div className="alert alert-info">
+              {t("user.trial-until", {
+                trialDate: userQuery.data?.trialUntil?.toLocaleDateString(),
+              })}
+            </div>
+          )}
+          <div className="flex items-center gap-2">
+            <span>{t("user.pricing")}</span>
+            <span className="rounded border border-secondary px-2 py-1 text-secondary">
+              {userQuery.data?.pricing?.title}
+            </span>
+            <span>
+              {userQuery.data?.pricing?.free
+                ? t("pricing.free")
+                : userQuery.data?.monthlyPayment
+                ? `${formatMoney(userQuery.data?.pricing?.monthly)}${t(
+                    "user.per-month"
+                  )}`
+                : `${formatMoney(userQuery.data?.pricing?.yearly)}${t(
+                    "user.per-year"
+                  )}`}
+            </span>
+            <span className="flex flex-grow items-center justify-between rounded border border-primary px-2 text-primary">
+              <span>{t("user.modify-period")}</span>
+              <label className="swap">
+                <input
+                  type="checkbox"
+                  checked={userQuery.data?.monthlyPayment ?? false}
+                  onChange={(e) =>
+                    periodicityMutation.mutate({
+                      userId,
+                      monthlyPayment: e.currentTarget.checked,
+                    })
+                  }
+                  className="bg-primary"
+                />
+                <div className="swap-on px-4 text-primary-content">
+                  {t("user.per-month")}
+                </div>
+                <div className="swap-off px-4 text-primary-content">
+                  {t("user.per-year")}
+                </div>
+              </label>
+            </span>
+          </div>
+          {userQuery.data?.role === "MANAGER" ||
+          userQuery.data?.role === "MANAGER_COACH" ? (
+            <>
+              <h3>{t("user.manager-activity")}</h3>
+              <div className="stats shadow">
+                <div className="stat">
+                  <div className="stat-title">
+                    {t("dashboard:clubs", {
+                      count: userQuery.data?.managedClubs?.length ?? 0,
+                    })}
+                  </div>
+                  <div className="stat-value text-primary">
+                    {userQuery.data?.managedClubs?.length}
+                  </div>
+                </div>
+                <div className="stat">
+                  <div className="stat-title">
+                    {t("dashboard:sites", { count: managerCount.sites })}
+                  </div>
+                  <div className="stat-value text-primary">
+                    {managerCount.sites}
+                  </div>
+                </div>
+                <div className="stat">
+                  <div className="stat-title">
+                    {t("dashboard:activities", {
+                      count: managerCount.activities,
+                    })}
+                  </div>
+                  <div className="stat-value text-primary">
+                    {managerCount.activities}
+                  </div>
+                </div>
+                <div className="stat">
+                  <div className="stat-title">
+                    {t("dashboard:members", { count: managerCount.members })}
+                  </div>
+                  <div className="stat-value text-primary">
+                    {managerCount.members}
+                  </div>
+                </div>
+              </div>
+            </>
+          ) : null}
+          {userQuery.data?.role === "COACH" ||
+          userQuery.data?.role === "MANAGER_COACH" ? (
+            <>
+              <h3>{t("user.coach-activity")}</h3>
+              <div className="stats shadow">
+                <div className="stat">
+                  <div className="stat-title">
+                    {t("dashboard:clubs", {
+                      count: userQuery.data?.clubs?.length ?? 0,
+                    })}
+                  </div>
+                  <div className="stat-value text-primary">
+                    {userQuery.data?.clubs?.length}
+                  </div>
+                </div>
+                <div className="stat">
+                  <div className="stat-title">
+                    {t("dashboard:certifications", {
+                      count: userQuery.data.certifications.length,
+                    })}
+                  </div>
+                  <div className="stat-value text-primary">
+                    {userQuery.data.certifications.length}
+                  </div>
+                </div>
+                <div className="stat">
+                  <div className="stat-title">{t("dashboard:rating")}</div>
+                  <div className="stat-value text-primary">
+                    {userQuery.data?.rating?.toFixed(1)}
+                  </div>
+                </div>
+              </div>
+            </>
+          ) : null}
         </article>
         <article className="rounded-md border border-primary p-2">
           <h2>{t("user.payments")}</h2>
@@ -206,7 +364,7 @@ export const getServerSideProps = async ({
     props: {
       ...(await serverSideTranslations(
         locale ?? "fr",
-        ["common", "admin", "auth", "home"],
+        ["common", "admin", "auth", "home", "dashboard"],
         nextI18nConfig
       )),
       userId: session?.user?.id || "",

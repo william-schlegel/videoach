@@ -63,19 +63,19 @@ const Home = () => {
             <p className="py-6">{t("hero-text")}</p>
             <div className="flex flex-wrap gap-2">
               <button
-                className="btn-accent btn"
+                className="btn btn-accent"
                 onClick={() => router.push("#find-club")}
               >
                 {t("btn-visitor")}
               </button>
               <button
-                className="btn-primary btn"
+                className="btn btn-primary"
                 onClick={() => router.push("/manager")}
               >
                 {t("btn-manager")}
               </button>
               <button
-                className="btn-secondary btn"
+                className="btn btn-secondary"
                 onClick={() => router.push("/coach")}
               >
                 {t("btn-coach")}
@@ -108,7 +108,7 @@ const Home = () => {
                   <span>Km</span>
                 </label>
               </div>
-              <button className="btn-primary btn flex items-center gap-4">
+              <button className="btn btn-primary flex items-center gap-4">
                 {t("search-club")}
                 <CgSearch size={16} />
               </button>
@@ -179,7 +179,7 @@ const Home = () => {
                   <span>Km</span>
                 </label>
               </div>
-              <button className="btn-primary btn flex items-center gap-4">
+              <button className="btn btn-primary flex items-center gap-4">
                 {t("search-coach")}
                 <CgSearch size={16} />
               </button>
@@ -199,7 +199,7 @@ const Home = () => {
                         <td>{res.name}</td>
                         <td>{/*res.distance*/ "(tbd)"}&nbsp;km</td>
                         <td>
-                          <Rating note={4.9} /*res.rating*/ />
+                          <Rating note={res.rating} />
                         </td>
                         <td className="flex flex-wrap gap-2">
                           {/*res.certifications.map((cert) => (
