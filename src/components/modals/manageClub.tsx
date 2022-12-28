@@ -8,7 +8,6 @@ import {
 } from "react-hook-form";
 import Modal from "../ui/modal";
 import SimpleForm from "../ui/simpleform";
-import { CgAdd, CgPen, CgTrash } from "react-icons/cg";
 import Confirmation from "../ui/confirmation";
 import { useTranslation } from "next-i18next";
 
@@ -53,7 +52,7 @@ export const CreateClub = () => {
       handleSubmit={handleSubmit(onSubmit, onError)}
       submitButtonText="Enregistrer"
       errors={errors}
-      buttonIcon={<CgAdd size={24} />}
+      buttonIcon={<i className="bx bx-plus bx-sm" />}
       onOpenModal={() => reset()}
     >
       <h3>{t("create-new-club")}</h3>
@@ -137,7 +136,7 @@ export const UpdateClub = ({ clubId }: PropsWithoutRef<PropsUpdateDelete>) => {
       handleSubmit={handleSubmit(onSubmit, onError)}
       submitButtonText="Enregistrer"
       errors={errors}
-      buttonIcon={<CgPen size={16} />}
+      buttonIcon={<i className="bx bx-edit bx-sm" />}
       variant={"Icon-Outlined-Primary"}
     >
       <h3>
@@ -183,7 +182,7 @@ export const DeleteClub = ({ clubId }: PropsWithoutRef<PropsUpdateDelete>) => {
       onConfirm={() => {
         deleteClub.mutate(clubId);
       }}
-      buttonIcon={<CgTrash size={16} />}
+      buttonIcon={<i className="bx bx-trash bx-sm" />}
       variant={"Icon-Outlined-Secondary"}
     />
   );

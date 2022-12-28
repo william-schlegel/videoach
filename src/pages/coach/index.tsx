@@ -11,7 +11,6 @@ import { appRouter } from "@trpcserver/router/_app";
 import { trpc } from "@trpcclient/trpc";
 import { Pricing, PricingContainer } from "@ui/pricing";
 import { useTranslation } from "next-i18next";
-import { CgBell, CgScreen, CgUserList } from "react-icons/cg";
 import { Feature, FeatureContainer } from "@ui/features";
 
 function CoachPage(
@@ -43,19 +42,19 @@ function CoachPage(
               title={t("features.coaching.title")}
               description={t("features.coaching.description")}
             >
-              <CgUserList size={64} className="text-accent" />
+              <i className="bx bx-user-check bx-lg text-accent" />
             </Feature>
             <Feature
               title={t("features.coach-communication.title")}
               description={t("features.coach-communication.description")}
             >
-              <CgBell size={64} className="text-accent" />
+              <i className="bx bx-bell bx-lg text-accent" />
             </Feature>
             <Feature
               title={t("features.video.title")}
               description={t("features.video.description")}
             >
-              <CgScreen size={64} className="text-accent" />
+              <i className="bx bx-video bx-lg text-accent" />
             </Feature>
           </FeatureContainer>
         </div>

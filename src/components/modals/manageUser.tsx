@@ -10,7 +10,6 @@ import {
 } from "react-hook-form";
 import Modal, { type TModalVariant } from "../ui/modal";
 import SimpleForm from "../ui/simpleform";
-import { CgPen, CgTrash } from "react-icons/cg";
 import { useState, type PropsWithoutRef } from "react";
 import type { Role } from "@prisma/client";
 import Confirmation from "@ui/confirmation";
@@ -83,7 +82,7 @@ export const UpdateUser = ({
       <Modal
         title={t("update-user")}
         handleSubmit={handleSubmit(onSubmit, onError)}
-        buttonIcon={<CgPen size={16} />}
+        buttonIcon={<i className="bx bx-edit bx-sm" />}
         variant={variant}
       >
         <h3>{t("update-user")}</h3>
@@ -115,7 +114,7 @@ export const DeleteUser = ({
     <Confirmation
       message={t("user-deletion-message")}
       title={t("user-deletion")}
-      buttonIcon={<CgTrash size={16} />}
+      buttonIcon={<i className="bx bx-trash bx-sm" />}
       onConfirm={() => {
         deleteUser.mutate(userId);
       }}

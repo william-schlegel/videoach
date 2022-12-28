@@ -12,13 +12,6 @@ import { useTranslation } from "next-i18next";
 import { serverSideTranslations } from "next-i18next/serverSideTranslations";
 import Link from "next/link";
 import { useMemo } from "react";
-import {
-  CgOrganisation,
-  CgPin,
-  CgHeart,
-  CgUser,
-  CgSquare,
-} from "react-icons/cg";
 
 const ManagerClubs = ({
   userId,
@@ -62,7 +55,7 @@ const ManagerClubs = ({
       <section className="stats shadow">
         <div className="stat">
           <div className="stat-figure text-primary">
-            <CgOrganisation size={48} />
+            <i className="bx bx-building bx-lg" />
           </div>
           <div className="stat-title">
             {t("clubs", { count: managerQuery.data?.length ?? 0 })}
@@ -73,7 +66,7 @@ const ManagerClubs = ({
         </div>
         <div className="stat">
           <div className="stat-figure text-primary">
-            <CgPin size={48} />
+            <i className="bx bx-map-pin bx-lg" />
           </div>
           <div className="stat-title">
             {t("sites", { count: siteCount.sites })}
@@ -82,7 +75,7 @@ const ManagerClubs = ({
         </div>
         <div className="stat">
           <div className="stat-figure text-primary">
-            <CgSquare size={48} />
+            <i className="bx bx-home bx-lg" />
           </div>
           <div className="stat-title">
             {t("rooms", { count: siteCount.rooms })}
@@ -91,7 +84,7 @@ const ManagerClubs = ({
         </div>
         <div className="stat">
           <div className="stat-figure text-primary">
-            <CgHeart size={48} />
+            <i className="bx bx-cycling bx-lg" />
           </div>
           <div className="stat-title">
             {t("activities", { count: activityCount })}
@@ -100,7 +93,7 @@ const ManagerClubs = ({
         </div>
         <div className="stat">
           <div className="stat-figure text-primary">
-            <CgUser size={48} />
+            <i className="bx bx-user bx-lg" />
           </div>
           <div className="stat-title">
             {t("members", { count: memberCount })}

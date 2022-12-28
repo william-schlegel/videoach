@@ -11,8 +11,6 @@ import { unstable_getServerSession } from "next-auth";
 import { useTranslation } from "next-i18next";
 import { serverSideTranslations } from "next-i18next/serverSideTranslations";
 import Link from "next/link";
-import { CgOrganisation, CgHeart, CgAwards } from "react-icons/cg";
-import { RxStar } from "react-icons/rx";
 
 const CoachDashboard = ({
   userId,
@@ -29,21 +27,21 @@ const CoachDashboard = ({
     <main className="container mx-auto my-2 flex flex-col gap-2">
       <h1 className="flex justify-between">
         {t("coach-dashboard")}
-        <Link className="btn btn-secondary" href={`${userId}/certifications`}>
+        <Link className="btn-secondary btn" href={`${userId}/certifications`}>
           {t("manage-certifications")}
         </Link>
       </h1>
       <section className="stats shadow">
         <div className="stat">
           <div className="stat-figure text-primary">
-            <CgOrganisation size={48} />
+            <i className="bx bx-building bx-lg" />
           </div>
           <div className="stat-title">{t("clubs", { count: clubCount })}</div>
           <div className="stat-value text-primary">{clubCount}</div>
         </div>
         <div className="stat">
           <div className="stat-figure text-primary">
-            <CgAwards size={48} />
+            <i className="bx bx-award bx-lg" />
           </div>
           <div className="stat-title">
             {t("certifications", { count: certificationCount })}
@@ -52,20 +50,20 @@ const CoachDashboard = ({
         </div>
         <div className="stat">
           <div className="stat-figure text-primary">
-            <CgHeart size={48} />
+            <i className="bx bx-cycling bx-lg" />
           </div>
           <div className="stat-title">
             {t("activities", { count: activityCount })}
           </div>
           <div className="stat-value text-primary">{activityCount}</div>
-          <div className="stat">
-            <div className="stat-figure text-primary">
-              <RxStar size={48} />
-            </div>
-            <div className="stat-title">{t("dashboard:rating")}</div>
-            <div className="stat-value text-primary">
-              {coachQuery.data?.rating?.toFixed(1)}
-            </div>
+        </div>
+        <div className="stat">
+          <div className="stat-figure text-primary">
+            <i className="bx bx-star bx-lg" />
+          </div>
+          <div className="stat-title">{t("dashboard:rating")}</div>
+          <div className="stat-value text-primary">
+            {coachQuery.data?.rating?.toFixed(1)}
           </div>
         </div>
       </section>

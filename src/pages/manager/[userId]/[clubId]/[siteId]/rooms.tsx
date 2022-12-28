@@ -22,7 +22,6 @@ import {
   RESERVATIONS,
   UpdateRoom,
 } from "@modals/manageRoom";
-import { CgClose } from "react-icons/cg";
 
 const ManageRooms = ({
   clubId,
@@ -125,7 +124,7 @@ export function RoomContent({ clubId, siteId, roomId }: RoomContentProps) {
         <h2>{roomQuery.data?.name}</h2>
         {roomQuery.data?.unavailable ? (
           <div className="alert alert-error w-fit">
-            <CgClose size={16} />
+            <i className="bx bx-x bx-xs" />
             <span>{t("room-closed")}</span>
           </div>
         ) : null}

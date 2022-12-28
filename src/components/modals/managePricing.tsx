@@ -8,14 +8,6 @@ import {
 } from "react-hook-form";
 import Modal, { type TModalVariant } from "../ui/modal";
 import {
-  CgAdd,
-  CgMathPlus,
-  CgMenuHotdog,
-  CgPen,
-  CgTrash,
-  CgUndo,
-} from "react-icons/cg";
-import {
   type Dispatch,
   type SetStateAction,
   useRef,
@@ -104,7 +96,7 @@ export const CreatePricing = ({ variant = "Primary" }: CreatePricingProps) => {
   return (
     <Modal
       title={t("pricing.new-pricing")}
-      buttonIcon={<CgAdd size={24} />}
+      buttonIcon={<i className="bx bx-plus bx-sm" />}
       variant={variant}
       className="w-10/12 max-w-3xl"
       handleSubmit={handleSubmit(onSubmit, onError)}
@@ -188,7 +180,7 @@ export const UpdatePricing = ({
       <Modal
         title={t("pricing.update-pricing")}
         handleSubmit={handleSubmit(onSubmit, onError)}
-        buttonIcon={<CgPen size={16} />}
+        buttonIcon={<i className="bx bx-edit bx-sm" />}
         variant={variant}
         className="w-10/12 max-w-3xl"
       >
@@ -227,7 +219,7 @@ export const DeletePricing = ({
     <Confirmation
       message={t("pricing.deletion-message")}
       title={t("pricing.deletion")}
-      buttonIcon={<CgTrash size={16} />}
+      buttonIcon={<i className="bx bx-trash bx-sm" />}
       onConfirm={() => {
         deletePricing.mutate(pricingId);
       }}
@@ -254,7 +246,7 @@ export const UndeletePricing = ({
     <Confirmation
       message={t("pricing.undelete-message")}
       title={t("pricing.undelete")}
-      buttonIcon={<CgUndo size={16} />}
+      buttonIcon={<i className="bx bx-undo bx-sm" />}
       onConfirm={() => {
         undeletePricing.mutate(pricingId);
       }}
@@ -442,7 +434,7 @@ function PricingForm({
             }}
           >
             <ButtonIcon
-              iconComponent={<CgMathPlus size={12} />}
+              iconComponent={<i className="bx bx-plus bx-sm" />}
               title={t("pricing.add-option")}
               buttonVariant="Icon-Outlined-Primary"
               buttonSize="btn-md"
@@ -476,15 +468,15 @@ const Option = ({ option, idx, onDelete }: OptionProps) => {
       {...attributes}
       {...listeners}
       style={style}
-      className="my-2 flex items-center justify-between gap-4 border border-base-300 p-2"
+      className="my-2 flex items-center justify-between gap-4 border border-base-300 bg-base-100 p-2"
     >
       <div className="flex items-center gap-2">
-        <CgMenuHotdog className="text-base-300" />
+        <i className="bx bx-menu bx-sm text-base-300" />
         <span>{option}</span>
       </div>
       <button onClick={() => onDelete(idx)}>
         <ButtonIcon
-          iconComponent={<CgTrash size={12} />}
+          iconComponent={<i className="bx bx-trash bx-xs" />}
           title={t("pricing.delete-option")}
           buttonVariant="Icon-Outlined-Secondary"
           buttonSize="btn-sm"

@@ -9,7 +9,6 @@ import {
 } from "react-hook-form";
 import Modal, { type TModalVariant } from "../ui/modal";
 import SimpleForm from "../ui/simpleform";
-import { CgAdd, CgPen, CgTrash } from "react-icons/cg";
 import { type PropsWithoutRef } from "react";
 import { useSession } from "next-auth/react";
 import Confirmation from "@ui/confirmation";
@@ -51,7 +50,7 @@ export const CreateSite = ({ clubId }: CreateSiteProps) => {
       handleSubmit={handleSubmit(onSubmit, onError)}
       submitButtonText="Enregistrer"
       errors={errors}
-      buttonIcon={<CgAdd size={16} />}
+      buttonIcon={<i className="bx bx-plus bx-xs" />}
       onOpenModal={() => reset()}
       className="w-11/12 max-w-5xl"
     >
@@ -103,7 +102,7 @@ export const UpdateSite = ({ siteId, clubId }: UpdateSiteProps) => {
       handleSubmit={handleSubmit(onSubmit, onError)}
       submitButtonText={t("update-site")}
       errors={errors}
-      buttonIcon={<CgPen size={16} />}
+      buttonIcon={<i className="bx bx-edit bx-sm" />}
       variant={"Icon-Outlined-Primary"}
       className="w-2/3 max-w-5xl"
     >
@@ -144,7 +143,7 @@ export const DeleteSite = ({
     <Confirmation
       message={t("site-deletion-message")}
       title={t("site-deletion")}
-      buttonIcon={<CgTrash size={16} />}
+      buttonIcon={<i className="bx bx-trash bx-sm" />}
       onConfirm={() => {
         deleteSite.mutate(siteId);
       }}

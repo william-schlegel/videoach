@@ -8,7 +8,6 @@ import { unstable_getServerSession } from "next-auth";
 import { useTranslation } from "next-i18next";
 import { serverSideTranslations } from "next-i18next/serverSideTranslations";
 import { useMemo } from "react";
-import { CgOrganisation, CgPin, CgUser, CgSquare } from "react-icons/cg";
 
 const AdminDashboard = () => {
   const adminQuery = trpc.dashboards.getAdminData.useQuery();
@@ -35,7 +34,7 @@ const AdminDashboard = () => {
       <section className="stats shadow">
         <div className="stat">
           <div className="stat-figure text-primary">
-            <CgOrganisation size={48} />
+            <i className="bx bx-building bx-lg" />
           </div>
           <div className="stat-title">
             {t("clubs", { count: adminQuery.data?.clubs?.length ?? 0 })}
@@ -46,7 +45,7 @@ const AdminDashboard = () => {
         </div>
         <div className="stat">
           <div className="stat-figure text-primary">
-            <CgPin size={48} />
+            <i className="bx bx-map-pin bx-lg" />
           </div>
           <div className="stat-title">
             {t("sites", { count: siteCount.sites })}
@@ -55,7 +54,7 @@ const AdminDashboard = () => {
         </div>
         <div className="stat">
           <div className="stat-figure text-primary">
-            <CgSquare size={48} />
+            <i className="bx bx-home bx-lg" />
           </div>
           <div className="stat-title">
             {t("rooms", { count: siteCount.rooms })}
@@ -64,7 +63,7 @@ const AdminDashboard = () => {
         </div>
         <div className="stat">
           <div className="stat-figure text-primary">
-            <CgUser size={48} />
+            <i className="bx bx-user bx-lg" />
           </div>
           <div className="stat-title">
             {t("members", { count: memberCount })}

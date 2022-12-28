@@ -1,7 +1,6 @@
 import { trpc } from "@trpcclient/trpc";
 import { useTranslation } from "next-i18next";
 import { type ReactNode, useState } from "react";
-import { CgChevronRight } from "react-icons/cg";
 import Spinner from "./spinner";
 
 type Props = {
@@ -38,7 +37,7 @@ export function Pricing({ pricingId, onSelect }: Props) {
         <ul className="self-start py-8">
           {pricingQuery.data?.options.map((option) => (
             <li key={option.id} className="flex items-center gap-4">
-              <CgChevronRight size={16} className="text-accent" />
+              <i className="bx bx-chevron-right bx-sm text-accent" />
               {option.name}
             </li>
           ))}
@@ -101,7 +100,7 @@ type PricingContainerProps = {
 
 export function PricingContainer({ children }: PricingContainerProps) {
   return (
-    <div className="flex flex-wrap items-stretch justify-center py-12">
+    <div className="flex flex-wrap items-stretch justify-center gap-4 py-12">
       {children}
     </div>
   );

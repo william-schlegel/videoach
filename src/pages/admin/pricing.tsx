@@ -16,7 +16,6 @@ import {
   UpdatePricing,
 } from "@modals/managePricing";
 import { Pricing as PricingComponent } from "@ui/pricing";
-import { CgTrash } from "react-icons/cg";
 import { getRoleName } from "../user/[userId]";
 
 type GroupedData = {
@@ -76,7 +75,7 @@ function PricingManagement() {
                       >
                         <span>{pricing.title}</span>
                         {pricing.deleted ? (
-                          <CgTrash size={16} className="text-red-600" />
+                          <i className="bx bx-trash bx-sm text-red-600" />
                         ) : null}
                       </button>
                     </li>

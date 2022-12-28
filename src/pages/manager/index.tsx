@@ -11,12 +11,6 @@ import { appRouter } from "@trpcserver/router/_app";
 import { trpc } from "@trpcclient/trpc";
 import { Pricing, PricingContainer } from "@ui/pricing";
 import { useTranslation } from "next-i18next";
-import {
-  CgBell,
-  CgOrganisation,
-  CgSmartphone,
-  CgWebsite,
-} from "react-icons/cg";
 import { Feature, FeatureContainer } from "@ui/features";
 
 function ManagerPage(
@@ -48,25 +42,25 @@ function ManagerPage(
               title={t("features.management.title")}
               description={t("features.management.description")}
             >
-              <CgOrganisation size={64} className="text-accent" />
+              <i className="bx bx-building bx-lg text-accent" />
             </Feature>
             <Feature
               title={t("features.communication.title")}
               description={t("features.communication.description")}
             >
-              <CgBell size={64} className="text-accent" />
+              <i className="bx bx-bell bx-lg text-accent" />
             </Feature>
             <Feature
               title={t("features.page.title")}
               description={t("features.page.description")}
             >
-              <CgWebsite size={64} className="text-accent" />
+              <i className="bx bx-windows bx-lg text-accent" />
             </Feature>
             <Feature
               title={t("features.mobile.title")}
               description={t("features.mobile.description")}
             >
-              <CgSmartphone size={64} className="text-accent" />
+              <i className="bx bx-mobile-alt bx-lg text-accent" />
             </Feature>
           </FeatureContainer>
         </div>

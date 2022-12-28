@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
 import { trpc } from "../../utils/trpc";
 import Modal from "../ui/modal";
-import { CgAdd, CgTime } from "react-icons/cg";
 import { useTranslation } from "next-i18next";
 import { DayName } from "@prisma/client";
 import ButtonIcon from "@ui/buttonIcon";
@@ -159,7 +158,7 @@ function FormCalendar({ calendarValues, onCalendarChange }: FormCalendarProps) {
                       <td>
                         <ButtonIcon
                           title={t("more-times")}
-                          iconComponent={<CgAdd />}
+                          iconComponent={<i className="bx bx-plus bx-sm" />}
                           buttonVariant="Icon-Outlined-Secondary"
                           buttonSize="btn-sm"
                         />
@@ -203,7 +202,7 @@ export const CreateClubCalendar = ({ clubId }: ClubCalendarProps) => {
       title={t("create-club-calendar")}
       handleSubmit={onSubmit}
       submitButtonText={t("save-calendar")}
-      buttonIcon={<CgTime size={16} />}
+      buttonIcon={<i className="bx bx-time bx-sm" />}
       variant="Icon-Outlined-Primary"
       className="w-2/3 max-w-xl"
     >
@@ -244,7 +243,7 @@ export const CreateSiteCalendar = ({ siteId }: SiteCalendarProps) => {
       title={t("create-site-calendar")}
       handleSubmit={onSubmit}
       submitButtonText={t("save-calendar")}
-      buttonIcon={<CgTime size={16} />}
+      buttonIcon={<i className="bx bx-time bx-sm" />}
       variant="Icon-Outlined-Primary"
       className="w-2/3 max-w-xl"
     >
@@ -340,7 +339,7 @@ export const CreateRoomCalendar = ({
       title={t("create-room-calendar")}
       handleSubmit={onSubmit}
       submitButtonText={t("save-calendar")}
-      buttonIcon={<CgTime size={16} />}
+      buttonIcon={<i className="bx bx-time bx-sm" />}
       variant="Icon-Outlined-Primary"
       className="w-2/3 max-w-xl"
     >

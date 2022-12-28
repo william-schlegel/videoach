@@ -7,7 +7,6 @@ import { unstable_getServerSession } from "next-auth/next";
 import Image from "next/image.js";
 import { useTranslation } from "next-i18next";
 import { useRouter } from "next/router.js";
-import { CgSearch } from "react-icons/cg";
 import Map from "react-map-gl";
 import { env } from "../env/client.mjs";
 // import { useState } from "react";
@@ -63,19 +62,19 @@ const Home = () => {
             <p className="py-6">{t("hero-text")}</p>
             <div className="flex flex-wrap gap-2">
               <button
-                className="btn btn-accent"
+                className="btn-accent btn"
                 onClick={() => router.push("#find-club")}
               >
                 {t("btn-visitor")}
               </button>
               <button
-                className="btn btn-primary"
+                className="btn-primary btn"
                 onClick={() => router.push("/manager")}
               >
                 {t("btn-manager")}
               </button>
               <button
-                className="btn btn-secondary"
+                className="btn-secondary btn"
                 onClick={() => router.push("/coach")}
               >
                 {t("btn-coach")}
@@ -108,9 +107,9 @@ const Home = () => {
                   <span>Km</span>
                 </label>
               </div>
-              <button className="btn btn-primary flex items-center gap-4">
+              <button className="btn-primary btn flex items-center gap-4">
                 {t("search-club")}
-                <CgSearch size={16} />
+                <i className="bx bx-search bx-xs" />
               </button>
               <div className="mt-8 max-h-60 w-full border border-primary">
                 <table className="table-zebra table w-full">
@@ -179,9 +178,9 @@ const Home = () => {
                   <span>Km</span>
                 </label>
               </div>
-              <button className="btn btn-primary flex items-center gap-4">
+              <button className="btn-primary btn flex items-center gap-4">
                 {t("search-coach")}
-                <CgSearch size={16} />
+                <i className="bx bx-search bx-xs" />
               </button>
               <div className="mt-8 max-h-60 w-full border border-primary">
                 <table className="table-zebra table w-full">

@@ -1,6 +1,5 @@
 import { trpc } from "../../utils/trpc";
 import Modal from "../ui/modal";
-import { CgAdd, CgPen, CgTrash } from "react-icons/cg";
 import { useState } from "react";
 import Confirmation from "../ui/confirmation";
 import { useTranslation } from "next-i18next";
@@ -52,7 +51,7 @@ const AddActivity = ({
       title={t("select-activities")}
       handleSubmit={onSubmit}
       submitButtonText={t("save-activities")}
-      buttonIcon={<CgAdd size={16} />}
+      buttonIcon={<i className="bx bx-plus bx-xs" />}
       className="w-11/12 max-w-5xl"
     >
       <h3>{t("select-club-activities")}</h3>
@@ -199,7 +198,7 @@ function UpdateActivity({
     <Modal
       title={t("update-activity")}
       handleSubmit={update}
-      buttonIcon={<CgPen size={12} />}
+      buttonIcon={<i className="bx bx-edit bx-xs" />}
       variant={"Icon-Outlined-Primary"}
       buttonSize="btn-sm"
     >
@@ -232,7 +231,7 @@ function DeleteActivity({ clubId, activityId }: DeleteActivityProps) {
       title={t("activity-deletion")}
       message={t("activity-deletion-message")}
       onConfirm={() => deleteActivity.mutate({ clubId, activityId })}
-      buttonIcon={<CgTrash size={12} />}
+      buttonIcon={<i className="bx bx-trash bx-xs" />}
       variant={"Icon-Outlined-Secondary"}
       textConfirmation={t("activity-deletion-confirmation")}
       buttonSize="btn-sm"
@@ -308,7 +307,7 @@ function UpdateGroup({ userId, id, initialName }: UpdateGroupProps) {
     <Modal
       title={t("update-group")}
       handleSubmit={update}
-      buttonIcon={<CgPen size={12} />}
+      buttonIcon={<i className="bx bx-edit bx-xs" />}
       variant={"Icon-Outlined-Secondary"}
       buttonSize="btn-sm"
     >
@@ -341,7 +340,7 @@ function DeleteGroup({ groupId, userId }: DeleteGroupProps) {
       title={t("group-deletion")}
       message={t("group-deletion-message")}
       onConfirm={() => deleteGroup.mutate({ groupId })}
-      buttonIcon={<CgTrash size={12} />}
+      buttonIcon={<i className="bx bx-trash bx-xs" />}
       variant={"Icon-Outlined-Secondary"}
       textConfirmation={t("group-deletion-confirmation")}
       buttonSize="btn-sm"

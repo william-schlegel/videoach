@@ -1,6 +1,5 @@
 import { trpc } from "../../utils/trpc";
 import Modal from "../ui/modal";
-import { CgAdd, CgPen, CgTrash } from "react-icons/cg";
 import { PropsWithoutRef, useState } from "react";
 import Confirmation from "../ui/confirmation";
 import { useTranslation } from "next-i18next";
@@ -60,7 +59,7 @@ export const CreateCertification = ({ userId }: CreateCertificationProps) => {
       title={t("create-certification")}
       handleSubmit={onSubmit}
       submitButtonText={t("save-certifications")}
-      buttonIcon={<CgAdd size={16} />}
+      buttonIcon={<i className="bx bx-time bx-sm" />}
       className="w-11/12 max-w-5xl"
     >
       <h3>{t("create-certification")}</h3>
@@ -186,7 +185,7 @@ export const UpdateCertification = ({
       handleSubmit={handleSubmit(onSubmit, onError)}
       submitButtonText="Enregistrer"
       errors={errors}
-      buttonIcon={<CgPen size={16} />}
+      buttonIcon={<i className="bx bx-edit bx-sm" />}
       variant={"Icon-Outlined-Primary"}
     >
       <h3>
@@ -230,7 +229,7 @@ export const DeleteCertification = ({
       onConfirm={() => {
         deleteCertification.mutate(certificationId);
       }}
-      buttonIcon={<CgTrash size={16} />}
+      buttonIcon={<i className="bx bx-trash bx-sm" />}
       variant={"Icon-Outlined-Secondary"}
       textConfirmation={t("certification-confirmation")}
     />
@@ -306,7 +305,7 @@ function UpdateGroup({ coachId, id, initialName }: UpdateGroupProps) {
     <Modal
       title={t("update-group")}
       handleSubmit={update}
-      buttonIcon={<CgPen size={12} />}
+      buttonIcon={<i className="bx bx-edit bx-sm" />}
       variant={"Icon-Outlined-Primary"}
       buttonSize="btn-sm"
     >
@@ -340,7 +339,7 @@ function DeleteGroup({ coachId, groupId }: DeleteGroupProps) {
       title={t("group-deletion")}
       message={t("group-deletion-message")}
       onConfirm={() => deleteGroup.mutate(groupId)}
-      buttonIcon={<CgTrash size={12} />}
+      buttonIcon={<i className="bx bx-trash bx-xs" />}
       variant={"Icon-Outlined-Secondary"}
       textConfirmation={t("group-deletion-confirmation")}
       buttonSize="btn-sm"
@@ -415,7 +414,7 @@ function UpdateModule({ groupId, id, initialName }: UpdateModuleProps) {
     <Modal
       title={t("update-module")}
       handleSubmit={update}
-      buttonIcon={<CgPen size={12} />}
+      buttonIcon={<i className="bx bx-edit bx-xs" />}
       variant={"Icon-Outlined-Secondary"}
       buttonSize="btn-sm"
     >
@@ -447,7 +446,7 @@ function DeleteModule({ groupId, moduleId }: DeleteModuleProps) {
       title={t("module-deletion")}
       message={t("module-deletion-message")}
       onConfirm={() => deleteModule.mutate(moduleId)}
-      buttonIcon={<CgTrash size={12} />}
+      buttonIcon={<i className="bx bx-trash bx-xs" />}
       variant={"Icon-Outlined-Secondary"}
       textConfirmation={t("module-deletion-confirmation")}
       buttonSize="btn-sm"

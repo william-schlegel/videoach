@@ -1,5 +1,4 @@
 import { useState, type ReactNode } from "react";
-import { CgChevronRight } from "react-icons/cg";
 
 type Props = {
   groupName: string;
@@ -14,11 +13,10 @@ function CollapsableGroup({ groupName, children }: Props) {
       className="flex items-center gap-2 rounded-full border border-neutral bg-base-100 px-4 py-1"
     >
       <span className="text-primary">{groupName}</span>
-      <div className="flex items-center gap-2">
+      <div className="flex items-center gap-2 transition-transform duration-200">
         {opened ? <>{children}</> : null}
-        <CgChevronRight
-          size={16}
-          className={`transition-transform duration-200 ${
+        <i
+          className={`bx bx-chevron-right bx-sm ${
             opened ? "rotate-180" : "rotate-0"
           }`}
         />

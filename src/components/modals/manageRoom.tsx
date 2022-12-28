@@ -10,7 +10,6 @@ import {
 } from "react-hook-form";
 import Modal, { type TModalVariant } from "../ui/modal";
 import SimpleForm from "../ui/simpleform";
-import { CgAdd, CgPen, CgTrash } from "react-icons/cg";
 import { useState, type PropsWithoutRef } from "react";
 import { RoomReservation } from "@prisma/client";
 import Confirmation from "@ui/confirmation";
@@ -83,7 +82,7 @@ export const CreateRoom = ({
       <Modal
         title={t("new-room")}
         handleSubmit={handleSubmit(onSubmit, onError)}
-        buttonIcon={<CgAdd size={24} />}
+        buttonIcon={<i className="bx bx-plus bx-sm" />}
         variant={variant}
       >
         <h3>{t("new-room")}</h3>
@@ -150,7 +149,7 @@ export const UpdateRoom = ({
       <Modal
         title={t("update-room")}
         handleSubmit={handleSubmit(onSubmit, onError)}
-        buttonIcon={<CgPen size={16} />}
+        buttonIcon={<i className="bx bx-edit bx-sm" />}
         variant={variant}
       >
         <h3>{t("update-room")}</h3>
@@ -183,7 +182,7 @@ export const DeleteRoom = ({
     <Confirmation
       message={t("room-deletion-message")}
       title={t("room-deletion")}
-      buttonIcon={<CgTrash size={16} />}
+      buttonIcon={<i className="bx bx-trash bx-sm" />}
       onConfirm={() => {
         deleteRoom.mutate(roomId);
       }}

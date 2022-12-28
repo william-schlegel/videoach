@@ -17,7 +17,6 @@ import Link from "next/link";
 import { useRouter } from "next/router";
 import { CreateSiteCalendar } from "@modals/manageCalendar";
 import CalendarWeek from "@root/src/components/calendarWeek";
-import { CgCalendarDates } from "react-icons/cg";
 
 const ManageSites = ({
   userId,
@@ -157,7 +156,7 @@ export function SiteContent({ clubId, siteId }: SiteContentProps) {
                   >
                     <span>{room.name}</span>
                     {room.reservation !== "NONE" && (
-                      <CgCalendarDates size={16} className="text-secondary" />
+                      <i className="bx bx-calendar bx-sm text-secondary" />
                     )}
                   </button>
                 </li>

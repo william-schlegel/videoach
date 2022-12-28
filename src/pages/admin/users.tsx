@@ -17,7 +17,6 @@ import {
   type SubmitHandler,
   useForm,
 } from "react-hook-form";
-import { CgSearch } from "react-icons/cg";
 import { DeleteUser, UpdateUser } from "@modals/manageUser";
 import { formatMoney } from "@lib/formatNumber";
 
@@ -118,9 +117,9 @@ function UserManagement() {
                 />
                 <button
                   onClick={handleSubmit(onSubmit, onError)}
-                  className="btn btn-primary btn-block mt-2 flex gap-4"
+                  className="btn-primary btn-block btn mt-2 flex gap-4"
                 >
-                  <CgSearch size={24} />
+                  <i className="bx bx-search bx-sm" />
                   {t("user.search")}
                 </button>
               </div>

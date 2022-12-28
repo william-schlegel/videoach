@@ -29,7 +29,6 @@ import {
   useSensors,
 } from "@dnd-kit/core";
 import CollapsableGroup from "@ui/collapsableGroup";
-import { CgClose } from "react-icons/cg";
 
 const ManageClubs = ({
   userId,
@@ -251,12 +250,11 @@ export function ClubContent({ userId, clubId }: ClubContentProps) {
                         >
                           {a.name}
                           <div
-                            className="tooltip"
+                            className="tooltip flex items-center"
                             data-tip={t("remove-activity")}
                           >
-                            <CgClose
-                              size={16}
-                              className="cursor-pointer rounded-full bg-base-100 text-secondary hover:bg-secondary hover:text-secondary-content"
+                            <i
+                              className="bx bx-x bx-sm cursor-pointer rounded-full bg-base-100 text-secondary hover:bg-secondary hover:text-secondary-content"
                               onClick={(e) => {
                                 e.stopPropagation();
                                 handledeleteActivity(room.id, a.id);
