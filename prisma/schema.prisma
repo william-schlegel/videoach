@@ -12,14 +12,11 @@ datasource db {
   relationMode = "prisma"
 }
 
-// datasource db {
-//   provider = "sqlite"
-//   // NOTE: When using postgresql, mysql or sqlserver, uncomment the @db.Text annotations in model Account below
-//   // Further reading:
-//   // https://next-auth.js.org/adapters/prisma#create-the-prisma-schema
-//   // https://www.prisma.io/docs/reference/api-reference/prisma-schema-reference#string
-//   url      = env("DATABASE_URL")
-// }
+// ----------------------------------------------------------------------------------------------
+
+//                             AUTHENTIFICATION - USER
+
+// ----------------------------------------------------------------------------------------------
 
 // Necessary for Next auth
 model Account {
@@ -61,26 +58,25 @@ enum Role {
 }
 
 model User {
-  id                  String               @id @default(cuid())
-  name                String?
-  email               String?              @unique
-  emailVerified       DateTime?
-  image               String?
-  accounts            Account[]
-  sessions            Session[]
-  activityGroups      ActivityGroup[]
-  managedClubs        Club[]               @relation("Manager")
-  clubs               Club[]               @relation("Member")
-  role                Role                 @default(MEMBER)
-  certificationGroups CertificationGroup[]
-  certifications      Certification[]
-  pricingId           String?
-  pricing             Pricing?             @relation(fields: [pricingId], references: [id])
-  monthlyPayment      Boolean              @default(false)
-  trialUntil          DateTime?
-  paiements           Paiement[]
-  dueDate             DateTime?
-  rating              Float                @default(0)
+  id             String          @id @default(cuid())
+  name           String?
+  email          String?         @unique
+  emailVerified  DateTime?
+  image          String?
+  accounts       Account[]
+  sessions       Session[]
+  activityGroups ActivityGroup[]
+  managedClubs   Club[]          @relation("Manager")
+  clubs          Club[]          @relation("Member")
+  role           Role            @default(MEMBER)
+  certifications Certification[]
+  pricingId      String?
+  pricing        Pricing?        @relation(fields: [pricingId], references: [id])
+  monthlyPayment Boolean         @default(false)
+  trialUntil     DateTime?
+  paiements      Paiement[]
+  dueDate        DateTime?
+  rating         Float           @default(0)
 
   @@index([pricingId])
 }
@@ -102,6 +98,12 @@ model VerificationToken {
 
   @@unique([identifier, token])
 }
+
+// ----------------------------------------------------------------------------------------------
+
+//                             CLUB MANAGEMENT
+
+// ----------------------------------------------------------------------------------------------
 
 model Club {
   id         String            @id @default(cuid())
@@ -152,33 +154,37 @@ model Room {
   @@index([siteId])
 }
 
+// ----------------------------------------------------------------------------------------------
+
+//                             ACTIVITIES
+
+// ----------------------------------------------------------------------------------------------
+
 // activity group may be standard (default group) or belong to a specific user
 model ActivityGroup {
-  id             String          @id @default(cuid())
-  name           String
-  default        Boolean         @default(false)
-  activities     Activity[]
-  user           User?           @relation(fields: [userId], references: [id], onDelete: Cascade)
-  userId         String?
-  certifications Certification[]
+  id                   String                @id @default(cuid())
+  name                 String
+  default              Boolean               @default(false)
+  activities           Activity[]
+  user                 User?                 @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId               String?
+  certifications       Certification[]
+  certificationModules CertificationModule[]
 
   @@index([userId])
 }
 
 model Activity {
-  id                   String              @id @default(cuid())
-  name                 String
-  groupId              String
-  group                ActivityGroup       @relation(fields: [groupId], references: [id], onDelete: Cascade)
-  clubId               String
-  club                 Club                @relation(fields: [clubId], references: [id], onDelete: Cascade)
-  rooms                Room[]
-  certificationGroupId String?
-  certificationGroup   CertificationGroup? @relation(fields: [certificationGroupId], references: [id])
+  id      String        @id @default(cuid())
+  name    String
+  groupId String
+  group   ActivityGroup @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  clubId  String
+  club    Club          @relation(fields: [clubId], references: [id], onDelete: Cascade)
+  rooms   Room[]
 
   @@index([groupId])
   @@index([clubId])
-  @@index([certificationGroupId])
 }
 
 model OpeningCalendar {
@@ -216,6 +222,12 @@ model OpeningTime {
   day     DayOpeningTime[]
 }
 
+// ----------------------------------------------------------------------------------------------
+
+//                             PRICING
+
+// ----------------------------------------------------------------------------------------------
+
 model Pricing {
   id           String          @id @default(cuid())
   roleTarget   Role
@@ -241,48 +253,39 @@ model PricingOption {
   @@index([pricingId])
 }
 
+// ----------------------------------------------------------------------------------------------
+
+//                             CERTIFICATION
+
+// ----------------------------------------------------------------------------------------------
+
 model CertificationGroup {
-  id             String                @id @default(cuid())
-  name           String
-  default        Boolean               @default(false)
-  user           User?                 @relation(fields: [userId], references: [id], onDelete: Cascade)
-  userId         String?
-  certifications Certification[]
-  activities     Activity[]
-  hasModules     Boolean               @default(false)
-  modules        CertificationModule[]
-
-  @@index([userId])
-}
-
-model Certification {
-  id                   String                @id @default(cuid())
-  name                 String
-  certificationGroupId String
-  certificationGroup   CertificationGroup    @relation(fields: [certificationGroupId], references: [id])
-  obtainedIn           DateTime
-  documentUrl          String?
-  user                 User                  @relation(fields: [userId], references: [id], onDelete: Cascade)
-  userId               String
-  activityGroupId      String?
-  activityGroup        ActivityGroup?        @relation(fields: [activityGroupId], references: [id])
-  modules              CertificationModule[]
-
-  @@index([userId])
-  @@index([activityGroupId])
-  @@index([certificationGroupId])
+  id      String                @id @default(cuid())
+  name    String
+  modules CertificationModule[]
 }
 
 model CertificationModule {
   id                   String             @id @default(cuid())
   name                 String
-  certificationId      String?
-  certification        Certification?     @relation(fields: [certificationId], references: [id], onDelete: Cascade)
-  obtainedIn           DateTime?
-  documentUrl          String?
   certificationGroupId String
   certificationGroup   CertificationGroup @relation(fields: [certificationGroupId], references: [id], onDelete: Cascade)
+  activityGroups       ActivityGroup[]
+  certifications       Certification[]
 
-  @@index([certificationId])
   @@index([certificationGroupId])
+}
+
+model Certification {
+  id             String                @id @default(cuid())
+  name           String
+  obtainedIn     DateTime
+  documentUrl    String?
+  user           User                  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId         String
+  modules        CertificationModule[]
+  activityGroups ActivityGroup[]
+  manualModule   String?
+
+  @@index([userId])
 }

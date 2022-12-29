@@ -24,12 +24,14 @@ interface Props<T extends BaseItem> {
   items: T[];
   onChange(items: T[]): void;
   renderItem(item: T): ReactNode;
+  className?: string;
 }
 
 export function SortableList<T extends BaseItem>({
   items,
   onChange,
   renderItem,
+  className,
 }: Props<T>) {
   const [active, setActive] = useState<Active | null>(null);
   const activeItem = useMemo(
@@ -63,7 +65,10 @@ export function SortableList<T extends BaseItem>({
       }}
     >
       <SortableContext items={items}>
-        <ul className="SortableList" role="application">
+        <ul
+          className={`flex list-none flex-col gap-2 p-0 ${className}`}
+          role="application"
+        >
           {items.map((item) => (
             <React.Fragment key={item.id}>{renderItem(item)}</React.Fragment>
           ))}

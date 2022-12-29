@@ -1,28 +1,35 @@
 import { trpc } from "../../utils/trpc";
-import Modal from "../ui/modal";
-import { PropsWithoutRef, useState } from "react";
+import Modal, { type TModalVariant } from "../ui/modal";
+import {
+  type Dispatch,
+  type SetStateAction,
+  useRef,
+  useState,
+  useMemo,
+} from "react";
 import Confirmation from "../ui/confirmation";
 import { useTranslation } from "next-i18next";
 import {
   useForm,
   type SubmitHandler,
   type SubmitErrorHandler,
-  type FieldValues,
   type FieldErrorsImpl,
   type UseFormRegister,
-  type UseFormGetValues,
-  type Path,
 } from "react-hook-form";
 import { useSession } from "next-auth/react";
 import SimpleForm from "@ui/simpleform";
+import { SortableList } from "@ui/sortableList";
+import ButtonIcon from "@ui/buttonIcon";
+import Spinner from "@ui/spinner";
 
 type CertificationFormValues = {
   name: string;
   certificationGroupId: string;
   obtainedIn: Date;
   documentUrl: string;
-  activityGroupId: string;
+  activityGroups: string[];
   modules: string[];
+  manualModule: string;
 };
 
 type CreateCertificationProps = {
@@ -31,15 +38,11 @@ type CreateCertificationProps = {
 
 export const CreateCertification = ({ userId }: CreateCertificationProps) => {
   const [groupId, setGroupId] = useState("");
-  const [moduleId, setModuleId] = useState("");
-  const queryGroups = trpc.coachs.getCertificationGroupsForCoach.useQuery(
-    userId,
-    {
-      onSuccess(data) {
-        if (groupId === "" && data.length > 0) setGroupId(data[0]?.id || "");
-      },
-    }
-  );
+  const queryGroups = trpc.coachs.getCertificationGroups.useQuery(undefined, {
+    onSuccess(data) {
+      if (groupId === "" && data.length > 0) setGroupId(data[0]?.id || "");
+    },
+  });
   const queryCoachCertifications =
     trpc.coachs.getCertificationsForCoach.useQuery(userId);
   const addCertification = trpc.coachs.createCertification.useMutation();
@@ -78,60 +81,25 @@ export const CreateCertification = ({ userId }: CreateCertificationProps) => {
                       onClick={() => setGroupId(group.id)}
                     >
                       {group.name}
-                      {!group.default && (
-                        <div className="flex">
-                          <UpdateGroup
-                            id={group.id}
-                            coachId={userId}
-                            initialName={group.name}
-                          />
-                          <DeleteGroup groupId={group.id} coachId={userId} />
-                        </div>
-                      )}
                     </button>
                   </div>
                 </li>
               ))}
             </ul>
           </div>
-          <NewGroup userId={userId} />
         </div>
-        {selectedGroup?.hasModules ? (
-          <div className="flex flex-col items-stretch justify-between gap-2">
-            <div>
-              <h4>{t("modules")}</h4>
-              <ul className="menu overflow-hidden rounded border border-secondary bg-base-100">
-                {selectedGroup.modules.map((mod) => (
-                  <li key={mod.id}>
-                    <div
-                      className={`flex ${moduleId === mod.id ? "active" : ""}`}
-                    >
-                      <button
-                        className="flex w-full items-center justify-between"
-                        onClick={() => setModuleId(mod.id)}
-                      >
-                        {mod.name}
-                      </button>
-                    </div>
-                  </li>
-                ))}
-              </ul>
-            </div>
-            <NewModule groupId={groupId} />
-          </div>
-        ) : null}
         <div className="flex flex-grow flex-col gap-2">
           <h4>{t("certifications")}</h4>
           <div className="flex flex-wrap gap-2">
-            {queryCoachCertifications.data?.certifications
-              .filter((c) => c.certificationGroupId === groupId)
-              .map((certification) => (
+            {queryCoachCertifications.data?.certifications.map(
+              (certification) => (
                 <div key={certification.id} className="flex items-center gap-2">
                   <span className="flex items-center gap-1 rounded-full border border-primary px-4 py-2 text-primary-content">
                     {certification.name}
                   </span>
                 </div>
-              ))}
+              )
+            )}
           </div>
         </div>
       </div>
@@ -236,101 +204,127 @@ export const DeleteCertification = ({
   );
 };
 
-type NewGroupProps = {
-  userId: string;
+type CertificationModuleForm = {
+  dbId?: string;
+  name: string;
+  activityIds: string[];
 };
 
-const NewGroup = ({ userId }: NewGroupProps) => {
-  const utils = trpc.useContext();
-  const createGroup = trpc.coachs.createGroup.useMutation({
-    onSuccess: () =>
-      utils.coachs.getCertificationGroupsForCoach.invalidate(userId),
-  });
-  const [name, setName] = useState("");
-  const [error, setError] = useState(false);
-  const { t } = useTranslation("coach");
+type CertificationGroupForm = {
+  name: string;
+  modules: CertificationModuleForm[];
+};
 
-  function addNewGroup() {
-    if (name === "") {
-      setError(true);
-      return;
-    }
-    setError(false);
+type CreateCertificationGroupProps = {
+  variant?: TModalVariant;
+};
+
+const emptyData: CertificationGroupForm = { name: "", modules: [] };
+
+export const CreateCertificationGroup = ({
+  variant = "Primary",
+}: CreateCertificationGroupProps) => {
+  const { t } = useTranslation("admin");
+  const utils = trpc.useContext();
+  const [data, setData] = useState<CertificationGroupForm>(emptyData);
+  const createGroup = trpc.coachs.createGroup.useMutation({
+    onSuccess: () => {
+      utils.coachs.getCertificationGroups.invalidate();
+      setData(emptyData);
+    },
+  });
+
+  const onSubmit = () => {
+    if (!data) return;
     createGroup.mutate({
-      name,
-      userId,
+      name: data.name,
+      modules: data.modules.map((m) => ({
+        name: m.name,
+        activityIds: m.activityIds,
+      })),
     });
-  }
+  };
 
   return (
-    <Modal title={t("new-group")} handleSubmit={addNewGroup}>
-      <h3>{t("create-group")}</h3>
-      <input value={name} onChange={(e) => setName(e.target.value)} />
-      {error && (
-        <p className="text-sm text-error">{t("group-name-mandatory")}</p>
-      )}
+    <Modal
+      title={t("certification.new-group")}
+      buttonIcon={<i className="bx bx-plus bx-sm" />}
+      variant={variant}
+      className="w-10/12 max-w-3xl"
+      handleSubmit={onSubmit}
+    >
+      <h3>{t("certification.new-group")}</h3>
+      <CertificationGroupForm data={data} setData={setData} />
     </Modal>
   );
 };
 
 type UpdateGroupProps = {
-  coachId: string;
-  id: string;
-  initialName: string;
+  groupId: string;
+  variant?: TModalVariant;
 };
 
-function UpdateGroup({ coachId, id, initialName }: UpdateGroupProps) {
+export function UpdateCertificationGroup({
+  groupId,
+  variant = "Icon-Outlined-Primary",
+}: UpdateGroupProps) {
+  const { t } = useTranslation("admin");
   const utils = trpc.useContext();
-  const updateGroup = trpc.coachs.updateGroup.useMutation({
-    onSuccess: () =>
-      utils.coachs.getCertificationGroupsForCoach.invalidate(coachId),
+  const [data, setData] = useState<CertificationGroupForm>(emptyData);
+  const queryGroup = trpc.coachs.getCertificationGroupById.useQuery(groupId, {
+    onSuccess(data) {
+      setData({
+        name: data?.name ?? "",
+        modules:
+          data?.modules.map((m, idx) => ({
+            dbId: m.id,
+            name: m.name,
+            activityIds: m.activityGroups.map((g) => g.id),
+            id: idx + 1,
+          })) ?? [],
+      });
+    },
   });
-  const [name, setName] = useState(initialName);
-  const [error, setError] = useState(false);
-  const { t } = useTranslation("coach");
+  const updateGroup = trpc.coachs.updateGroup.useMutation({
+    onSuccess: () => {
+      utils.coachs.getCertificationGroups.invalidate();
+      setData(emptyData);
+    },
+  });
 
-  function update() {
-    if (name === "") {
-      setError(true);
-      return;
-    }
-    setError(false);
+  const onSubmit = () => {
     updateGroup.mutate({
-      id,
-      name,
+      id: groupId,
+      name: data?.name ?? "",
     });
-  }
+  };
 
   return (
     <Modal
-      title={t("update-group")}
-      handleSubmit={update}
+      title={t("certification.update-group")}
       buttonIcon={<i className="bx bx-edit bx-sm" />}
-      variant={"Icon-Outlined-Primary"}
-      buttonSize="sm"
+      variant={variant}
+      className="w-10/12 max-w-3xl"
+      handleSubmit={onSubmit}
     >
-      <h3>
-        {t("update-group")}
-        <span className="text-primary">{initialName}</span>
-      </h3>
-      <input value={name} onChange={(e) => setName(e.target.value)} />
-      {error && (
-        <p className="text-sm text-error">{t("group-name-mandatory")}</p>
+      <h3>{t("certification.update-group")}</h3>
+      {queryGroup.isLoading ? (
+        <Spinner />
+      ) : (
+        <CertificationGroupForm data={data} setData={setData} />
       )}
     </Modal>
   );
 }
 
 type DeleteGroupProps = {
-  coachId: string;
   groupId: string;
 };
 
-function DeleteGroup({ coachId, groupId }: DeleteGroupProps) {
+export function DeleteCertificationGroup({ groupId }: DeleteGroupProps) {
   const utils = trpc.useContext();
   const deleteGroup = trpc.coachs.deleteGroup.useMutation({
-    onSuccess: () =>
-      utils.coachs.getCertificationGroupsForCoach.invalidate(coachId),
+    onSuccess: () => utils.coachs.getCertificationGroups.invalidate(),
   });
   const { t } = useTranslation("coach");
 
@@ -339,7 +333,7 @@ function DeleteGroup({ coachId, groupId }: DeleteGroupProps) {
       title={t("group-deletion")}
       message={t("group-deletion-message")}
       onConfirm={() => deleteGroup.mutate(groupId)}
-      buttonIcon={<i className="bx bx-trash bx-xs" />}
+      buttonIcon={<i className="bx bx-trash bx-sm" />}
       variant={"Icon-Outlined-Secondary"}
       textConfirmation={t("group-deletion-confirmation")}
       buttonSize="sm"
@@ -347,109 +341,207 @@ function DeleteGroup({ coachId, groupId }: DeleteGroupProps) {
   );
 }
 
-type NewModuleProps = {
-  groupId: string;
+type CertificationGroupFormProps = {
+  data: CertificationGroupForm;
+  setData: Dispatch<SetStateAction<CertificationGroupForm>>;
+  groupId?: string;
 };
 
-const NewModule = ({ groupId }: NewModuleProps) => {
-  const utils = trpc.useContext();
-  const createModule = trpc.coachs.createModule.useMutation({
-    onSuccess: () => utils.coachs.getCertificationGroupById.invalidate(groupId),
-  });
-  const [name, setName] = useState("");
-  const [error, setError] = useState(false);
-  const { t } = useTranslation("coach");
+function CertificationGroupForm({
+  data,
+  setData,
+  groupId,
+}: CertificationGroupFormProps): JSX.Element {
+  const { t } = useTranslation("admin");
+  const refOpt = useRef<HTMLInputElement>(null);
+  const deleteModule = trpc.coachs.deleteModule.useMutation();
+  const agQuery = trpc.activities.getAllActivityGroups.useQuery();
+  const [moduleId, setModuleId] = useState("");
+  const [activityIds, setActivityIds] = useState(new Set<string>());
+  const [moduleName, setModuleName] = useState("");
+  const selectedModule = useMemo(
+    () => data.modules.find((m) => m.dbId === moduleId),
+    [data.modules, moduleId]
+  );
 
-  function addNewModule() {
-    if (name === "") {
-      setError(true);
+  function handleDeleteModule(id: number) {
+    const mod = data.modules[id];
+    if (!mod?.dbId?.startsWith("MOD-")) deleteModule.mutate(mod?.dbId ?? "");
+
+    const mods = data.modules.filter((_, idx) => idx !== id);
+    setData({ ...data, modules: mods });
+  }
+
+  function selectModule(dbId?: string) {
+    setModuleId(dbId ?? "");
+    const mod = data.modules.find((m) => m.dbId === dbId);
+    setActivityIds(new Set(mod?.activityIds));
+    setModuleName(mod?.name ?? "");
+  }
+
+  function addModule(mod?: CertificationModuleForm) {
+    if (!mod) return;
+    const mods = data.modules;
+    if (!selectedModule) {
+      mod.dbId = `MOD-${data.modules.length + 1}`;
+      mods.push(mod);
+    } else {
+      const modIdx = mods.findIndex((m) => m.dbId === selectedModule.dbId);
+      if (modIdx >= 0) mods[modIdx] = mod;
+    }
+    setData({ ...data, modules: mods });
+    setActivityIds(new Set());
+    setModuleName("");
+    setModuleId("");
+  }
+
+  function addActivityId(activityId: string) {
+    const mod = data.modules.find((m) => m.dbId === moduleId);
+    if (!mod) {
+      activityIds.add(activityId);
+      setActivityIds(new Set(activityIds));
       return;
     }
-    setError(false);
-    createModule.mutate({
-      name,
-      groupId,
-    });
+    mod.activityIds.push(activityId);
+    setData({ ...data });
+  }
+
+  function removeActivityId(activityId: string) {
+    const mod = data.modules.find((m) => m.dbId === moduleId);
+    if (!mod) {
+      activityIds.delete(activityId);
+      setActivityIds(new Set(activityIds));
+      return;
+    }
+    mod.activityIds = mod.activityIds.filter((a) => a !== activityId);
+    setData({ ...data });
   }
 
   return (
-    <Modal title={t("new-module")} handleSubmit={addNewModule}>
-      <h3>{t("create-new-module")}</h3>
-      <input value={name} onChange={(e) => setName(e.target.value)} />
-      {error && (
-        <p className="text-sm text-error">{t("module-name-mandatory")}</p>
-      )}
-    </Modal>
-  );
-};
-
-type UpdateModuleProps = {
-  groupId: string;
-  id: string;
-  initialName: string;
-};
-
-function UpdateModule({ groupId, id, initialName }: UpdateModuleProps) {
-  const utils = trpc.useContext();
-  const updateGroup = trpc.coachs.updateGroup.useMutation({
-    onSuccess: () => utils.coachs.getCertificationGroupById.invalidate(groupId),
-  });
-  const [name, setName] = useState(initialName);
-  const [error, setError] = useState(false);
-  const { t } = useTranslation("coach");
-
-  function update() {
-    if (name === "") {
-      setError(true);
-      return;
-    }
-    setError(false);
-    updateGroup.mutate({
-      id,
-      name,
-    });
-  }
-
-  return (
-    <Modal
-      title={t("update-module")}
-      handleSubmit={update}
-      buttonIcon={<i className="bx bx-edit bx-xs" />}
-      variant={"Icon-Outlined-Secondary"}
-      buttonSize="sm"
-    >
-      <h3>
-        {t("update-module")} <span className="text-primary">{initialName}</span>
-      </h3>
-      <input value={name} onChange={(e) => setName(e.target.value)} />
-      {error && (
-        <p className="text-sm text-error">{t("module-name-mandatory")}</p>
-      )}
-    </Modal>
-  );
-}
-
-type DeleteModuleProps = {
-  groupId: string;
-  moduleId: string;
-};
-
-function DeleteModule({ groupId, moduleId }: DeleteModuleProps) {
-  const utils = trpc.useContext();
-  const deleteModule = trpc.coachs.deleteModule.useMutation({
-    onSuccess: () => utils.coachs.getCertificationGroupById.invalidate(groupId),
-  });
-  const { t } = useTranslation("coach");
-
-  return (
-    <Confirmation
-      title={t("module-deletion")}
-      message={t("module-deletion-message")}
-      onConfirm={() => deleteModule.mutate(moduleId)}
-      buttonIcon={<i className="bx bx-trash bx-xs" />}
-      variant={"Icon-Outlined-Secondary"}
-      textConfirmation={t("module-deletion-confirmation")}
-      buttonSize="sm"
-    />
+    <div className="flex flex-col gap-2">
+      <form className={`grid grid-cols-[auto_1fr] gap-2`}>
+        <label>{t("certification.group-name")}</label>
+        <input
+          value={data.name}
+          onChange={(e) => setData({ ...data, name: e.currentTarget.value })}
+          type={"text"}
+        />
+        {data.name === "" ? (
+          <p className="col-span-2 text-sm text-error">
+            {t("certification.name-mandatory")}
+          </p>
+        ) : null}
+      </form>
+      <label>{t("certification.modules")}</label>
+      <ul className="menu overflow-hidden rounded border border-base-300">
+        {data.modules.map((mod, idx) => (
+          <li key={mod.dbId}>
+            <div
+              className={`flex w-full items-center justify-between text-center ${
+                moduleId === mod.dbId ? "active" : ""
+              }`}
+              onClick={() => selectModule(mod.dbId)}
+            >
+              <div className="flex flex-grow items-center justify-between">
+                <div className="flex flex-wrap items-center gap-2">
+                  <span>{mod.name}</span>
+                  {mod.activityIds.map((id) => (
+                    <span key={id} className="badge badge-primary">
+                      {agQuery.data?.find((g) => g.id === id)?.name ?? "???"}
+                    </span>
+                  ))}
+                </div>
+                <button onClick={() => handleDeleteModule(idx)}>
+                  <ButtonIcon
+                    iconComponent={<i className="bx bx-trash bx-xs" />}
+                    title={t("certification.delete-module")}
+                    buttonVariant="Icon-Outlined-Secondary"
+                    buttonSize="sm"
+                  />
+                </button>
+              </div>
+            </div>
+          </li>
+        ))}
+      </ul>
+      <div className="flex items-center gap-2">
+        <div className="flex flex-col gap-2 rounded-md border border-primary p-2">
+          <input
+            type={"text"}
+            ref={refOpt}
+            value={moduleName}
+            onChange={(e) => {
+              setModuleName(e.currentTarget.value);
+            }}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") {
+                addModule({
+                  name: e.currentTarget.value,
+                  activityIds:
+                    selectedModule?.activityIds ?? Array.from(activityIds),
+                });
+                e.currentTarget.value = "";
+              }
+              if (e.key === "Escape") {
+                e.currentTarget.value = "";
+              }
+            }}
+          />
+          <h3>{t("certification.linked-activities")}</h3>
+          {agQuery.isLoading ? (
+            <Spinner />
+          ) : (
+            <div className="flex flex-wrap gap-2">
+              {agQuery.data?.map((ag) => (
+                <button
+                  className={`btn-primary btn-sm btn ${
+                    selectedModule?.activityIds.includes(ag.id) ||
+                    activityIds.has(ag.id)
+                      ? ""
+                      : "btn-outline"
+                  }`}
+                  key={ag.id}
+                  onClick={() => {
+                    if (selectedModule?.activityIds) {
+                      const ids = selectedModule?.activityIds ?? [];
+                      if (ids.includes(ag.id)) removeActivityId(ag.id);
+                      else addActivityId(ag.id);
+                    } else {
+                      const ids = activityIds;
+                      if (ids.has(ag.id)) removeActivityId(ag.id);
+                      else addActivityId(ag.id);
+                    }
+                  }}
+                >
+                  {ag.name}
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
+        <button
+          onClick={() => {
+            if (!refOpt.current) return;
+            addModule({
+              name: refOpt.current.value,
+              activityIds:
+                selectedModule?.activityIds ?? Array.from(activityIds),
+            });
+            refOpt.current.value = "";
+          }}
+        >
+          <ButtonIcon
+            iconComponent={
+              <i
+                className={`bx ${selectedModule ? "bx-edit" : "bx-plus"} bx-sm`}
+              />
+            }
+            title={t("pricing.add-option")}
+            buttonVariant="Icon-Outlined-Primary"
+            buttonSize="md"
+          />
+        </button>
+      </div>
+    </div>
   );
 }

@@ -7,10 +7,9 @@ import type {
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 
-import "./SortableItem.css";
-
 interface Props {
   id: UniqueIdentifier;
+  className?: string;
 }
 
 interface Context {
@@ -24,10 +23,14 @@ const SortableItemContext = createContext<Context>({
   attributes: {},
   listeners: undefined,
   // eslint-disable-next-line @typescript-eslint/no-empty-function
-  ref: () => {},
+  ref() {},
 });
 
-export function SortableItem({ children, id }: PropsWithChildren<Props>) {
+export function SortableItem({
+  children,
+  id,
+  className,
+}: PropsWithChildren<Props>) {
   const {
     attributes,
     isDragging,
@@ -53,21 +56,39 @@ export function SortableItem({ children, id }: PropsWithChildren<Props>) {
 
   return (
     <SortableItemContext.Provider value={context}>
-      <li className="SortableItem" ref={setNodeRef} style={style}>
+      <li
+        className={`flex flex-grow items-center justify-between rounded-md border border-neutral bg-base-100 px-4 py-2 text-base-content shadow-sm ${className}`}
+        ref={setNodeRef}
+        style={style}
+      >
         {children}
       </li>
     </SortableItemContext.Provider>
   );
 }
 
-export function DragHandle() {
+type DragHandleProps = {
+  className?: string;
+};
+
+export function DragHandle({ className }: DragHandleProps) {
   const { attributes, listeners, ref } = useContext(SortableItemContext);
 
   return (
-    <button className="DragHandle" {...attributes} {...listeners} ref={ref}>
-      <svg viewBox="0 0 20 20" width="12">
+    <button
+      className={`flex w-3 cursor-pointer touch-none appearance-none items-center justify-center rounded-md border-none bg-transparent p-4 outline-none hover:bg-black hover:bg-opacity-5 focus-visible:outline-primary ${className}`}
+      {...attributes}
+      {...listeners}
+      ref={ref}
+    >
+      <i className="bx bx-menu text-base-content" />
+      {/* <svg
+        className="m-auto h-full overflow-visible fill-base-content"
+        viewBox="0 0 20 20"
+        width="12"
+      >
         <path d="M7 2a2 2 0 1 0 .001 4.001A2 2 0 0 0 7 2zm0 6a2 2 0 1 0 .001 4.001A2 2 0 0 0 7 8zm0 6a2 2 0 1 0 .001 4.001A2 2 0 0 0 7 14zm6-8a2 2 0 1 0-.001-4.001A2 2 0 0 0 13 6zm0 2a2 2 0 1 0 .001 4.001A2 2 0 0 0 13 8zm0 6a2 2 0 1 0 .001 4.001A2 2 0 0 0 13 14z"></path>
-      </svg>
+      </svg> */}
     </button>
   );
 }

@@ -45,5 +45,18 @@
     "groups": "Groupes d'activité",
     "group-clubs": "Clubs qui utilisent ce groupe",
     "group-activities": "Activités attachées à ce groupe"
+  },
+  "certification": {
+    "manage-cg": "Gérer les certifications",
+    "groups": "Organisme de certification",
+    "group-coachs": "Coachs certifiés avec ce groupe (modules)",
+    "group-modules": "Modules attachées à ce groupe (activités)",
+    "group-name": "Nom de l'organisme de certification",
+    "name-mandatory": "Le nom est obligatoire",
+    "modules": "Modules de fomation",
+    "new-group": "Nouvel organisme de certification",
+    "update-group": "Modifier l'organisme de certification",
+    "delete-module": "Supprimer ce module",
+    "linked-activities": "Activités liées"
   }
 }
