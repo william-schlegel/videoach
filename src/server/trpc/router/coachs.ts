@@ -105,17 +105,17 @@ export const coachRouter = router({
             name: input.name,
           },
         });
-        input.modules.forEach(async (module) => {
+        for (const mod of input.modules) {
           await tx.certificationModule.create({
             data: {
-              name: module.name,
+              name: mod.name,
               certificationGroupId: group.id,
               activityGroups: {
-                connect: module.activityIds.map((id) => ({ id })),
+                connect: mod.activityIds.map((id) => ({ id })),
               },
             },
           });
-        });
+        }
         return group;
       })
     ),
@@ -124,14 +124,47 @@ export const coachRouter = router({
       z.object({
         id: z.string().cuid(),
         name: z.string(),
+        modules: z.array(
+          z.object({
+            id: z.string().cuid().optional(),
+            name: z.string(),
+            activityIds: z.array(z.string().cuid()),
+          })
+        ),
       })
     )
     .mutation(({ ctx, input }) =>
-      ctx.prisma.certificationGroup.update({
-        where: { id: input.id },
-        data: {
-          name: input.name,
-        },
+      ctx.prisma.$transaction(async (tx) => {
+        const group = await tx.certificationGroup.update({
+          where: { id: input.id },
+          data: {
+            name: input.name,
+          },
+        });
+        for (const mod of input.modules.filter((m) => !m.id)) {
+          await tx.certificationModule.create({
+            data: {
+              name: mod.name,
+              certificationGroupId: group.id,
+              activityGroups: {
+                connect: mod.activityIds.map((id) => ({ id })),
+              },
+            },
+          });
+        }
+        for (const mod of input.modules.filter((m) => m.id)) {
+          await tx.certificationModule.update({
+            where: { id: mod.id },
+            data: {
+              name: mod.name,
+              certificationGroupId: group.id,
+              activityGroups: {
+                connect: mod.activityIds.map((id) => ({ id })),
+              },
+            },
+          });
+        }
+        return group;
       })
     ),
   deleteGroup: protectedProcedure

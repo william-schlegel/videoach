@@ -58,25 +58,26 @@ enum Role {
 }
 
 model User {
-  id             String          @id @default(cuid())
-  name           String?
-  email          String?         @unique
-  emailVerified  DateTime?
-  image          String?
-  accounts       Account[]
-  sessions       Session[]
-  activityGroups ActivityGroup[]
-  managedClubs   Club[]          @relation("Manager")
-  clubs          Club[]          @relation("Member")
-  role           Role            @default(MEMBER)
-  certifications Certification[]
-  pricingId      String?
-  pricing        Pricing?        @relation(fields: [pricingId], references: [id])
-  monthlyPayment Boolean         @default(false)
-  trialUntil     DateTime?
-  paiements      Paiement[]
-  dueDate        DateTime?
-  rating         Float           @default(0)
+  id              String          @id @default(cuid())
+  name            String?
+  email           String?         @unique
+  emailVerified   DateTime?
+  image           String?
+  accounts        Account[]
+  sessions        Session[]
+  activityGroups  ActivityGroup[]
+  managedClubs    Club[]          @relation("Manager")
+  clubs           Club[]          @relation("Member")
+  role            Role            @default(MEMBER)
+  certifications  Certification[]
+  pricingId       String?
+  pricing         Pricing?        @relation(fields: [pricingId], references: [id])
+  monthlyPayment  Boolean         @default(false)
+  trialUntil      DateTime?
+  paiements       Paiement[]
+  dueDate         DateTime?
+  rating          Float           @default(0)
+  cancelationDate DateTime?
 
   @@index([pricingId])
 }

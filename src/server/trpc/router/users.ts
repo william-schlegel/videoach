@@ -27,6 +27,11 @@ export const userRouter = router({
     .query(({ ctx, input }) => {
       return ctx.prisma.user.findUnique({
         where: { id: input },
+        include: {
+          pricing: true,
+          paiements: true,
+          accounts: true,
+        },
       });
     }),
   getUserFullById: protectedProcedure
@@ -102,6 +107,21 @@ export const userRouter = router({
         data: { ...input },
       });
     }),
+  changeUserPlan: protectedProcedure
+    .input(
+      z.object({
+        id: z.string().cuid(),
+        pricingId: z.string().cuid().optional(),
+        monthlyPayment: z.boolean().optional(),
+        cancelationDate: z.date().optional(),
+      })
+    )
+    .mutation(({ ctx, input }) =>
+      ctx.prisma.user.update({
+        where: { id: input.id },
+        data: { ...input },
+      })
+    ),
   deleteUser: protectedProcedure
     .input(z.string())
     .mutation(({ ctx, input }) => {

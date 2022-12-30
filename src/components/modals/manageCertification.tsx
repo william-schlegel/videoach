@@ -6,6 +6,7 @@ import {
   useRef,
   useState,
   useMemo,
+  KeyboardEventHandler,
 } from "react";
 import Confirmation from "../ui/confirmation";
 import { useTranslation } from "next-i18next";
@@ -236,6 +237,7 @@ export const CreateCertificationGroup = ({
 
   const onSubmit = () => {
     if (!data) return;
+    console.log("data :>> ", data);
     createGroup.mutate({
       name: data.name,
       modules: data.modules.map((m) => ({
@@ -276,11 +278,10 @@ export function UpdateCertificationGroup({
       setData({
         name: data?.name ?? "",
         modules:
-          data?.modules.map((m, idx) => ({
+          data?.modules.map((m) => ({
             dbId: m.id,
             name: m.name,
             activityIds: m.activityGroups.map((g) => g.id),
-            id: idx + 1,
           })) ?? [],
       });
     },
@@ -293,9 +294,15 @@ export function UpdateCertificationGroup({
   });
 
   const onSubmit = () => {
+    console.log("data :>> ", data);
     updateGroup.mutate({
       id: groupId,
       name: data?.name ?? "",
+      modules: data.modules.map((m) => ({
+        id: m.dbId?.startsWith("MOD-") ? undefined : m.dbId,
+        name: m.name,
+        activityIds: m.activityIds,
+      })),
     });
   };
 
@@ -344,13 +351,11 @@ export function DeleteCertificationGroup({ groupId }: DeleteGroupProps) {
 type CertificationGroupFormProps = {
   data: CertificationGroupForm;
   setData: Dispatch<SetStateAction<CertificationGroupForm>>;
-  groupId?: string;
 };
 
 function CertificationGroupForm({
   data,
   setData,
-  groupId,
 }: CertificationGroupFormProps): JSX.Element {
   const { t } = useTranslation("admin");
   const refOpt = useRef<HTMLInputElement>(null);
@@ -417,6 +422,20 @@ function CertificationGroupForm({
     setData({ ...data });
   }
 
+  function handleKeyboard(key: string, name: string) {
+    if (key === "Enter") {
+      addModule({
+        name,
+        activityIds: selectedModule?.activityIds ?? Array.from(activityIds),
+      });
+      if (refOpt.current) refOpt.current.value = "";
+    }
+    if (key === "Escape") {
+      if (refOpt.current) refOpt.current.value = "";
+      setActivityIds(new Set());
+    }
+  }
+
   return (
     <div className="flex flex-col gap-2">
       <form className={`grid grid-cols-[auto_1fr] gap-2`}>
@@ -473,19 +492,7 @@ function CertificationGroupForm({
             onChange={(e) => {
               setModuleName(e.currentTarget.value);
             }}
-            onKeyDown={(e) => {
-              if (e.key === "Enter") {
-                addModule({
-                  name: e.currentTarget.value,
-                  activityIds:
-                    selectedModule?.activityIds ?? Array.from(activityIds),
-                });
-                e.currentTarget.value = "";
-              }
-              if (e.key === "Escape") {
-                e.currentTarget.value = "";
-              }
-            }}
+            onKeyDown={(e) => handleKeyboard(e.key, e.currentTarget.value)}
           />
           <h3>{t("certification.linked-activities")}</h3>
           {agQuery.isLoading ? (
@@ -527,8 +534,9 @@ function CertificationGroupForm({
               activityIds:
                 selectedModule?.activityIds ?? Array.from(activityIds),
             });
-            refOpt.current.value = "";
+            handleKeyboard("Escape", "");
           }}
+          onKeyDown={(e) => handleKeyboard(e.key, refOpt.current?.value ?? "")}
         >
           <ButtonIcon
             iconComponent={
