@@ -17,7 +17,6 @@ import {
   DeleteCertification,
   UpdateCertification,
 } from "@modals/manageCertification";
-import { useRouter } from "next/router";
 
 const ManageCertifications = ({
   userId,
@@ -57,26 +56,44 @@ const ManageCertifications = ({
         {certificationQuery.isLoading ? (
           <Spinner />
         ) : (
-          <ul className="menu w-1/4 overflow-hidden rounded bg-base-100">
-            {certificationQuery.data?.certifications?.map((certification) => (
-              <li key={certification.id}>
-                <button
-                  className={`w-full text-center ${
-                    certificationId === certification.id ? "active" : ""
-                  }`}
-                  onClick={() => setCertificationId(certification.id)}
-                >
-                  {certification.name}
-                </button>
-              </li>
+          <div className="flex flex-wrap gap-4">
+            {certificationQuery.data?.certifications.map((certification) => (
+              <div
+                key={certification.id}
+                className="card w-96 bg-base-100 shadow-xl"
+              >
+                <div className="card-body">
+                  <h2 className="card-title">{certification.name}</h2>
+                  <h3>{t("modules")}</h3>
+                  <div className="flex flex-wrap gap-2">
+                    {certification.modules.map((mod) => (
+                      <div key={mod.id} className="pill">
+                        {mod.name}
+                      </div>
+                    ))}
+                  </div>
+                  <h3>{t("activities")}</h3>
+                  <div className="flex flex-wrap gap-2">
+                    {certification.activityGroups.map((act) => (
+                      <div key={act.id} className="pill">
+                        {act.name}
+                      </div>
+                    ))}
+                  </div>
+                  <div className="card-actions justify-end">
+                    <UpdateCertification
+                      userId={userId}
+                      certificationId={certificationId}
+                    />
+                    <DeleteCertification
+                      userId={userId}
+                      certificationId={certificationId}
+                    />
+                  </div>
+                </div>
+              </div>
             ))}
-          </ul>
-        )}
-        {certificationId === "" ? null : (
-          <CertificationContent
-            userId={userId}
-            certificationId={certificationId}
-          />
+          </div>
         )}
       </div>
     </div>
@@ -84,40 +101,6 @@ const ManageCertifications = ({
 };
 
 export default ManageCertifications;
-
-type CertificationContentProps = {
-  userId: string;
-  certificationId: string;
-};
-
-export function CertificationContent({
-  userId,
-  certificationId,
-}: CertificationContentProps) {
-  const certificationQuery =
-    trpc.coachs.getCertificationById.useQuery(certificationId);
-  const { t } = useTranslation("coach");
-  const router = useRouter();
-
-  const root = router.asPath.split("/");
-  root.pop();
-  const path = root.reduce((a, r) => a.concat(`${r}/`), "");
-
-  if (certificationQuery.isLoading) return <Spinner />;
-  return (
-    <div className="flex w-full flex-col gap-4">
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <h2>{certificationQuery.data?.name}</h2>
-        </div>
-        <div className="flex items-center gap-2">
-          <UpdateCertification certificationId={certificationId} />
-          <DeleteCertification certificationId={certificationId} />
-        </div>
-      </div>
-    </div>
-  );
-}
 
 export const getServerSideProps = async ({
   locale,

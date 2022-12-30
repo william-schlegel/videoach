@@ -5,6 +5,7 @@ import Confirmation from "../ui/confirmation";
 import { useTranslation } from "next-i18next";
 import { type ButtonSize } from "@ui/buttonIcon";
 import Spinner from "@ui/spinner";
+import { toast } from "react-toastify";
 
 type AddActivityProps = {
   userId: string;
@@ -124,7 +125,13 @@ const NewActivity = ({ clubId, groupId }: NewActivityProps) => {
   const utils = trpc.useContext();
   const groupQuery = trpc.activities.getActivityGroupById.useQuery(groupId);
   const createActivity = trpc.activities.createActivity.useMutation({
-    onSuccess: () => utils.activities.getActivitiesForClub.invalidate(),
+    onSuccess: () => {
+      utils.activities.getActivitiesForClub.invalidate();
+      toast.success(t("activity-created") as string);
+    },
+    onError(error) {
+      toast.error(error.message);
+    },
   });
   const [name, setName] = useState("");
   const [error, setError] = useState(false);
@@ -172,7 +179,13 @@ function UpdateActivity({
 }: UpdateActivityProps) {
   const utils = trpc.useContext();
   const updateActivity = trpc.activities.updateActivity.useMutation({
-    onSuccess: () => utils.activities.getActivitiesForClub.invalidate(),
+    onSuccess: () => {
+      utils.activities.getActivitiesForClub.invalidate();
+      toast.success(t("activity-updated") as string);
+    },
+    onError(error) {
+      toast.error(error.message);
+    },
   });
   const [name, setName] = useState(initialName);
   const [error, setError] = useState(false);
@@ -220,7 +233,13 @@ type DeleteActivityProps = {
 function DeleteActivity({ clubId, activityId }: DeleteActivityProps) {
   const utils = trpc.useContext();
   const deleteActivity = trpc.activities.deleteActivity.useMutation({
-    onSuccess: () => utils.activities.getActivitiesForClub.invalidate(),
+    onSuccess: () => {
+      utils.activities.getActivitiesForClub.invalidate();
+      toast.success(t("activity-deleted") as string);
+    },
+    onError(error) {
+      toast.error(error.message);
+    },
   });
   const { t } = useTranslation("club");
 
@@ -245,10 +264,15 @@ type NewGroupProps = {
 export const NewGroup = ({ userId, variant = "Primary" }: NewGroupProps) => {
   const utils = trpc.useContext();
   const createGroup = trpc.activities.createGroup.useMutation({
-    onSuccess: () =>
+    onSuccess: () => {
       userId
         ? utils.activities.getActivityGroupsForUser.invalidate(userId)
         : utils.activities.getAllActivityGroups.invalidate(),
+        toast.success(t("group-created") as string);
+    },
+    onError(error) {
+      toast.error(error.message);
+    },
   });
   const [name, setName] = useState("");
   const [error, setError] = useState(false);
@@ -299,10 +323,15 @@ export function UpdateGroup({
     },
   });
   const updateGroup = trpc.activities.updateGroup.useMutation({
-    onSuccess: () =>
+    onSuccess: () => {
       userId
         ? utils.activities.getActivityGroupsForUser.invalidate(userId)
         : utils.activities.getAllActivityGroups.invalidate(),
+        toast.success(t("group-updated") as string);
+    },
+    onError(error) {
+      toast.error(error.message);
+    },
   });
   const [name, setName] = useState("");
   const [defaultGroup, setDefaultGroup] = useState(false);
@@ -377,10 +406,15 @@ export function DeleteGroup({
 }: DeleteGroupProps) {
   const utils = trpc.useContext();
   const deleteGroup = trpc.activities.deleteGroup.useMutation({
-    onSuccess: () =>
+    onSuccess: () => {
       userId
         ? utils.activities.getActivityGroupsForUser.invalidate(userId)
         : utils.activities.getAllActivityGroups.invalidate(),
+        toast.success(t("group-deleted") as string);
+    },
+    onError(error) {
+      toast.error(error.message);
+    },
   });
   const { t } = useTranslation("club");
 

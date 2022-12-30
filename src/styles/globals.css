@@ -28,6 +28,9 @@
     @apply input-bordered input w-full;
   }
 }
+.pill {
+  @apply flex flex-wrap items-center gap-2 rounded-full border border-neutral bg-base-100 p-2 text-base-content;
+}
 
 .bg-gradient-home-hero {
   --hero-bg-opacity: 0.3;

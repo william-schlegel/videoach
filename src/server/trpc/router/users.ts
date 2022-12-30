@@ -132,7 +132,7 @@ export const userRouter = router({
         });
       return ctx.prisma.user.delete({ where: { id: input } });
     }),
-  updatePaiymentPeriod: protectedProcedure
+  updatePaymentPeriod: protectedProcedure
     .input(z.object({ userId: z.string().cuid(), monthlyPayment: z.boolean() }))
     .mutation(({ ctx, input }) => {
       if (

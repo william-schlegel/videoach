@@ -10,14 +10,14 @@ import {
 } from "react-hook-form";
 import Modal, { type TModalVariant } from "../ui/modal";
 import SimpleForm from "../ui/simpleform";
-import { useState, type PropsWithoutRef } from "react";
+import { type PropsWithoutRef } from "react";
 import type { Role } from "@prisma/client";
 import Confirmation from "@ui/confirmation";
 import { useTranslation } from "next-i18next";
 import { trpc } from "@trpcclient/trpc";
 import Spinner from "@ui/spinner";
-import Toast from "@ui/toast";
 import { ROLE_LIST } from "@root/src/pages/user/[userId]";
+import { toast } from "react-toastify";
 
 type UserFormValues = {
   name: string;
@@ -34,7 +34,6 @@ export const UpdateUser = ({
   userId,
   variant = "Icon-Outlined-Primary",
 }: PropsUpdateDelete) => {
-  const [error, setError] = useState("");
   const utils = trpc.useContext();
   const queryUser = trpc.users.getUserById.useQuery(userId, {
     onSuccess(data) {
@@ -45,15 +44,16 @@ export const UpdateUser = ({
           role: data.role ?? "MEMBER",
         });
     },
-    onError(err) {
-      setError(err.message);
-    },
   });
   const updateUser = trpc.users.updateUser.useMutation({
     onSuccess: () => {
       utils.users.getUserById.invalidate(userId);
       utils.users.getUserFullById.invalidate(userId);
       reset();
+      toast.success(t("user-updated") as string);
+    },
+    onError(error) {
+      toast.error(error.message);
     },
   });
   const {
@@ -92,7 +92,6 @@ export const UpdateUser = ({
           <UserForm register={register} errors={errors} getValues={getValues} />
         )}
       </Modal>
-      {error !== "" ? <Toast message={error} variant="Toast-Error" /> : null}
     </>
   );
 };
@@ -107,6 +106,10 @@ export const DeleteUser = ({
   const deleteUser = trpc.users.deleteUser.useMutation({
     onSuccess: () => {
       utils.users.getAllUsers.invalidate();
+      toast.success(t("user-deleted") as string);
+    },
+    onError(error) {
+      toast.error(error.message);
     },
   });
 

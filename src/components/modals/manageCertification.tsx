@@ -6,7 +6,6 @@ import {
   useRef,
   useState,
   useMemo,
-  KeyboardEventHandler,
 } from "react";
 import Confirmation from "../ui/confirmation";
 import { useTranslation } from "next-i18next";
@@ -14,14 +13,11 @@ import {
   useForm,
   type SubmitHandler,
   type SubmitErrorHandler,
-  type FieldErrorsImpl,
-  type UseFormRegister,
 } from "react-hook-form";
-import { useSession } from "next-auth/react";
 import SimpleForm from "@ui/simpleform";
-import { SortableList } from "@ui/sortableList";
-import ButtonIcon from "@ui/buttonIcon";
+import ButtonIcon, { type ButtonSize } from "@ui/buttonIcon";
 import Spinner from "@ui/spinner";
+import { toast } from "react-toastify";
 
 type CertificationFormValues = {
   name: string;
@@ -37,25 +33,102 @@ type CreateCertificationProps = {
   userId: string;
 };
 
+type OptionItem = {
+  id: string;
+  selected: boolean;
+};
+
 export const CreateCertification = ({ userId }: CreateCertificationProps) => {
   const [groupId, setGroupId] = useState("");
+  const [moduleIds, setModuleIds] = useState<Map<string, OptionItem>>(
+    new Map()
+  );
+  const [activityIds, setActivityIds] = useState<Map<string, OptionItem>>(
+    new Map()
+  );
+  const [obtentionDate, setObtentionDate] = useState<string>(
+    new Date(Date.now()).toISOString()
+  );
+  const utils = trpc.useContext();
+
   const queryGroups = trpc.coachs.getCertificationGroups.useQuery(undefined, {
     onSuccess(data) {
-      if (groupId === "" && data.length > 0) setGroupId(data[0]?.id || "");
+      if (groupId === "" && data.length > 0) {
+        const grpId = data[0]?.id || "";
+        setGroupId(grpId);
+        const mIds = new Map<string, OptionItem>();
+        for (const m of data?.find((g) => g.id === grpId)?.modules ?? []) {
+          mIds.set(m.id, { id: m.id, selected: false });
+        }
+        setModuleIds(mIds);
+      }
     },
   });
-  const queryCoachCertifications =
-    trpc.coachs.getCertificationsForCoach.useQuery(userId);
-  const addCertification = trpc.coachs.createCertification.useMutation();
   const { t } = useTranslation("coach");
+  const addCertification = trpc.coachs.createCertification.useMutation({
+    onSuccess() {
+      toast.success(t("certification-created") as string);
+      utils.coachs.getCertificationsForCoach.invalidate(userId);
+    },
+    onError(error) {
+      toast.error(error.message);
+    },
+  });
 
   const selectedGroup = queryGroups.data?.find((g) => g.id === groupId);
+  const selectedActivities =
+    selectedGroup?.modules
+      .filter((m) => moduleIds.get(m.id)?.selected)
+      .flatMap((m) => m.activityGroups) ?? [];
 
   const onSubmit = () => {
-    // updateClubActivities.mutate({
-    //   id: clubId,
-    //   activities: queryClubActivities.data?.activities.map((a) => a.id) || [],
-    // });
+    addCertification.mutate({
+      userId,
+      name: selectedGroup?.name ?? "?",
+      obtainedIn: new Date(obtentionDate ?? Date.now()),
+      activityGroups: Array.from(activityIds.values())
+        .filter((a) => a.selected)
+        .map((a) => a.id),
+      modules: Array.from(moduleIds.values())
+        .filter((m) => m.selected)
+        .map((m) => m.id),
+    });
+  };
+
+  const selectGroup = (grpId: string) => {
+    setGroupId(grpId);
+    const mIds = new Map<string, OptionItem>();
+    for (const m of queryGroups.data?.find((g) => g.id === grpId)?.modules ??
+      []) {
+      mIds.set(m.id, { id: m.id, selected: false });
+    }
+    setModuleIds(mIds);
+  };
+
+  const toggleModule = (moduleId: string) => {
+    const mods = moduleIds;
+    const mod = mods.get(moduleId);
+    if (mod) {
+      mod.selected = !mod.selected;
+      setModuleIds(new Map(mods));
+      const selectedModules =
+        selectedGroup?.modules.filter((m) => mods.get(m.id)?.selected) ?? [];
+      const activities =
+        selectedModules.flatMap((m) => m.activityGroups.map((a) => a.id)) ?? [];
+      const aIds = new Map<string, OptionItem>();
+      for (const a of activities) {
+        aIds.set(a, { id: a, selected: false });
+      }
+      setActivityIds(aIds);
+    }
+  };
+
+  const toggleActivity = (activityId: string) => {
+    const act = activityIds.get(activityId);
+    if (act) {
+      act.selected = !act.selected;
+      setActivityIds(new Map(activityIds));
+    }
   };
 
   return (
@@ -63,59 +136,96 @@ export const CreateCertification = ({ userId }: CreateCertificationProps) => {
       title={t("create-certification")}
       handleSubmit={onSubmit}
       submitButtonText={t("save-certifications")}
-      buttonIcon={<i className="bx bx-time bx-sm" />}
+      buttonIcon={<i className="bx bx-plus bx-sm" />}
       className="w-11/12 max-w-5xl"
     >
       <h3>{t("create-certification")}</h3>
-      <div className="flex flex-1 gap-4">
-        <div className="flex flex-col items-stretch justify-between gap-2">
-          <div>
-            <h4>{t("certification-provider")}</h4>
-            <ul className="menu overflow-hidden rounded border border-secondary bg-base-100">
-              {queryGroups.data?.map((group) => (
-                <li key={group.id}>
-                  <div
-                    className={`flex ${groupId === group.id ? "active" : ""}`}
+      <div className="grid grid-cols-3 gap-4">
+        <div>
+          <h4>{t("certification-provider")}</h4>
+          <ul className="menu overflow-hidden rounded border border-secondary bg-base-100">
+            {queryGroups.data?.map((group) => (
+              <li key={group.id}>
+                <div className={`flex ${groupId === group.id ? "active" : ""}`}>
+                  <button
+                    className="flex w-full items-center justify-between"
+                    onClick={() => selectGroup(group.id)}
                   >
-                    <button
-                      className="flex w-full items-center justify-between"
-                      onClick={() => setGroupId(group.id)}
-                    >
-                      {group.name}
-                    </button>
-                  </div>
-                </li>
-              ))}
-            </ul>
+                    {group.name}
+                  </button>
+                </div>
+              </li>
+            ))}
+          </ul>
+        </div>
+        <div>
+          <h4>{t("modules")}</h4>
+          <div className="flex flex-wrap gap-2 rounded border border-secondary bg-base-100 p-2">
+            {selectedGroup?.modules?.map((mod) => (
+              <button
+                key={mod.id}
+                className={`btn-primary btn normal-case ${
+                  moduleIds.get(mod.id)?.selected ? "" : "btn-outline"
+                }`}
+                onClick={() => toggleModule(mod.id)}
+              >
+                {mod.name}
+              </button>
+            ))}
           </div>
         </div>
-        <div className="flex flex-grow flex-col gap-2">
-          <h4>{t("certifications")}</h4>
-          <div className="flex flex-wrap gap-2">
-            {queryCoachCertifications.data?.certifications.map(
-              (certification) => (
-                <div key={certification.id} className="flex items-center gap-2">
-                  <span className="flex items-center gap-1 rounded-full border border-primary px-4 py-2 text-primary-content">
-                    {certification.name}
-                  </span>
-                </div>
-              )
-            )}
+        <div>
+          <h4>{t("activities")}</h4>
+          <div className="flex flex-wrap gap-2 rounded border border-secondary bg-base-100 p-2">
+            {selectedActivities.map((act) => (
+              <button
+                key={act.id}
+                className={`btn-primary btn normal-case ${
+                  activityIds.get(act.id)?.selected ? "" : "btn-outline"
+                }`}
+                onClick={() => toggleActivity(act.id)}
+              >
+                {act.name}
+              </button>
+            ))}
           </div>
         </div>
       </div>
+      <form className={`mt-2 grid grid-cols-2 gap-2`}>
+        <div className="flex flex-col">
+          <label>{t("obtention-date")}</label>
+          <input
+            type="date"
+            value={obtentionDate}
+            onChange={(e) => setObtentionDate(e.target.value)}
+            required
+          />
+        </div>
+        <div className="flex flex-col">
+          <label>{t("document")}</label>
+          <input
+            type="file"
+            className="file-input-bordered file-input-primary file-input w-full"
+          />
+        </div>
+      </form>
     </Modal>
   );
 };
 
 type UpdateCertificationProps = {
+  userId: string;
   certificationId: string;
+  variant?: TModalVariant;
+  buttonSize?: ButtonSize;
 };
 
 export const UpdateCertification = ({
   certificationId,
+  userId,
+  variant = "Icon-Outlined-Primary",
+  buttonSize = "sm",
 }: UpdateCertificationProps) => {
-  const { data: sessionData } = useSession();
   const utils = trpc.useContext();
   const {
     register,
@@ -134,9 +244,11 @@ export const UpdateCertification = ({
   );
   const updateCertification = trpc.coachs.updateCertification.useMutation({
     onSuccess: () => {
-      utils.coachs.getCertificationsForCoach.invalidate(
-        sessionData?.user?.id ?? ""
-      );
+      toast.success(t("certification-updated") as string);
+      utils.coachs.getCertificationsForCoach.invalidate(userId);
+    },
+    onError(error) {
+      toast.error(error.message);
     },
   });
 
@@ -155,7 +267,8 @@ export const UpdateCertification = ({
       submitButtonText="Enregistrer"
       errors={errors}
       buttonIcon={<i className="bx bx-edit bx-sm" />}
-      variant={"Icon-Outlined-Primary"}
+      variant={variant}
+      buttonSize={buttonSize}
     >
       <h3>
         {t("update-certification")} {queryCertification.data?.name}
@@ -177,17 +290,21 @@ export const UpdateCertification = ({
 };
 
 export const DeleteCertification = ({
+  userId,
   certificationId,
+  variant = "Icon-Outlined-Secondary",
+  buttonSize = "sm",
 }: UpdateCertificationProps) => {
   const utils = trpc.useContext();
-  const { data: sessionData } = useSession();
   const { t } = useTranslation("coach");
 
   const deleteCertification = trpc.coachs.deleteCertification.useMutation({
     onSuccess: () => {
-      utils.coachs.getCertificationsForCoach.invalidate(
-        sessionData?.user?.id ?? ""
-      );
+      utils.coachs.getCertificationsForCoach.invalidate(userId);
+      toast.success(t("certification-deleted") as string);
+    },
+    onError(error) {
+      toast.error(error.message);
     },
   });
 
@@ -199,7 +316,8 @@ export const DeleteCertification = ({
         deleteCertification.mutate(certificationId);
       }}
       buttonIcon={<i className="bx bx-trash bx-sm" />}
-      variant={"Icon-Outlined-Secondary"}
+      variant={variant}
+      buttonSize={buttonSize}
       textConfirmation={t("certification-confirmation")}
     />
   );
@@ -232,6 +350,10 @@ export const CreateCertificationGroup = ({
     onSuccess: () => {
       utils.coachs.getCertificationGroups.invalidate();
       setData(emptyData);
+      toast.success(t("certification.group-created") as string);
+    },
+    onError(error) {
+      toast.error(error.message);
     },
   });
 
@@ -290,6 +412,10 @@ export function UpdateCertificationGroup({
     onSuccess: () => {
       utils.coachs.getCertificationGroups.invalidate();
       setData(emptyData);
+      toast.success(t("certification.group-updated") as string);
+    },
+    onError(error) {
+      toast.error(error.message);
     },
   });
 
@@ -331,9 +457,15 @@ type DeleteGroupProps = {
 export function DeleteCertificationGroup({ groupId }: DeleteGroupProps) {
   const utils = trpc.useContext();
   const deleteGroup = trpc.coachs.deleteGroup.useMutation({
-    onSuccess: () => utils.coachs.getCertificationGroups.invalidate(),
+    onSuccess() {
+      utils.coachs.getCertificationGroups.invalidate(),
+        toast.success(t("certification.group-deleted") as string);
+    },
+    onError(error) {
+      toast.error(error.message);
+    },
   });
-  const { t } = useTranslation("coach");
+  const { t } = useTranslation("admin");
 
   return (
     <Confirmation

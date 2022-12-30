@@ -38,7 +38,7 @@ import {
   verticalListSortingStrategy,
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
-// import Toast from "@ui/toast";
+import { toast } from "react-toastify";
 
 type PricingFormValues = {
   title: string;
@@ -62,6 +62,10 @@ export const CreatePricing = ({ variant = "Primary" }: CreatePricingProps) => {
     onSuccess: () => {
       utils.pricings.getAllPricing.invalidate();
       reset();
+      toast.success(t("pricing.pricing-created") as string);
+    },
+    onError(error) {
+      toast.error(error.message);
     },
   });
   const {
@@ -143,6 +147,10 @@ export const UpdatePricing = ({
     onSuccess: () => {
       utils.pricings.getPricingById.invalidate(pricingId);
       reset();
+      toast.success(t("pricing.pricing-updated") as string);
+    },
+    onError(error) {
+      toast.error(error.message);
     },
   });
   const {
@@ -212,6 +220,10 @@ export const DeletePricing = ({
     onSuccess: () => {
       utils.pricings.getPricingById.invalidate(pricingId);
       utils.pricings.getAllPricing.invalidate();
+      toast.success(t("pricing.pricing-deleted") as string);
+    },
+    onError(error) {
+      toast.error(error.message);
     },
   });
 
@@ -239,6 +251,10 @@ export const UndeletePricing = ({
     onSuccess: () => {
       utils.pricings.getPricingById.invalidate(pricingId);
       utils.pricings.getAllPricing.invalidate();
+      toast.success(t("pricing.pricing-restored") as string);
+    },
+    onError(error) {
+      toast.error(error.message);
     },
   });
 
@@ -292,11 +308,6 @@ function PricingForm({
       });
     }
   }
-
-  // const onError: SubmitErrorHandler<PricingFormValues> = (errors) => {
-  //   console.log("errors :>> ", errors);
-  //   // {errors ? <Toast message={"Erreur création"} variant="Toast-Error" /> : null}
-  // };
 
   function handleDeleteOption(idx: number) {
     deletePricingOption.mutate(options[idx] ?? "");

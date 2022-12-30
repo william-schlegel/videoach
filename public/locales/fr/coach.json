@@ -1,7 +1,7 @@
 {
   "coach-only": "Cette page est réservée aux coachs",
   "manage-my-certifications_zero": "Gérer ma certification",
-  "manage-my-certifications_other": "Gérer mes certification",
+  "manage-my-certifications_other": "Gérer mes certifications",
   "select-certifications": "Sélectionnez vos certifications",
   "save-certifications": "Enregistrer les certifications",
   "create-certification": "Créer une nouvelle certification",
@@ -29,5 +29,15 @@
   "update-module": "Modifier le module",
   "module-deletion": "Suppression du module",
   "module-deletion-message": "Voulez-vous supprimer ce module ?\nCette action est irréversible",
-  "module-deletion-confirmation": "Supprimer définitivement"
+  "module-deletion-confirmation": "Supprimer définitivement",
+  "activities": "Activités",
+  "obtention-date": "Date d'obtention",
+  "document": "Document de certification",
+  "manual-entry": "Saisie manuelle",
+  "group-created": "Organisme de certification créé",
+  "group-updated": "Organisme de certification mis à jour",
+  "group-deleted": "Organisme de certification supprimé",
+  "certification-created": "Certification créée",
+  "certification-updated": "Certification mise à jour",
+  "certification-deleted": "Certification supprimée"
 }

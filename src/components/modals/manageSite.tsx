@@ -13,6 +13,7 @@ import { type PropsWithoutRef } from "react";
 import { useSession } from "next-auth/react";
 import Confirmation from "@ui/confirmation";
 import { useTranslation } from "next-i18next";
+import { toast } from "react-toastify";
 
 type SiteFormValues = {
   name: string;
@@ -34,7 +35,13 @@ export const CreateSite = ({ clubId }: CreateSiteProps) => {
   const { t } = useTranslation("club");
 
   const createSite = trpc.sites.createSite.useMutation({
-    onSuccess: () => utils.clubs.getClubById.invalidate(clubId),
+    onSuccess: () => {
+      utils.clubs.getClubById.invalidate(clubId),
+        toast.success(t("site-created") as string);
+    },
+    onError(error) {
+      toast.error(error.message);
+    },
   });
   const onSubmit: SubmitHandler<SiteFormValues> = (data) => {
     createSite.mutate({ clubId, ...data });
@@ -83,6 +90,10 @@ export const UpdateSite = ({ siteId, clubId }: UpdateSiteProps) => {
     onSuccess: () => {
       utils.sites.getSiteById.invalidate(siteId);
       utils.sites.getSitesForClub.invalidate(clubId);
+      toast.success(t("site-updated") as string);
+    },
+    onError(error) {
+      toast.error(error.message);
     },
   });
   const { t } = useTranslation("club");
@@ -136,6 +147,10 @@ export const DeleteSite = ({
     onSuccess: () => {
       utils.clubs.getClubsForManager.invalidate(sessionData?.user?.id ?? "");
       utils.clubs.getClubById.invalidate(clubId);
+      toast.success(t("site-deleted") as string);
+    },
+    onError(error) {
+      toast.error(error.message);
     },
   });
 

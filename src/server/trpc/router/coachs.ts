@@ -6,11 +6,11 @@ import { router, protectedProcedure, publicProcedure } from "../trpc";
 const CertificationData = z.object({
   id: z.string().cuid(),
   name: z.string(),
-  certificationGroupId: z.string(),
   obtainedIn: z.date(),
   documentUrl: z.string().url().optional(),
   userId: z.string().cuid(),
-  activityGroupId: z.string().cuid().optional(),
+  modules: z.array(z.string().cuid()),
+  activityGroups: z.array(z.string().cuid()),
 });
 
 export const coachRouter = router({
@@ -28,7 +28,18 @@ export const coachRouter = router({
     .input(CertificationData.omit({ id: true }))
     .mutation(({ ctx, input }) =>
       ctx.prisma.certification.create({
-        data: input,
+        data: {
+          name: input.name,
+          obtainedIn: input.obtainedIn,
+          documentUrl: input.documentUrl,
+          userId: input.userId,
+          modules: {
+            connect: input.modules.map((m) => ({ id: m })),
+          },
+          activityGroups: {
+            connect: input.activityGroups.map((a) => ({ id: a })),
+          },
+        },
       })
     ),
   updateCertification: protectedProcedure
@@ -36,7 +47,22 @@ export const coachRouter = router({
     .mutation(({ ctx, input }) =>
       ctx.prisma.certification.update({
         where: { id: input.id },
-        data: input,
+        data: {
+          name: input.name,
+          obtainedIn: input.obtainedIn,
+          documentUrl: input.documentUrl,
+          userId: input.userId,
+          modules: input.modules
+            ? {
+                connect: input.modules.map((m) => ({ id: m })),
+              }
+            : undefined,
+          activityGroups: input.activityGroups
+            ? {
+                connect: input.activityGroups.map((a) => ({ id: a })),
+              }
+            : undefined,
+        },
       })
     ),
   deleteCertification: protectedProcedure
@@ -56,7 +82,12 @@ export const coachRouter = router({
       ctx.prisma.user.findUnique({
         where: { id: input },
         include: {
-          certifications: true,
+          certifications: {
+            include: {
+              modules: true,
+              activityGroups: true,
+            },
+          },
         },
       })
     ),
@@ -73,7 +104,7 @@ export const coachRouter = router({
     ),
   getCertificationGroups: protectedProcedure.query(({ ctx }) =>
     ctx.prisma.certificationGroup.findMany({
-      include: { modules: { include: { _count: true } } },
+      include: { modules: { include: { activityGroups: true } } },
     })
   ),
   getCertificationGroupById: protectedProcedure

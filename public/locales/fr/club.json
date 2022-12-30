@@ -81,5 +81,20 @@
   "group-deletion": "Supprimer le groupe",
   "group-deletion-message": "Voulez-vous supprimer ce groupe ?\nCette action est irréversible",
   "group-deletion-confirmation": "Supprimer définitivement",
-  "default": "Par défaut"
+  "default": "Par défaut",
+  "club-created": "Club créé",
+  "club-updated": "Club mis à jour",
+  "club-deleted": "Club supprimé",
+  "site-created": "Site d'activité créé",
+  "site-updated": "Site d'activité mis à jour",
+  "site-deleted": "Site d'activité supprimé",
+  "room-created": "Salle créée",
+  "room-updated": "Salle mise à jour",
+  "room-deleted": "Salle supprimée",
+  "group-created": "Groupe d'activité créé",
+  "group-updated": "Groupe d'activité mis à jour",
+  "group-deleted": "Groupe d'activité supprimé",
+  "activity-created": "Activité créée",
+  "activity-updated": "Activité mise à jour",
+  "activity-deleted": "Activité supprimée"
 }

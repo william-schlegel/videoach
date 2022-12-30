@@ -10,6 +10,7 @@ import Modal from "../ui/modal";
 import SimpleForm from "../ui/simpleform";
 import Confirmation from "../ui/confirmation";
 import { useTranslation } from "next-i18next";
+import { toast } from "react-toastify";
 
 type ClubFormValues = {
   name: string;
@@ -34,6 +35,10 @@ export const CreateClub = () => {
   const createClub = trpc.clubs.createClub.useMutation({
     onSuccess: () => {
       utils.clubs.getClubsForManager.invalidate(sessionData?.user?.id ?? "");
+      toast.success(t("club-created") as string);
+    },
+    onError(error) {
+      toast.error(error.message);
     },
   });
 
@@ -119,6 +124,10 @@ export const UpdateClub = ({ clubId }: PropsWithoutRef<PropsUpdateDelete>) => {
     onSuccess: () => {
       utils.clubs.getClubsForManager.invalidate(sessionData?.user?.id ?? "");
       utils.clubs.getClubById.invalidate(clubId);
+      toast.success(t("club-updated") as string);
+    },
+    onError(error) {
+      toast.error(error.message);
     },
   });
 
@@ -172,6 +181,10 @@ export const DeleteClub = ({ clubId }: PropsWithoutRef<PropsUpdateDelete>) => {
     onSuccess: () => {
       utils.clubs.getClubsForManager.invalidate(sessionData?.user?.id ?? "");
       utils.clubs.getClubById.invalidate(clubId);
+      toast.success(t("club-deleted") as string);
+    },
+    onError(error) {
+      toast.error(error.message);
     },
   });
 

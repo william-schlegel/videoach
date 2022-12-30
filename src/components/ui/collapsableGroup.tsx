@@ -8,10 +8,7 @@ type Props = {
 function CollapsableGroup({ groupName, children }: Props) {
   const [opened, setOpened] = useState(false);
   return (
-    <button
-      onClick={() => setOpened((p) => !p)}
-      className="flex items-center gap-2 rounded-full border border-neutral bg-base-100 px-4 py-1"
-    >
+    <button onClick={() => setOpened((p) => !p)} className="pill">
       <span className="text-primary">{groupName}</span>
       <div className="flex items-center gap-2 transition-transform duration-200">
         {opened ? <>{children}</> : null}

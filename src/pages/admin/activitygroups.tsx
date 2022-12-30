@@ -129,10 +129,7 @@ export function AGContent({ agId }: AGContentProps) {
           <h3>{t("ag.group-activities")}</h3>
           <div className="flex flex-row flex-wrap gap-2">
             {activitiesQuery.data?.map((activity) => (
-              <div
-                key={activity.id}
-                className="flex items-center gap-4 rounded-full border  border-neutral px-4 py-2"
-              >
+              <div key={activity.id} className="pill">
                 <span>{activity.name}</span>
                 <span className="badge badge-primary">
                   {activity.club.name}
@@ -145,10 +142,7 @@ export function AGContent({ agId }: AGContentProps) {
           <h3>{t("ag.group-clubs")}</h3>
           <div className="flex flex-row flex-wrap gap-2">
             {clubs.map((club) => (
-              <div
-                key={club.id}
-                className="flex items-center gap-4 rounded-full border  border-neutral px-4 py-2"
-              >
+              <div key={club.id} className="pill">
                 <span>{club.name}</span>
                 <span className="badge badge-primary">{club.activities}</span>
               </div>

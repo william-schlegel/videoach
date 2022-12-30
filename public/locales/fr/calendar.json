@@ -20,5 +20,8 @@
   "same-as-club": "Mêmes horaires que le club",
   "same-as-site": "Mêmes horaires que le site d'activité",
   "save-calendar": "Enregistrer ce calendrier",
-  "no-calendar": "Pas d'horaires d'ouverture définis"
+  "no-calendar": "Pas d'horaires d'ouverture définis",
+  "calendar-created": "Horaires d'ouverture créés",
+  "calendar-updated": "Horaires d'ouverture mis à jour",
+  "calendar-deleted": "Horaires d'ouverture supprimés"
 }

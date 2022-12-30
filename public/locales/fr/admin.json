@@ -23,7 +23,11 @@
     "delete-option": "Supprimer cette option",
     "add-option": "Ajouter cette option",
     "undelete": "Restaurer le tarif",
-    "undelete-message": "Voulez vous restaurer ce tarif ?"
+    "undelete-message": "Voulez vous restaurer ce tarif ?",
+    "pricing-created": "Tarif créé",
+    "pricing-updated": "Tarif mis à jour",
+    "pricing-deleted": "Tarif supprimé",
+    "pricing-restored": "Tarif restoré"
   },
   "user": {
     "manage-users": "Gérer les utilisateurs",
@@ -38,13 +42,19 @@
     "trial-until": "En période d'éssai jusqu'au {{trialDate}}",
     "trial": "Essai",
     "manager-activity": "Activités de manager",
-    "coach-activity": "Activités de coach"
+    "coach-activity": "Activités de coach",
+    "user-created": "Utilisateur créé",
+    "user-updated": "Utilisateur mis à jour",
+    "user-deleted": "Utilisateur supprimé"
   },
   "ag": {
     "manage-ag": "Gérer les activités",
     "groups": "Groupes d'activité",
     "group-clubs": "Clubs qui utilisent ce groupe",
-    "group-activities": "Activités attachées à ce groupe"
+    "group-activities": "Activités attachées à ce groupe",
+    "ag-created": "Groupe d'activité créé",
+    "ag-updated": "Groupe d'activité mis à jour",
+    "ag-deleted": "Groupe d'activité supprimé"
   },
   "certification": {
     "manage-cg": "Gérer les certifications",
@@ -57,6 +67,9 @@
     "new-group": "Nouvel organisme de certification",
     "update-group": "Modifier l'organisme de certification",
     "delete-module": "Supprimer ce module",
-    "linked-activities": "Activités liées"
+    "linked-activities": "Activités liées",
+    "group-created": "organisme de certification créé",
+    "group-updated": "organisme de certification mis à jour",
+    "group-deleted": "organisme de certification supprimé"
   }
 }

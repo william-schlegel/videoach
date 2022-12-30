@@ -88,10 +88,7 @@ export function CGContent({ cgId }: CGContentProps) {
           <h3>{t("certification.group-modules")}</h3>
           <div className="flex flex-row flex-wrap gap-2">
             {cgQuery.data?.modules?.map((module) => (
-              <div
-                key={module.id}
-                className="flex items-center gap-4 rounded-full border  border-neutral px-4 py-2"
-              >
+              <div key={module.id} className="pill">
                 <span>{module.name}</span>
                 <span className="badge badge-primary">
                   {module.activityGroups?.length}

@@ -3,7 +3,9 @@ import Head from "next/head";
 import { useEffect, useRef, type ReactNode } from "react";
 import Footer from "./footer";
 import Navbar from "./navbar";
+import { ToastContainer } from "react-toastify";
 
+import "react-toastify/dist/ReactToastify.css";
 type Props = {
   children: ReactNode;
 };
@@ -36,6 +38,10 @@ export default function Layout({ children }: Props) {
         />
         <main className="bg-base-200 pb-4">{children}</main>
         <Footer />
+        <ToastContainer
+          autoClose={3000}
+          theme={theme === "dark" ? "dark" : "colored"}
+        />
       </div>
     </>
   );

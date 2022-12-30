@@ -9,6 +9,7 @@ import nextI18nConfig from "@root/next-i18next.config.mjs";
 import { Pricing, PricingContainer } from "@ui/pricing";
 import { remainingDays } from "@lib/formatDate";
 import Confirmation from "@ui/confirmation";
+import { toast } from "react-toastify";
 
 export const ROLE_LIST = [
   { label: "user", value: Role.MEMBER },
@@ -55,6 +56,10 @@ export default function Profile() {
   const planUpdate = trpc.users.changeUserPlan.useMutation({
     onSuccess() {
       utils.users.getUserById.invalidate(myUserId);
+      toast.success(t("plan-updated") as string);
+    },
+    onError(error) {
+      toast.error(error.message);
     },
   });
 
@@ -62,6 +67,10 @@ export default function Profile() {
   const updateUser = trpc.users.updateUser.useMutation({
     onSuccess() {
       utils.users.getUserById.invalidate(myUserId);
+      toast.success(t("user-updated") as string);
+    },
+    onError(error) {
+      toast.error(error.message);
     },
   });
   const { t } = useTranslation("auth");

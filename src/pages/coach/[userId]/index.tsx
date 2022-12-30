@@ -18,7 +18,7 @@ const CoachDashboard = ({
   const coachQuery = trpc.dashboards.getCoachDataForUserId.useQuery(userId);
   const { t } = useTranslation("dashboard");
   const clubCount = coachQuery.data?.clubs?.length ?? 0;
-  const certificationCount = 0; //coachQuery.data?.certifications?.length ?? 0;
+  const certificationCount = coachQuery.data?.certifications?.length ?? 0;
   const activityCount = coachQuery.data?.activityGroups?.length ?? 0;
 
   if (coachQuery.isLoading) return <Spinner />;

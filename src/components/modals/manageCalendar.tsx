@@ -6,6 +6,7 @@ import { DayName } from "@prisma/client";
 import ButtonIcon from "@ui/buttonIcon";
 import { fieldSet } from "@lib/fieldGetSet";
 import { formatDateAsYYYYMMDD } from "@lib/formatDate";
+import { toast } from "react-toastify";
 
 export const DAYS = [
   { value: DayName.MONDAY, label: "monday" },
@@ -293,6 +294,10 @@ export const CreateRoomCalendar = ({
         roomId,
         siteId,
       });
+      toast.success(t("calendar-created") as string);
+    },
+    onError(error) {
+      toast.error(error.message);
     },
   });
   const updateRoomCal = trpc.sites.updateRoomCalendar.useMutation({
@@ -302,6 +307,10 @@ export const CreateRoomCalendar = ({
         roomId,
         siteId,
       });
+      toast.success(t("calendar-updated") as string);
+    },
+    onError(error) {
+      toast.error(error.message);
     },
   });
   const updateRoom = trpc.sites.updateRoom.useMutation({

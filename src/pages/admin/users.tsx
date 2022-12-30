@@ -76,7 +76,7 @@ function UserManagement() {
               <div className="collapse-title text-xl font-medium">
                 <span className="flex items-center gap-4">
                   {t("user.filter")}
-                  <span className="badge-info badge">
+                  <span className="badge badge-info">
                     {Object.keys(filter).length}
                   </span>
                 </span>
@@ -170,7 +170,7 @@ type UserContentProps = {
 export function UserContent({ userId }: UserContentProps) {
   const userQuery = trpc.users.getUserFullById.useQuery(userId);
   const { t } = useTranslation("admin");
-  const periodicityMutation = trpc.users.updatePaiymentPeriod.useMutation({
+  const periodicityMutation = trpc.users.updatePaymentPeriod.useMutation({
     onSuccess() {
       utils.users.getUserFullById.invalidate(userId);
     },
@@ -210,7 +210,7 @@ export function UserContent({ userId }: UserContentProps) {
         <article className="flex flex-col gap-2 rounded-md border border-primary p-2">
           <h2 className="flex items-center justify-between gap-2">
             {t("user.plan")}
-            <span className="badge-primary badge">
+            <span className="badge badge-primary">
               {t(`auth:${getRoleName(userQuery.data?.role ?? "MEMBER")}`)}
             </span>
           </h2>

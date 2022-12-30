@@ -10,13 +10,13 @@ import {
 } from "react-hook-form";
 import Modal, { type TModalVariant } from "../ui/modal";
 import SimpleForm from "../ui/simpleform";
-import { useState, type PropsWithoutRef } from "react";
+import { type PropsWithoutRef } from "react";
 import { RoomReservation } from "@prisma/client";
 import Confirmation from "@ui/confirmation";
 import { useTranslation } from "next-i18next";
 import { trpc } from "@trpcclient/trpc";
 import Spinner from "@ui/spinner";
-import Toast from "@ui/toast";
+import { toast } from "react-toastify";
 
 type RoomFormValues = {
   name: string;
@@ -40,15 +40,15 @@ export const CreateRoom = ({
   siteId,
   variant = "Icon-Outlined-Primary",
 }: CreateRoomProps) => {
-  const [error, setError] = useState("");
   const utils = trpc.useContext();
   const createRoom = trpc.sites.createRoom.useMutation({
     onSuccess: () => {
       utils.sites.getRoomsForSite.invalidate(siteId);
       reset();
+      toast.success(t("room-created") as string);
     },
-    onError(err) {
-      setError(err.message);
+    onError(error) {
+      toast.error(error.message);
     },
   });
   const {
@@ -88,7 +88,6 @@ export const CreateRoom = ({
         <h3>{t("new-room")}</h3>
         <RoomForm register={register} errors={errors} getValues={getValues} />
       </Modal>
-      {error !== "" ? <Toast message={error} variant="Toast-Error" /> : null}
     </>
   );
 };
@@ -104,14 +103,10 @@ export const UpdateRoom = ({
   roomId,
   variant = "Icon-Outlined-Primary",
 }: PropsUpdateDelete) => {
-  const [error, setError] = useState("");
   const utils = trpc.useContext();
   const queryRoom = trpc.sites.getRoomById.useQuery(roomId, {
     onSuccess(data) {
       if (data) reset(data);
-    },
-    onError(err) {
-      setError(err.message);
     },
   });
   const updateRoom = trpc.sites.updateRoom.useMutation({
@@ -119,6 +114,10 @@ export const UpdateRoom = ({
       utils.sites.getRoomsForSite.invalidate(siteId);
       utils.sites.getRoomById.invalidate(roomId);
       reset();
+      toast.success(t("room-updated") as string);
+    },
+    onError(error) {
+      toast.error(error.message);
     },
   });
   const {
@@ -159,7 +158,6 @@ export const UpdateRoom = ({
           <RoomForm register={register} errors={errors} getValues={getValues} />
         )}
       </Modal>
-      {error !== "" ? <Toast message={error} variant="Toast-Error" /> : null}
     </>
   );
 };
@@ -175,6 +173,10 @@ export const DeleteRoom = ({
   const deleteRoom = trpc.sites.deleteRoom.useMutation({
     onSuccess: () => {
       utils.sites.getRoomsForSite.invalidate(siteId);
+      toast.success(t("room-deleted") as string);
+    },
+    onError(error) {
+      toast.error(error.message);
     },
   });
 
