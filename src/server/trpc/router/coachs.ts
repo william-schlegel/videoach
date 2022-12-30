@@ -73,6 +73,9 @@ export const coachRouter = router({
   getAllCoachs: publicProcedure.query(({ ctx }) =>
     ctx.prisma.user.findMany({
       where: { role: { in: ["COACH", "MANAGER_COACH"] } },
+      include: {
+        certifications: true,
+      },
     })
   ),
 
@@ -155,49 +158,34 @@ export const coachRouter = router({
       z.object({
         id: z.string().cuid(),
         name: z.string(),
-        modules: z.array(
-          z.object({
-            id: z.string().cuid().optional(),
-            name: z.string(),
-            activityIds: z.array(z.string().cuid()),
-          })
-        ),
       })
     )
     .mutation(({ ctx, input }) =>
-      ctx.prisma.$transaction(async (tx) => {
-        const group = await tx.certificationGroup.update({
-          where: { id: input.id },
-          data: {
-            name: input.name,
-          },
-        });
-        for (const mod of input.modules.filter((m) => !m.id)) {
-          await tx.certificationModule.create({
-            data: {
-              name: mod.name,
-              certificationGroupId: group.id,
-              activityGroups: {
-                connect: mod.activityIds.map((id) => ({ id })),
-              },
-            },
-          });
-        }
-        for (const mod of input.modules.filter((m) => m.id)) {
-          await tx.certificationModule.update({
-            where: { id: mod.id },
-            data: {
-              name: mod.name,
-              certificationGroupId: group.id,
-              activityGroups: {
-                connect: mod.activityIds.map((id) => ({ id })),
-              },
-            },
-          });
-        }
-        return group;
+      ctx.prisma.certificationGroup.update({
+        where: { id: input.id },
+        data: {
+          name: input.name,
+        },
       })
     ),
+  updateActivitiesForModule: protectedProcedure
+    .input(
+      z.object({
+        moduleId: z.string().cuid(),
+        activityIds: z.array(z.string().cuid()),
+      })
+    )
+    .mutation(({ ctx, input }) =>
+      ctx.prisma.certificationModule.update({
+        where: { id: input.moduleId },
+        data: {
+          activityGroups: {
+            connect: input.activityIds.map((a) => ({ id: a })),
+          },
+        },
+      })
+    ),
+
   deleteGroup: protectedProcedure
     .input(z.string().cuid())
     .mutation(async ({ ctx, input }) => {

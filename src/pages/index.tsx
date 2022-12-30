@@ -201,10 +201,13 @@ const Home = () => {
                           <Rating note={res.rating} />
                         </td>
                         <td className="flex flex-wrap gap-2">
-                          {/*res.certifications.map((cert) => (
-                            <span key={cert}>{cert}</span>
-                          ))*/}
-                          tbd
+                          {res.certifications.length ? (
+                            res.certifications.map((cert) => (
+                              <span key={cert.id}>{cert.name}</span>
+                            ))
+                          ) : (
+                            <span>&nbsp;</span>
+                          )}
                         </td>
                       </tr>
                     ))}

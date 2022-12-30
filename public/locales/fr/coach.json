@@ -1,6 +1,7 @@
 {
   "coach-only": "Cette page est réservée aux coachs",
-  "manage-my-certifications_zero": "Gérer ma certification",
+  "manage-my-certifications_zero": "Aucune certification pour le moment",
+  "manage-my-certifications_one": "Gérer ma certification",
   "manage-my-certifications_other": "Gérer mes certifications",
   "select-certifications": "Sélectionnez vos certifications",
   "save-certifications": "Enregistrer les certifications",

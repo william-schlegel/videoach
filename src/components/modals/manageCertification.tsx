@@ -1,12 +1,6 @@
 import { trpc } from "../../utils/trpc";
 import Modal, { type TModalVariant } from "../ui/modal";
-import {
-  type Dispatch,
-  type SetStateAction,
-  useRef,
-  useState,
-  useMemo,
-} from "react";
+import { type Dispatch, type SetStateAction, useRef, useState } from "react";
 import Confirmation from "../ui/confirmation";
 import { useTranslation } from "next-i18next";
 import {
@@ -18,6 +12,7 @@ import SimpleForm from "@ui/simpleform";
 import ButtonIcon, { type ButtonSize } from "@ui/buttonIcon";
 import Spinner from "@ui/spinner";
 import { toast } from "react-toastify";
+import { formatDateAsYYYYMMDD } from "@lib/formatDate";
 
 type CertificationFormValues = {
   name: string;
@@ -46,8 +41,8 @@ export const CreateCertification = ({ userId }: CreateCertificationProps) => {
   const [activityIds, setActivityIds] = useState<Map<string, OptionItem>>(
     new Map()
   );
-  const [obtentionDate, setObtentionDate] = useState<string>(
-    new Date(Date.now()).toISOString()
+  const [obtentionDate, setObtentionDate] = useState<Date>(
+    new Date(Date.now())
   );
   const utils = trpc.useContext();
 
@@ -76,16 +71,19 @@ export const CreateCertification = ({ userId }: CreateCertificationProps) => {
   });
 
   const selectedGroup = queryGroups.data?.find((g) => g.id === groupId);
-  const selectedActivities =
-    selectedGroup?.modules
-      .filter((m) => moduleIds.get(m.id)?.selected)
-      .flatMap((m) => m.activityGroups) ?? [];
+  const selectedActivities = new Map();
+
+  for (const a of selectedGroup?.modules
+    .filter((m) => moduleIds.get(m.id)?.selected)
+    .flatMap((m) => m.activityGroups) ?? []) {
+    selectedActivities.set(a.id, a);
+  }
 
   const onSubmit = () => {
     addCertification.mutate({
       userId,
       name: selectedGroup?.name ?? "?",
-      obtainedIn: new Date(obtentionDate ?? Date.now()),
+      obtainedIn: obtentionDate,
       activityGroups: Array.from(activityIds.values())
         .filter((a) => a.selected)
         .map((a) => a.id),
@@ -113,8 +111,12 @@ export const CreateCertification = ({ userId }: CreateCertificationProps) => {
       setModuleIds(new Map(mods));
       const selectedModules =
         selectedGroup?.modules.filter((m) => mods.get(m.id)?.selected) ?? [];
-      const activities =
-        selectedModules.flatMap((m) => m.activityGroups.map((a) => a.id)) ?? [];
+      const activities = Array.from(
+        new Set(
+          selectedModules.flatMap((m) => m.activityGroups.map((a) => a.id)) ??
+            []
+        )
+      );
       const aIds = new Map<string, OptionItem>();
       for (const a of activities) {
         aIds.set(a, { id: a, selected: false });
@@ -177,7 +179,7 @@ export const CreateCertification = ({ userId }: CreateCertificationProps) => {
         <div>
           <h4>{t("activities")}</h4>
           <div className="flex flex-wrap gap-2 rounded border border-secondary bg-base-100 p-2">
-            {selectedActivities.map((act) => (
+            {Array.from(selectedActivities.values()).map((act) => (
               <button
                 key={act.id}
                 className={`btn-primary btn normal-case ${
@@ -196,8 +198,10 @@ export const CreateCertification = ({ userId }: CreateCertificationProps) => {
           <label>{t("obtention-date")}</label>
           <input
             type="date"
-            value={obtentionDate}
-            onChange={(e) => setObtentionDate(e.target.value)}
+            value={formatDateAsYYYYMMDD(obtentionDate)}
+            onChange={(e) =>
+              setObtentionDate(e.target.valueAsDate ?? new Date(Date.now()))
+            }
             required
           />
         </div>
@@ -424,11 +428,6 @@ export function UpdateCertificationGroup({
     updateGroup.mutate({
       id: groupId,
       name: data?.name ?? "",
-      modules: data.modules.map((m) => ({
-        id: m.dbId?.startsWith("MOD-") ? undefined : m.dbId,
-        name: m.name,
-        activityIds: m.activityIds,
-      })),
     });
   };
 
@@ -444,7 +443,11 @@ export function UpdateCertificationGroup({
       {queryGroup.isLoading ? (
         <Spinner />
       ) : (
-        <CertificationGroupForm data={data} setData={setData} />
+        <CertificationGroupForm
+          data={data}
+          setData={setData}
+          groupId={groupId}
+        />
       )}
     </Modal>
   );
@@ -469,12 +472,12 @@ export function DeleteCertificationGroup({ groupId }: DeleteGroupProps) {
 
   return (
     <Confirmation
-      title={t("group-deletion")}
-      message={t("group-deletion-message")}
+      title={t("coach:group-deletion")}
+      message={t("coach:group-deletion-message")}
       onConfirm={() => deleteGroup.mutate(groupId)}
       buttonIcon={<i className="bx bx-trash bx-sm" />}
       variant={"Icon-Outlined-Secondary"}
-      textConfirmation={t("group-deletion-confirmation")}
+      textConfirmation={t("coach:group-deletion-confirmation")}
       buttonSize="sm"
     />
   );
@@ -483,11 +486,13 @@ export function DeleteCertificationGroup({ groupId }: DeleteGroupProps) {
 type CertificationGroupFormProps = {
   data: CertificationGroupForm;
   setData: Dispatch<SetStateAction<CertificationGroupForm>>;
+  groupId?: string;
 };
 
 function CertificationGroupForm({
   data,
   setData,
+  groupId,
 }: CertificationGroupFormProps): JSX.Element {
   const { t } = useTranslation("admin");
   const refOpt = useRef<HTMLInputElement>(null);
@@ -496,14 +501,19 @@ function CertificationGroupForm({
   const [moduleId, setModuleId] = useState("");
   const [activityIds, setActivityIds] = useState(new Set<string>());
   const [moduleName, setModuleName] = useState("");
-  const selectedModule = useMemo(
-    () => data.modules.find((m) => m.dbId === moduleId),
-    [data.modules, moduleId]
-  );
+  const utils = trpc.useContext();
+
+  const selectedModule = data.modules.find((m) => m.dbId === moduleId);
+  const addActivities = trpc.coachs.updateActivitiesForModule.useMutation({
+    onSuccess() {
+      if (groupId) utils.coachs.getCertificationGroupById.invalidate(groupId);
+    },
+  });
 
   function handleDeleteModule(id: number) {
     const mod = data.modules[id];
-    if (!mod?.dbId?.startsWith("MOD-")) deleteModule.mutate(mod?.dbId ?? "");
+    if (!mod?.dbId?.startsWith("MOD-") && groupId)
+      deleteModule.mutate(mod?.dbId ?? "");
 
     const mods = data.modules.filter((_, idx) => idx !== id);
     setData({ ...data, modules: mods });
@@ -541,6 +551,12 @@ function CertificationGroupForm({
     }
     mod.activityIds.push(activityId);
     setData({ ...data });
+    if (groupId && mod.dbId) {
+      addActivities.mutate({
+        moduleId: mod.dbId,
+        activityIds: mod.activityIds,
+      });
+    }
   }
 
   function removeActivityId(activityId: string) {
@@ -552,6 +568,12 @@ function CertificationGroupForm({
     }
     mod.activityIds = mod.activityIds.filter((a) => a !== activityId);
     setData({ ...data });
+    if (groupId && mod.dbId) {
+      addActivities.mutate({
+        moduleId: mod.dbId,
+        activityIds: mod.activityIds,
+      });
+    }
   }
 
   function handleKeyboard(key: string, name: string) {
@@ -567,6 +589,18 @@ function CertificationGroupForm({
       setActivityIds(new Set());
     }
   }
+
+  const toggleActivityGroup = (id: string) => {
+    if (selectedModule?.activityIds) {
+      const ids = selectedModule?.activityIds ?? [];
+      if (ids.includes(id)) removeActivityId(id);
+      else addActivityId(id);
+    } else {
+      const ids = activityIds;
+      if (ids.has(id)) removeActivityId(id);
+      else addActivityId(id);
+    }
+  };
 
   return (
     <div className="flex flex-col gap-2">
@@ -633,24 +667,14 @@ function CertificationGroupForm({
             <div className="flex flex-wrap gap-2">
               {agQuery.data?.map((ag) => (
                 <button
-                  className={`btn-primary btn-sm btn ${
+                  className={`btn-primary btn-sm btn normal-case ${
                     selectedModule?.activityIds.includes(ag.id) ||
                     activityIds.has(ag.id)
                       ? ""
                       : "btn-outline"
                   }`}
                   key={ag.id}
-                  onClick={() => {
-                    if (selectedModule?.activityIds) {
-                      const ids = selectedModule?.activityIds ?? [];
-                      if (ids.includes(ag.id)) removeActivityId(ag.id);
-                      else addActivityId(ag.id);
-                    } else {
-                      const ids = activityIds;
-                      if (ids.has(ag.id)) removeActivityId(ag.id);
-                      else addActivityId(ag.id);
-                    }
-                  }}
+                  onClick={() => toggleActivityGroup(ag.id)}
                 >
                   {ag.name}
                 </button>

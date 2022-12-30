@@ -4,7 +4,7 @@ dayjs.locale("fr-fr");
 
 export const formatDateAsYYYYMMDD = (dt: Date) => {
   const y = dt.getFullYear();
-  const m = dt.getMonth();
+  const m = dt.getMonth() + 1;
   const d = dt.getDate();
 
   return `${y}-${`0${m}`.slice(-2)}-${`0${d}`.slice(-2)}`;
