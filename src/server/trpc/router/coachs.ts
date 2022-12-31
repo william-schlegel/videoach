@@ -7,7 +7,7 @@ const CertificationData = z.object({
   id: z.string().cuid(),
   name: z.string(),
   obtainedIn: z.date(),
-  documentUrl: z.string().url().optional(),
+  documentId: z.string().cuid().optional(),
   userId: z.string().cuid(),
   modules: z.array(z.string().cuid()),
   activityGroups: z.array(z.string().cuid()),
@@ -26,12 +26,11 @@ export const coachRouter = router({
   }),
   createCertification: protectedProcedure
     .input(CertificationData.omit({ id: true }))
-    .mutation(({ ctx, input }) =>
-      ctx.prisma.certification.create({
+    .mutation(async ({ ctx, input }) => {
+      const certif = await ctx.prisma.certification.create({
         data: {
           name: input.name,
           obtainedIn: input.obtainedIn,
-          documentUrl: input.documentUrl,
           userId: input.userId,
           modules: {
             connect: input.modules.map((m) => ({ id: m })),
@@ -40,8 +39,21 @@ export const coachRouter = router({
             connect: input.activityGroups.map((a) => ({ id: a })),
           },
         },
-      })
-    ),
+      });
+      if (input.documentId) {
+        await ctx.prisma.certification.update({
+          where: { id: certif.id },
+          data: {
+            document: {
+              connect: {
+                id: input.documentId,
+              },
+            },
+          },
+        });
+      }
+      return certif;
+    }),
   updateCertification: protectedProcedure
     .input(CertificationData.partial())
     .mutation(({ ctx, input }) =>
@@ -50,7 +62,6 @@ export const coachRouter = router({
         data: {
           name: input.name,
           obtainedIn: input.obtainedIn,
-          documentUrl: input.documentUrl,
           userId: input.userId,
           modules: input.modules
             ? {

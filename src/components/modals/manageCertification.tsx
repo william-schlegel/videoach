@@ -1,6 +1,11 @@
 import { trpc } from "../../utils/trpc";
 import Modal, { type TModalVariant } from "../ui/modal";
-import { type Dispatch, type SetStateAction, useRef, useState } from "react";
+import React, {
+  type Dispatch,
+  type SetStateAction,
+  useRef,
+  useState,
+} from "react";
 import Confirmation from "../ui/confirmation";
 import { useTranslation } from "next-i18next";
 import {
@@ -18,7 +23,6 @@ type CertificationFormValues = {
   name: string;
   certificationGroupId: string;
   obtainedIn: Date;
-  documentUrl: string;
   activityGroups: string[];
   modules: string[];
   manualModule: string;
@@ -44,6 +48,10 @@ export const CreateCertification = ({ userId }: CreateCertificationProps) => {
   const [obtentionDate, setObtentionDate] = useState<Date>(
     new Date(Date.now())
   );
+  const [file, setFile] = useState<File>();
+  const createPresignedUrl =
+    trpc.files.createPresignedUrl.useMutation().mutateAsync;
+
   const utils = trpc.useContext();
 
   const queryGroups = trpc.coachs.getCertificationGroups.useQuery(undefined, {
@@ -79,7 +87,28 @@ export const CreateCertification = ({ userId }: CreateCertificationProps) => {
     selectedActivities.set(a.id, a);
   }
 
-  const onSubmit = () => {
+  const onSubmit = async () => {
+    let newDocumentId: string | undefined;
+    if (file) {
+      const { url, fields, documentId } = await createPresignedUrl({
+        userId,
+        fileType: file.type,
+        documentType: "CERTIFICATION",
+      });
+      const formData = new FormData();
+      formData.append("Content-Type", file.type);
+      Object.entries(fields).forEach(([k, v]) => {
+        formData.append(k, v);
+      });
+      formData.append("file", file);
+
+      await fetch(url, {
+        method: "POST",
+        body: formData,
+      });
+      newDocumentId = documentId;
+    }
+
     addCertification.mutate({
       userId,
       name: selectedGroup?.name ?? "?",
@@ -90,6 +119,7 @@ export const CreateCertification = ({ userId }: CreateCertificationProps) => {
       modules: Array.from(moduleIds.values())
         .filter((m) => m.selected)
         .map((m) => m.id),
+      documentId: newDocumentId,
     });
   };
 
@@ -131,6 +161,10 @@ export const CreateCertification = ({ userId }: CreateCertificationProps) => {
       act.selected = !act.selected;
       setActivityIds(new Map(activityIds));
     }
+  };
+
+  const onFileChange = (e: React.FormEvent<HTMLInputElement>) => {
+    setFile(e.currentTarget.files?.[0]);
   };
 
   return (
@@ -210,6 +244,7 @@ export const CreateCertification = ({ userId }: CreateCertificationProps) => {
           <input
             type="file"
             className="file-input-bordered file-input-primary file-input w-full"
+            onChange={onFileChange}
           />
         </div>
       </form>

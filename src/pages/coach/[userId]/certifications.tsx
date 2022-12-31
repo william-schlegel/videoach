@@ -80,14 +80,19 @@ const ManageCertifications = ({
                       </div>
                     ))}
                   </div>
+                  <div className="rounded-full bg-primary px-4 py-1 text-center text-primary-content">
+                    {certification.documentId
+                      ? t("document-ok")
+                      : t("document-nok")}
+                  </div>
                   <div className="card-actions justify-end">
                     <UpdateCertification
                       userId={userId}
-                      certificationId={certificationId}
+                      certificationId={certification.id}
                     />
                     <DeleteCertification
                       userId={userId}
-                      certificationId={certificationId}
+                      certificationId={certification.id}
                     />
                   </div>
                 </div>

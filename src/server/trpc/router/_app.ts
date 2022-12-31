@@ -4,6 +4,7 @@ import { calendarRouter } from "./calendar";
 import { clubRouter } from "./clubs";
 import { coachRouter } from "./coachs";
 import { dashboardRouter } from "./dashboard";
+import { fileRouter } from "./files";
 import { pricingRouter } from "./pricing";
 import { siteRouter } from "./sites";
 import { userRouter } from "./users";
@@ -17,6 +18,7 @@ export const appRouter = router({
   calendars: calendarRouter,
   pricings: pricingRouter,
   coachs: coachRouter,
+  files: fileRouter,
 });
 
 // export type definition of API

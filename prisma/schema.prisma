@@ -78,6 +78,7 @@ model User {
   dueDate         DateTime?
   rating          Float           @default(0)
   cancelationDate DateTime?
+  documents       UserDocument[]
 
   @@index([pricingId])
 }
@@ -98,6 +99,25 @@ model VerificationToken {
   expires    DateTime
 
   @@unique([identifier, token])
+}
+
+enum UserDocumentType {
+  DOCUMENT
+  IMAGE
+  PROFILE_IMAGE
+  PAGE_IMAGE
+  CERTIFICATION
+  MEDICAL_CERTIFICAT
+}
+
+model UserDocument {
+  id            String           @id @default(cuid())
+  user          User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId        String
+  documentType  UserDocumentType @default(DOCUMENT)
+  certification Certification?
+
+  @@index([userId])
 }
 
 // ----------------------------------------------------------------------------------------------
@@ -281,7 +301,8 @@ model Certification {
   id             String                @id @default(cuid())
   name           String
   obtainedIn     DateTime
-  documentUrl    String?
+  documentId     String?               @unique
+  document       UserDocument?         @relation(fields: [documentId], references: [id])
   user           User                  @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId         String
   modules        CertificationModule[]

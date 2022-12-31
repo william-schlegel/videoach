@@ -40,5 +40,7 @@
   "group-deleted": "Organisme de certification supprimé",
   "certification-created": "Certification créée",
   "certification-updated": "Certification mise à jour",
-  "certification-deleted": "Certification supprimée"
+  "certification-deleted": "Certification supprimée",
+  "document-ok": "Le document de certification a bien été téléchargé",
+  "document-nok": "Le document de certification n' pas été téléchargé"
 }
