@@ -42,5 +42,10 @@
   "certification-updated": "Certification mise à jour",
   "certification-deleted": "Certification supprimée",
   "document-ok": "Le document de certification a bien été téléchargé",
-  "document-nok": "Le document de certification n' pas été téléchargé"
+  "document-nok": "Le document de certification n' pas été téléchargé",
+  "view-document": "Visualiser le document",
+  "upload-document": "Télécharger un document",
+  "upload-new-document": "Télécharger un nouveau document",
+  "document-error": "Erreur de lecture du document",
+  "type-invalid": "Le type de document est invalide (PDF seulement)"
 }

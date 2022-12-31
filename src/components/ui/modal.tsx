@@ -11,7 +11,7 @@ export type TModalVariant =
 
 type Props = {
   title: string | undefined;
-  handleSubmit: () => void;
+  handleSubmit?: () => void;
   handleCancel?: () => void;
   children: ReactNode;
   submitButtonText?: string;
@@ -49,7 +49,7 @@ export default function Modal({
   const handleClickSubmit = () => {
     if (typeof errors === "object" && Object.keys(errors).length > 0) return;
     close();
-    handleSubmit();
+    if (typeof handleSubmit === "function") handleSubmit();
   };
 
   const primary =
@@ -114,15 +114,17 @@ export default function Modal({
                 {cancelButtonText}
               </button>
             ) : null}
-            <button
-              className="btn-primary btn"
-              onClick={(e) => {
-                e.preventDefault();
-                handleClickSubmit();
-              }}
-            >
-              {submitButtonText}
-            </button>
+            {typeof handleSubmit === "function" ? (
+              <button
+                className="btn-primary btn"
+                onClick={(e) => {
+                  e.preventDefault();
+                  handleClickSubmit();
+                }}
+              >
+                {submitButtonText}
+              </button>
+            ) : null}
           </div>
         </div>
       </div>

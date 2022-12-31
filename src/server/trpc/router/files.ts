@@ -50,6 +50,7 @@ export const fileRouter = router({
         data: {
           userId,
           documentType: input.documentType,
+          fileType: input.fileType,
         },
       });
       const presigned = await createPresignedPost(s3, {
@@ -63,6 +64,29 @@ export const fileRouter = router({
         Expires: 600,
       });
       return { ...presigned, documentId: document.id };
+    }),
+  getDocumentUrlById: protectedProcedure
+    .input(z.string())
+    .query(async ({ ctx, input }) => {
+      if (!input) return { url: "", fileype: "" };
+      const document = await ctx.prisma.userDocument.findUnique({
+        where: {
+          id: input,
+        },
+      });
+      if (!document)
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "This document does not exist",
+        });
+      const url = await getSignedUrl(
+        s3,
+        new GetObjectCommand({
+          Bucket,
+          Key: `${document.userId}/${document.id}`,
+        })
+      );
+      return { url, fileType: document.fileType };
     }),
   getDocumentsForUser: protectedProcedure
     .input(

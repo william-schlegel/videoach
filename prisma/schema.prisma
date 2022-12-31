@@ -116,6 +116,7 @@ model UserDocument {
   userId        String
   documentType  UserDocumentType @default(DOCUMENT)
   certification Certification?
+  fileType      String
 
   @@index([userId])
 }

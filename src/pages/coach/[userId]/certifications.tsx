@@ -17,6 +17,8 @@ import {
   DeleteCertification,
   UpdateCertification,
 } from "@modals/manageCertification";
+import ButtonIcon from "@ui/buttonIcon";
+import { toast } from "react-toastify";
 
 const ManageCertifications = ({
   userId,
@@ -32,7 +34,20 @@ const ManageCertifications = ({
     }
   );
   const [certificationId, setCertificationId] = useState("");
+  const [docId, setDocId] = useState("");
+
   const { t } = useTranslation("coach");
+  trpc.files.getDocumentUrlById.useQuery(docId, {
+    onSuccess(data) {
+      if (data.url)
+        if (data.fileType === "application/pdf") {
+          setDocId("");
+          window.open(data.url, "_blank");
+        } else {
+          toast.error(t("type-invalid") as string);
+        }
+    },
+  });
 
   if (
     sessionData &&
@@ -80,10 +95,33 @@ const ManageCertifications = ({
                       </div>
                     ))}
                   </div>
-                  <div className="rounded-full bg-primary px-4 py-1 text-center text-primary-content">
-                    {certification.documentId
-                      ? t("document-ok")
-                      : t("document-nok")}
+                  <div className="mt-4 flex items-center gap-4 border-t border-base-200 pt-4">
+                    {certification.documentId ? (
+                      <>
+                        <div className="rounded-full bg-info px-4 py-1 text-center text-info-content">
+                          {t("document-ok")}
+                        </div>
+
+                        <button
+                          onClick={() =>
+                            setDocId(certification.documentId ?? "")
+                          }
+                        >
+                          <ButtonIcon
+                            iconComponent={<i className="bx bx-show bx-sm" />}
+                            title={t("view-document")}
+                            buttonSize="md"
+                            buttonVariant="Icon-Outlined-Primary"
+                          />
+                        </button>
+                      </>
+                    ) : (
+                      <>
+                        <div className="rounded-full bg-warning px-4 py-1 text-center text-warning-content">
+                          {t("document-nok")}
+                        </div>
+                      </>
+                    )}
                   </div>
                   <div className="card-actions justify-end">
                     <UpdateCertification
