@@ -18,6 +18,7 @@ import ButtonIcon, { type ButtonSize } from "@ui/buttonIcon";
 import Spinner from "@ui/spinner";
 import { toast } from "react-toastify";
 import { formatDateAsYYYYMMDD } from "@lib/formatDate";
+import { useWriteFile } from "@lib/useManageFile";
 
 type CertificationFormValues = {
   name: string;
@@ -49,8 +50,10 @@ export const CreateCertification = ({ userId }: CreateCertificationProps) => {
     new Date(Date.now())
   );
   const [file, setFile] = useState<File>();
-  const createPresignedUrl =
-    trpc.files.createPresignedUrl.useMutation().mutateAsync;
+  // const createPresignedUrl =
+  //   trpc.files.createPresignedUrl.useMutation().mutateAsync;
+
+  const writeFile = useWriteFile(file, userId, "CERTIFICATION");
 
   const utils = trpc.useContext();
 
@@ -88,26 +91,27 @@ export const CreateCertification = ({ userId }: CreateCertificationProps) => {
   }
 
   const onSubmit = async () => {
-    let newDocumentId: string | undefined;
-    if (file) {
-      const { url, fields, documentId } = await createPresignedUrl({
-        userId,
-        fileType: file.type,
-        documentType: "CERTIFICATION",
-      });
-      const formData = new FormData();
-      formData.append("Content-Type", file.type);
-      Object.entries(fields).forEach(([k, v]) => {
-        formData.append(k, v);
-      });
-      formData.append("file", file);
+    // let newDocumentId: string | undefined;
+    // if (file) {
+    //   const { url, fields, documentId } = await createPresignedUrl({
+    //     userId,
+    //     fileType: file.type,
+    //     documentType: "CERTIFICATION",
+    //   });
+    //   const formData = new FormData();
+    //   formData.append("Content-Type", file.type);
+    //   Object.entries(fields).forEach(([k, v]) => {
+    //     formData.append(k, v);
+    //   });
+    //   formData.append("file", file);
 
-      await fetch(url, {
-        method: "POST",
-        body: formData,
-      });
-      newDocumentId = documentId;
-    }
+    //   await fetch(url, {
+    //     method: "POST",
+    //     body: formData,
+    //   });
+    //   newDocumentId = documentId;
+    // }
+    const documentId = await writeFile();
 
     addCertification.mutate({
       userId,
@@ -119,7 +123,7 @@ export const CreateCertification = ({ userId }: CreateCertificationProps) => {
       modules: Array.from(moduleIds.values())
         .filter((m) => m.selected)
         .map((m) => m.id),
-      documentId: newDocumentId,
+      documentId,
     });
   };
 

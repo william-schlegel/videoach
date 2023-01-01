@@ -4,7 +4,11 @@ import { z } from "zod";
 import { router, protectedProcedure } from "../trpc";
 import { createPresignedPost } from "@aws-sdk/s3-presigned-post";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
-import { S3Client, GetObjectCommand } from "@aws-sdk/client-s3";
+import {
+  S3Client,
+  GetObjectCommand,
+  DeleteObjectCommand,
+} from "@aws-sdk/client-s3";
 import { env } from "@root/src/env/server.mjs";
 
 const s3 = new S3Client({
@@ -124,5 +128,29 @@ export const fileRouter = router({
         }))
       );
       return extendedDocuments;
+    }),
+  deleteUserDocument: protectedProcedure
+    .input(
+      z.object({ userId: z.string().cuid(), documentId: z.string().cuid() })
+    )
+    .mutation(async ({ ctx, input }) => {
+      if (
+        ctx.session.user.role !== "ADMIN" &&
+        ctx.session.user.id !== input.userId
+      ) {
+        throw new TRPCError({
+          code: "UNAUTHORIZED",
+          message: "You are not allowed to delete this file",
+        });
+      }
+
+      const command = new DeleteObjectCommand({
+        Bucket,
+        Key: `${input.userId}/${input.documentId}`,
+      });
+      await s3.send(command);
+      return ctx.prisma.userDocument.delete({
+        where: { id: input.documentId },
+      });
     }),
 });
