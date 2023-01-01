@@ -29,7 +29,8 @@
     "price-yearly": "{{price}}€/an",
     "try-offer": "Vous bénéficiez de 30j d'éssai gratuit lors de votre inscription !",
     "deleted": "Supprimé le {{date}}",
-    "free": "Gratuit !"
+    "free": "Gratuit !",
+    "create-your-account": "Créez votre compte ou connectez-vous pour continuer"
   },
   "features": {
     "manager": "Des outils pour le gérant de club",

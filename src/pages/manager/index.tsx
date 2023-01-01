@@ -12,6 +12,7 @@ import { trpc } from "@trpcclient/trpc";
 import { Pricing, PricingContainer } from "@ui/pricing";
 import { useTranslation } from "next-i18next";
 import { Feature, FeatureContainer } from "@ui/features";
+import Link from "next/link";
 
 function ManagerPage(
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -21,9 +22,6 @@ function ManagerPage(
   const { data } = pricingQuery;
   const { t } = useTranslation("home");
 
-  function handleSelectPricing(id: string, monthlyPrice: boolean) {
-    console.log("{id,monthlyPrice}", { id, monthlyPrice });
-  }
   return (
     <div>
       <section className="hero bg-base-100">
@@ -71,13 +69,14 @@ function ManagerPage(
           <p className="alert alert-info">{t("pricing.try-offer")}</p>
           <PricingContainer>
             {data?.map((pricing) => (
-              <Pricing
-                key={pricing.id}
-                pricingId={pricing.id}
-                onSelect={handleSelectPricing}
-              />
+              <Pricing key={pricing.id} pricingId={pricing.id} />
             ))}
           </PricingContainer>
+          <Link href="/user/signin">
+            <button className="btn-accent btn-block btn my-4">
+              {t("pricing.create-your-account")}
+            </button>
+          </Link>
         </div>
       </section>
     </div>

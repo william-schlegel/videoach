@@ -28,8 +28,16 @@
     @apply input-bordered input w-full;
   }
 }
+
 .pill {
-  @apply flex flex-wrap items-center gap-2 rounded-full border border-neutral bg-base-100 p-2 text-base-content;
+  @apply flex flex-wrap items-center gap-2 rounded-full border border-neutral bg-base-100 text-base-content;
+  padding: 0.5rem;
+}
+
+.pill-xs {
+  @apply text-xs;
+  padding-inline: 0.25rem;
+  padding-block: 0.125rem;
 }
 
 .bg-gradient-home-hero {

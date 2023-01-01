@@ -17,7 +17,6 @@ function Rating({ note }: Props) {
 export default Rating;
 
 function Star({ cover }: { cover: number }) {
-  console.log("cover :>> ", cover);
   return (
     <div className="mask mask-star aspect-square h-full bg-base-300">
       <div
