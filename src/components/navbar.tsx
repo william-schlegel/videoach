@@ -25,6 +25,11 @@ const MENUS: MenuDefinitionType[] = [
   { label: "navigation.manager-offer", page: "/manager", access: ["VISITOR"] },
   { label: "navigation.coach-offer", page: "/coach", access: ["VISITOR"] },
   {
+    label: "navigation.presentation-page",
+    page: `/create-page`,
+    access: ["MANAGER", "COACH", "MANAGER_COACH"],
+  },
+  {
     label: "navigation.users",
     page: "/admin/users",
     access: ["ADMIN"],
@@ -96,7 +101,7 @@ export default function Navbar({ theme, onChangeTheme }: NavbarProps) {
       </div>
 
       <div className="navbar-end">
-        <label className="swap swap-rotate">
+        <label className="swap-rotate swap">
           <input
             type="checkbox"
             onChange={(e) =>

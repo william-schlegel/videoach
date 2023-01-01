@@ -111,12 +111,13 @@ enum UserDocumentType {
 }
 
 model UserDocument {
-  id            String           @id @default(cuid())
-  user          User             @relation(fields: [userId], references: [id], onDelete: Cascade)
-  userId        String
-  documentType  UserDocumentType @default(DOCUMENT)
-  certification Certification?
-  fileType      String
+  id                 String               @id @default(cuid())
+  user               User                 @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId             String
+  documentType       UserDocumentType     @default(DOCUMENT)
+  certification      Certification?
+  fileType           String
+  pageSectionElement PageSectionElement[]
 
   @@index([userId])
 }
@@ -137,6 +138,7 @@ model Club {
   activities Activity[]
   members    User[]            @relation(name: "Member")
   calendars  OpeningCalendar[]
+  pages      Page[]
 
   @@index([managerId])
 }
@@ -311,4 +313,78 @@ model Certification {
   manualModule   String?
 
   @@index([userId])
+}
+
+// ----------------------------------------------------------------------------------------------
+
+//                             PAGES
+
+// ----------------------------------------------------------------------------------------------
+
+enum PageTarget {
+  HOME
+  PRESENTATION
+  ACTIVITIES
+  ACTIVITY
+  TEAM
+  PLANS
+  CONTACT
+  VIDEOS
+}
+
+enum PageSectionModel {
+  HERO
+  ACTIVITY_GROUPS
+  ACTIVITIES
+  LOCATION
+  SOCIAL
+  FEATURES
+  FOOTER
+}
+
+enum PageSectionElementType {
+  HERO_CONTENT
+  CTA
+  CARD
+  OPENING_TIME
+  MAP
+  FEATURE
+  BUTTON
+  NEWSLETTER
+}
+
+enum PageSectionStyle {
+  STANDARD
+  PARALAX
+  WAVES
+}
+
+model PageSectionElement {
+  id          String                  @id @default(cuid())
+  images      UserDocument[]
+  title       String?
+  subTitle    String?
+  elementType PageSectionElementType?
+  content     String?
+  link        String?
+  sections    PageSection[]
+}
+
+model PageSection {
+  id       String               @id @default(cuid())
+  model    PageSectionModel
+  style    PageSectionStyle     @default(STANDARD)
+  elements PageSectionElement[]
+  pages    Page[]
+}
+
+model Page {
+  id       String        @id @default(cuid())
+  name     String
+  target   PageTarget    @default(HOME)
+  sections PageSection[]
+  clubId   String
+  club     Club          @relation(fields: [clubId], references: [id], onDelete: Cascade)
+
+  @@index([clubId])
 }

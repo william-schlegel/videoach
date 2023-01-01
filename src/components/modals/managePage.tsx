@@ -1,0 +1,265 @@
+import { trpc } from "../../utils/trpc";
+import Modal, { type TModalVariant } from "../ui/modal";
+import Confirmation from "../ui/confirmation";
+import { useTranslation } from "next-i18next";
+import { type ButtonSize } from "@ui/buttonIcon";
+import Spinner from "@ui/spinner";
+import { toast } from "react-toastify";
+import { type PageSectionModel, type PageTarget } from "@prisma/client";
+import SimpleForm from "@ui/simpleform";
+import {
+  type Path,
+  type SubmitErrorHandler,
+  type SubmitHandler,
+  useForm,
+} from "react-hook-form";
+
+type CreatePageProps = {
+  clubId: string;
+  variant?: TModalVariant;
+};
+
+type TSelectTarget = { value: PageTarget; label: string };
+
+export const PAGE_TARGET_LIST: TSelectTarget[] = [
+  { value: "HOME", label: "home" },
+  { value: "ACTIVITIES", label: "activities" },
+  { value: "ACTIVITY", label: "activity" },
+  { value: "CONTACT", label: "contact" },
+  { value: "PLANS", label: "plans" },
+  { value: "PRESENTATION", label: "presentation" },
+  { value: "TEAM", label: "team" },
+  { value: "VIDEOS", label: "videos" },
+];
+
+type TSelectSection = { value: PageSectionModel; label: string };
+
+export const PAGE_SECTION_LIST: TSelectSection[] = [
+  { value: "HERO", label: "hero" },
+  { value: "ACTIVITY_GROUPS", label: "activity-groups" },
+  { value: "ACTIVITIES", label: "activity-details" },
+  { value: "LOCATION", label: "location" },
+  { value: "SOCIAL", label: "social" },
+  { value: "FEATURES", label: "features" },
+  { value: "FOOTER", label: "footer" },
+];
+
+type CreatePageFormValues = {
+  name: string;
+  target: PageTarget;
+};
+
+export const CreatePage = ({
+  clubId,
+  variant = "Primary",
+}: CreatePageProps) => {
+  const utils = trpc.useContext();
+  const createPage = trpc.pages.createPage.useMutation({
+    onSuccess: () => {
+      utils.pages.getPagesForClub.invalidate(clubId);
+      toast.success(t("page-created") as string);
+    },
+    onError(error) {
+      toast.error(error.message);
+    },
+  });
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+    getValues,
+  } = useForm<CreatePageFormValues>();
+
+  const { t } = useTranslation("pages");
+
+  const onSubmit: SubmitHandler<CreatePageFormValues> = (data) => {
+    console.log("data", data);
+    createPage.mutate({
+      clubId,
+      ...data,
+    });
+  };
+
+  const onError: SubmitErrorHandler<CreatePageFormValues> = (errors) => {
+    console.log("errors", errors);
+  };
+
+  return (
+    <Modal
+      title={t("create-new-page")}
+      variant={variant}
+      handleSubmit={handleSubmit(onSubmit, onError)}
+    >
+      <h3>{t("create-new-page")}</h3>
+      <SimpleForm
+        errors={errors}
+        register={register}
+        fields={[
+          {
+            label: t("page-name"),
+            name: "name",
+            required: t("name-mandatory"),
+          },
+          {
+            label: t("page-target"),
+            name: "target",
+            component: (
+              <select
+                className="select-bordered select w-full"
+                defaultValue={getValues("target" as Path<CreatePageFormValues>)}
+                {...register("target" as Path<CreatePageFormValues>)}
+              >
+                {PAGE_TARGET_LIST.map((target) => (
+                  <option key={target.value} value={target.value}>
+                    {t(target.label)}
+                  </option>
+                ))}
+              </select>
+            ),
+          },
+        ]}
+      />
+    </Modal>
+  );
+};
+
+type UpdatePageProps = {
+  clubId: string;
+  pageId: string;
+  variant?: TModalVariant;
+  size?: ButtonSize;
+};
+
+export function UpdatePage({
+  clubId,
+  pageId,
+  variant = "Icon-Outlined-Primary",
+  size = "sm",
+}: UpdatePageProps) {
+  const utils = trpc.useContext();
+  const pageQuery = trpc.pages.getPageById.useQuery(pageId, {
+    onSuccess(data) {
+      reset({
+        name: data?.name,
+        target: data?.target,
+      });
+    },
+  });
+  const updatePage = trpc.pages.updatePage.useMutation({
+    onSuccess: () => {
+      utils.pages.getPagesForClub.invalidate(clubId);
+      toast.success(t("page-updated") as string);
+    },
+    onError(error) {
+      toast.error(error.message);
+    },
+  });
+  const {
+    register,
+    handleSubmit,
+    reset,
+    formState: { errors },
+    getValues,
+  } = useForm<CreatePageFormValues>();
+
+  const { t } = useTranslation("pages");
+
+  const onSubmit: SubmitHandler<CreatePageFormValues> = (data) => {
+    console.log("data", data);
+    updatePage.mutate({
+      id: pageId,
+      ...data,
+    });
+  };
+
+  const onError: SubmitErrorHandler<CreatePageFormValues> = (errors) => {
+    console.log("errors", errors);
+  };
+
+  return (
+    <Modal
+      title={t("update-page")}
+      handleSubmit={handleSubmit(onSubmit, onError)}
+      buttonIcon={<i className={`bx bx-edit bx-${size}`} />}
+      variant={variant}
+      buttonSize={size}
+    >
+      <h3>
+        {t("update-page")}{" "}
+        <span className="text-primary">{pageQuery.data?.name}</span>
+      </h3>
+      {pageQuery.isLoading ? (
+        <Spinner />
+      ) : (
+        <SimpleForm
+          errors={errors}
+          register={register}
+          fields={[
+            {
+              label: t("page-name"),
+              name: "name",
+              required: t("name-mandatory"),
+            },
+            {
+              label: t("page-target"),
+              name: "target",
+              component: (
+                <select
+                  className="select-bordered select w-full"
+                  defaultValue={getValues(
+                    "target" as Path<CreatePageFormValues>
+                  )}
+                  {...register("target" as Path<CreatePageFormValues>)}
+                >
+                  {PAGE_TARGET_LIST.map((target) => (
+                    <option key={target.value} value={target.value}>
+                      {t(target.label)}
+                    </option>
+                  ))}
+                </select>
+              ),
+            },
+          ]}
+        />
+      )}
+    </Modal>
+  );
+}
+
+type DeletePageProps = {
+  clubId: string;
+  pageId: string;
+  variant?: TModalVariant;
+  size?: ButtonSize;
+};
+
+export function DeletePage({
+  pageId,
+  clubId,
+  size = "sm",
+  variant = "Icon-Outlined-Secondary",
+}: DeletePageProps) {
+  const utils = trpc.useContext();
+  const deletePage = trpc.pages.deletePage.useMutation({
+    onSuccess: () => {
+      utils.pages.getPagesForClub.invalidate(clubId);
+      toast.success(t("page-deleted") as string);
+    },
+    onError(error) {
+      toast.error(error.message);
+    },
+  });
+  const { t } = useTranslation("pages");
+
+  return (
+    <Confirmation
+      title={t("page-deletion")}
+      message={t("page-deletion-message")}
+      onConfirm={() => deletePage.mutate(pageId)}
+      buttonIcon={<i className={`bx bx-trash bx-${size}`} />}
+      variant={variant}
+      textConfirmation={t("page-deletion-confirmation")}
+      buttonSize={size}
+    />
+  );
+}

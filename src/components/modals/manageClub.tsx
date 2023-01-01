@@ -6,9 +6,9 @@ import {
   type SubmitHandler,
   type SubmitErrorHandler,
 } from "react-hook-form";
-import Modal from "../ui/modal";
-import SimpleForm from "../ui/simpleform";
-import Confirmation from "../ui/confirmation";
+import Modal from "@ui/modal";
+import SimpleForm from "@ui/simpleform";
+import Confirmation from "@ui/confirmation";
 import { useTranslation } from "next-i18next";
 import { toast } from "react-toastify";
 

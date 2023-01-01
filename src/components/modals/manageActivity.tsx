@@ -59,7 +59,7 @@ const AddActivity = ({
     >
       <h3>{t("select-club-activities")}</h3>
       <div className="flex flex-1 gap-4">
-        <div className="flex flex-col gap-2">
+        <aside className="flex flex-col gap-2">
           <h4>{t("group")}</h4>
           <ul className="menu overflow-hidden rounded border border-secondary bg-base-100">
             {queryGroups.data?.map((group) => (
@@ -79,7 +79,7 @@ const AddActivity = ({
             ))}
           </ul>
           {withAdd ? <NewGroup userId={userId} /> : null}
-        </div>
+        </aside>
         <div className="flex flex-grow flex-col gap-2">
           <h4>{t("activities")}</h4>
           <div className="flex flex-wrap gap-2">
