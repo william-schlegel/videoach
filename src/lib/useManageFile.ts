@@ -15,6 +15,7 @@ export const useWriteFile = (
       userId,
       fileType: file.type,
       documentType,
+      fileName: file.name,
     });
     const formData = new FormData();
     formData.append("Content-Type", file.type);

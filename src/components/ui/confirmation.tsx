@@ -37,9 +37,11 @@ function Confirmation({
       buttonSize={buttonSize}
     >
       <h3>{title}</h3>
-      {message.split("\\n").map((p, idx) => (
-        <p key={idx}>{p}</p>
-      ))}
+      <div className="flex flex-col">
+        {message.split("|").map((p, idx) => (
+          <p key={idx}>{p}</p>
+        ))}
+      </div>
     </Modal>
   );
 }

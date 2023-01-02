@@ -27,6 +27,12 @@
   input {
     @apply input-bordered input w-full;
   }
+  textarea {
+    @apply textarea-bordered textarea w-full;
+  }
+  select {
+    @apply select-bordered select w-full;
+  }
 }
 
 .pill {

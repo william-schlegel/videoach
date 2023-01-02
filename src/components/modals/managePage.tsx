@@ -5,7 +5,7 @@ import { useTranslation } from "next-i18next";
 import { type ButtonSize } from "@ui/buttonIcon";
 import Spinner from "@ui/spinner";
 import { toast } from "react-toastify";
-import { type PageSectionModel, type PageTarget } from "@prisma/client";
+import { type PageTarget } from "@prisma/client";
 import SimpleForm from "@ui/simpleform";
 import {
   type Path,
@@ -32,9 +32,7 @@ export const PAGE_TARGET_LIST: TSelectTarget[] = [
   { value: "VIDEOS", label: "videos" },
 ];
 
-type TSelectSection = { value: PageSectionModel; label: string };
-
-export const PAGE_SECTION_LIST: TSelectSection[] = [
+export const PAGE_SECTION_LIST = [
   { value: "HERO", label: "hero" },
   { value: "ACTIVITY_GROUPS", label: "activity-groups" },
   { value: "ACTIVITIES", label: "activity-details" },
@@ -42,7 +40,7 @@ export const PAGE_SECTION_LIST: TSelectSection[] = [
   { value: "SOCIAL", label: "social" },
   { value: "FEATURES", label: "features" },
   { value: "FOOTER", label: "footer" },
-];
+] as const;
 
 type CreatePageFormValues = {
   name: string;
@@ -105,7 +103,6 @@ export const CreatePage = ({
             name: "target",
             component: (
               <select
-                className="select-bordered select w-full"
                 defaultValue={getValues("target" as Path<CreatePageFormValues>)}
                 {...register("target" as Path<CreatePageFormValues>)}
               >
@@ -205,7 +202,6 @@ export function UpdatePage({
               name: "target",
               component: (
                 <select
-                  className="select-bordered select w-full"
                   defaultValue={getValues(
                     "target" as Path<CreatePageFormValues>
                   )}

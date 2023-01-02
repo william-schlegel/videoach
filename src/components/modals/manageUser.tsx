@@ -157,10 +157,7 @@ function UserForm<T extends FieldValues>({
           label: t("role"),
           name: "role",
           component: (
-            <select
-              className="select-bordered select w-full max-w-xs"
-              {...register("role" as Path<T>)}
-            >
+            <select className="max-w-xs" {...register("role" as Path<T>)}>
               {ROLE_LIST.map((rl) => (
                 <option key={rl.value} value={rl.value}>
                   {t(rl.label)}

@@ -36,6 +36,7 @@ export const fileRouter = router({
           .optional()
           .default(1024 * 1024),
         fileType: z.string(),
+        fileName: z.string(),
         documentType: z.nativeEnum(UserDocumentType),
       })
     )
@@ -55,6 +56,7 @@ export const fileRouter = router({
           userId,
           documentType: input.documentType,
           fileType: input.fileType,
+          fileName: input.fileName,
         },
       });
       const presigned = await createPresignedPost(s3, {

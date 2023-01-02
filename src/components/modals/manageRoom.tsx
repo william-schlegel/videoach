@@ -224,7 +224,6 @@ function RoomForm<T extends FieldValues>({
           name: "reservation",
           component: (
             <select
-              className="select-bordered select w-full"
               defaultValue={getValues("reservation" as Path<T>)}
               {...register("reservation" as Path<T>)}
             >

@@ -18,7 +18,7 @@
     "yearly": "Annuel",
     "highlighted": "Mis en avant",
     "deletion": "Suppression du tarif",
-    "deletion-message": "Voulez vous supprimer ce tarif ?\nVous pourrez le réactiver si besoin",
+    "deletion-message": "Voulez vous supprimer ce tarif ?|Vous pourrez le réactiver si besoin",
     "options": "Options liées au tarif",
     "delete-option": "Supprimer cette option",
     "add-option": "Ajouter cette option",

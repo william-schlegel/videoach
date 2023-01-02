@@ -50,8 +50,6 @@ export const CreateCertification = ({ userId }: CreateCertificationProps) => {
     new Date(Date.now())
   );
   const [file, setFile] = useState<File>();
-  // const createPresignedUrl =
-  //   trpc.files.createPresignedUrl.useMutation().mutateAsync;
 
   const writeFile = useWriteFile(file, userId, "CERTIFICATION");
 
@@ -91,26 +89,6 @@ export const CreateCertification = ({ userId }: CreateCertificationProps) => {
   }
 
   const onSubmit = async () => {
-    // let newDocumentId: string | undefined;
-    // if (file) {
-    //   const { url, fields, documentId } = await createPresignedUrl({
-    //     userId,
-    //     fileType: file.type,
-    //     documentType: "CERTIFICATION",
-    //   });
-    //   const formData = new FormData();
-    //   formData.append("Content-Type", file.type);
-    //   Object.entries(fields).forEach(([k, v]) => {
-    //     formData.append(k, v);
-    //   });
-    //   formData.append("file", file);
-
-    //   await fetch(url, {
-    //     method: "POST",
-    //     body: formData,
-    //   });
-    //   newDocumentId = documentId;
-    // }
     const documentId = await writeFile();
 
     addCertification.mutate({
@@ -670,7 +648,7 @@ function CertificationGroupForm({
                 <div className="flex flex-wrap items-center gap-2">
                   <span>{mod.name}</span>
                   {mod.activityIds.map((id) => (
-                    <span key={id} className="badge badge-primary">
+                    <span key={id} className="badge-primary badge">
                       {agQuery.data?.find((g) => g.id === id)?.name ?? "???"}
                     </span>
                   ))}

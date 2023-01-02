@@ -340,7 +340,6 @@ function PricingForm({
         <label>{t("pricing.description")}</label>
         <div className="flex flex-col gap-2">
           <textarea
-            className="textarea-bordered textarea"
             {...register("description", {
               required: t("pricing.description-mandatory"),
             })}
@@ -352,7 +351,7 @@ function PricingForm({
         </div>
         <label>{t("pricing.role")}</label>
         <select
-          className="select-bordered select w-full max-w-xs"
+          className="max-w-xs"
           {...register("roleTarget")}
           defaultValue={Role.MANAGER}
         >

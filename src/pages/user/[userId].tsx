@@ -117,7 +117,7 @@ export default function Profile() {
           <div>{t("admin")}</div>
         ) : (
           <select
-            className="select-bordered select w-full max-w-xs"
+            className="max-w-xs"
             {...register("role")}
             defaultValue={userQuery.data?.role}
           >
@@ -128,7 +128,7 @@ export default function Profile() {
             ))}
           </select>
         )}
-        <button className="btn-primary btn" disabled={updateUser.isLoading}>
+        <button className="btn btn-primary" disabled={updateUser.isLoading}>
           {t("save-profile")}
         </button>
       </form>

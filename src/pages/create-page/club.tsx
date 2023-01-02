@@ -1,5 +1,5 @@
 import { authOptions } from "@auth/[...nextauth]";
-import { Role } from "@prisma/client";
+import { type PageSectionModel, Role } from "@prisma/client";
 import {
   type InferGetServerSidePropsType,
   type GetServerSidePropsContext,
@@ -18,6 +18,7 @@ import {
   UpdatePage,
 } from "@modals/managePage";
 import Spinner from "@ui/spinner";
+import { HeroCreation } from "@root/src/components/sections/hero";
 
 function ClubPage({
   userId,
@@ -43,7 +44,7 @@ function ClubPage({
         <div className="ml-auto flex items-center gap-2">
           <label>{t("select-club")}</label>
           <select
-            className="select-bordered select w-48 min-w-fit"
+            className="w-48 min-w-fit"
             value={clubId}
             onChange={(e) => setClubId(e.target.value)}
           >
@@ -56,7 +57,7 @@ function ClubPage({
         </div>
       </h1>
       <div className="flex gap-4">
-        <aside className="flex flex-col gap-2">
+        <aside className="flex min-w-fit flex-col gap-2">
           <h4>{t("pages")}</h4>
           <CreatePage clubId={clubId} />
           <ul className="menu overflow-hidden rounded border border-secondary bg-base-100">
@@ -68,7 +69,7 @@ function ClubPage({
                     className="flex flex-1 items-center justify-between"
                   >
                     <span>{page.name}</span>
-                    <span className="badge badge-secondary">
+                    <span className="badge-secondary badge">
                       {t(
                         PAGE_TARGET_LIST.find((t) => t.value === page.target)
                           ?.label ?? ""
@@ -95,7 +96,9 @@ type PageContentProps = {
 
 const PageContent = ({ pageId, clubId }: PageContentProps) => {
   const queryPage = trpc.pages.getPageById.useQuery(pageId);
-  const [section, setSection] = useState(PAGE_SECTION_LIST[0]?.value ?? "hero");
+  const [section, setSection] = useState<PageSectionModel>(
+    PAGE_SECTION_LIST[0]?.value ?? "HERO"
+  );
   const { t } = useTranslation("pages");
 
   if (queryPage.isLoading) return <Spinner />;
@@ -108,20 +111,21 @@ const PageContent = ({ pageId, clubId }: PageContentProps) => {
           <DeletePage clubId={clubId} pageId={pageId} />
         </div>
       </h2>
-      <div className="flex gap-2">
-        <div className="btn-group btn-group-vertical">
-          {PAGE_SECTION_LIST.map((sec) => (
-            <button
-              key={sec.value}
-              className={`btn btn-primary ${
-                sec.value === section ? "" : "btn-outline"
-              }`}
-              onClick={() => setSection(sec.value)}
-            >
-              {t(sec.label)}
-            </button>
-          ))}
-        </div>
+      <div className="btn-group">
+        {PAGE_SECTION_LIST.map((sec) => (
+          <button
+            key={sec.value}
+            className={`btn btn-primary ${
+              sec.value === section ? "" : "btn-outline"
+            }`}
+            onClick={() => setSection(sec.value)}
+          >
+            {t(sec.label)}
+          </button>
+        ))}
+      </div>
+      <div className="w-full">
+        {section === "HERO" && <HeroCreation clubId={clubId} pageId={pageId} />}
       </div>
     </article>
   );
