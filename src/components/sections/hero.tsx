@@ -2,6 +2,7 @@
 import { formatSize } from "@lib/formatNumber";
 import { useWriteFile } from "@lib/useManageFile";
 import { PAGE_SECTION_LIST } from "@modals/managePage";
+import { type PageSectionModel } from "@prisma/client";
 import { trpc } from "@trpcclient/trpc";
 import ButtonIcon from "@ui/buttonIcon";
 import Confirmation from "@ui/confirmation";
@@ -11,6 +12,7 @@ import { useEffect, useState } from "react";
 import type { SubmitHandler } from "react-hook-form";
 import { useForm, useWatch } from "react-hook-form";
 import { toast } from "react-toastify";
+import ThemeSelector, { type TThemes } from "../themeSelector";
 
 type HeroCreationProps = {
   clubId: string;
@@ -24,7 +26,7 @@ type HeroCreationForm = {
   description: string;
   cta: string;
   linkedPage: string;
-  pageSection: string;
+  pageSection: PageSectionModel;
   protocol: string;
   url: string;
 };
@@ -40,49 +42,53 @@ export const HeroCreation = ({ clubId, pageId }: HeroCreationProps) => {
   const fields = useWatch({ control });
   const utils = trpc.useContext();
   const [updating, setUpdating] = useState(false);
+  const [previewTheme, setPreviewTheme] = useState<TThemes>("cupcake");
 
-  const querySection = trpc.pages.getSetionByModel.useQuery("HERO", {
-    onSuccess: async (data) => {
-      if (!data) {
-        setUpdating(false);
-        return;
-      }
-      const hc = data?.elements.find((e) => e.elementType === "HERO_CONTENT");
-      const cta = data?.elements.find((e) => e.elementType === "BUTTON");
-      if (hc?.images?.[0]) {
-        const { url } = await utils.files.getDocumentUrlById.fetch(
-          hc.images[0].id
-        );
-        setImagePreview(url);
-      }
-      const linkUrl = cta?.link
-        ? new URL(cta.link)
-        : { protocol: "https:", host: "", pathname: "" };
-      const resetData: HeroCreationForm = {
-        cta: cta?.title ?? "",
-        description: hc?.content ?? "",
-        linkedPage: cta?.pageId ?? "url",
-        pageSection: cta?.pageSection ?? PAGE_SECTION_LIST[0].value,
-        url: `${linkUrl.host}${linkUrl.pathname}` ?? "",
-        protocol: linkUrl.protocol,
-        title: hc?.title ?? "",
-        subtitle: hc?.subTitle ?? "",
-      };
-      console.log("resetData :>> ", resetData);
-      reset(resetData);
-      setUpdating(true);
-    },
-  });
+  const querySection = trpc.pages.getSectionByModel.useQuery(
+    { pageId, model: "HERO" },
+    {
+      onSuccess: async (data) => {
+        if (!data) {
+          setUpdating(false);
+          return;
+        }
+        const hc = data?.elements.find((e) => e.elementType === "HERO_CONTENT");
+        const cta = data?.elements.find((e) => e.elementType === "BUTTON");
+        if (hc?.images?.[0]) {
+          const { url } = await utils.files.getDocumentUrlById.fetch(
+            hc.images[0].id
+          );
+          setImagePreview(url);
+        }
+        const linkUrl = cta?.link
+          ? new URL(cta.link)
+          : { protocol: "https:", host: "", pathname: "" };
+        const resetData: HeroCreationForm = {
+          cta: cta?.title ?? "",
+          description: hc?.content ?? "",
+          linkedPage: cta?.pageId ?? "url",
+          pageSection:
+            cta?.pageSection ?? PAGE_SECTION_LIST?.[0]?.value ?? "HERO",
+          url: `${linkUrl.host}${linkUrl.pathname}` ?? "",
+          protocol: linkUrl.protocol,
+          title: hc?.title ?? "",
+          subtitle: hc?.subTitle ?? "",
+        };
+        reset(resetData);
+        setUpdating(true);
+      },
+    }
+  );
   const queryPages = trpc.pages.getPagesForClub.useQuery(clubId);
   const writeFile = useWriteFile(
-    fields?.images?.[0],
     clubQuery.data?.managerId ?? "",
-    "PAGE_IMAGE"
+    "PAGE_IMAGE",
+    MAX_SIZE
   );
   const createSection = trpc.pages.createPageSection.useMutation({
     onSuccess() {
       toast.success(t("section-created") as string);
-      utils.pages.getSetionByModel.invalidate("HERO");
+      utils.pages.getSectionByModel.invalidate({ pageId, model: "HERO" });
       reset();
       setImagePreview("");
     },
@@ -105,7 +111,7 @@ export const HeroCreation = ({ clubId, pageId }: HeroCreationProps) => {
         data.elements.map((elem) => deleteSectionElement.mutateAsync(elem.id))
       );
       toast.success(t("section-deleted") as string);
-      utils.pages.getSetionByModel.invalidate("HERO");
+      utils.pages.getSectionByModel.invalidate({ pageId, model: "HERO" });
       reset();
       setImagePreview("");
     },
@@ -119,7 +125,7 @@ export const HeroCreation = ({ clubId, pageId }: HeroCreationProps) => {
   const updateSectionElement = trpc.pages.updatePageSectionElement.useMutation({
     onSuccess() {
       toast.success(t("section-updated") as string);
-      utils.pages.getSetionByModel.invalidate("HERO");
+      utils.pages.getSectionByModel.invalidate({ pageId, model: "HERO" });
     },
     onError(error) {
       toast.error(error.message);
@@ -137,13 +143,13 @@ export const HeroCreation = ({ clubId, pageId }: HeroCreationProps) => {
         (e) => e.elementType === "BUTTON"
       );
       let docId: string | undefined;
-      if (control.getFieldState("images").isDirty) {
+      if (data.images?.[0]) {
         if (hc?.images?.[0])
           await deleteUserDocument.mutateAsync({
             userId: hc.images[0].userId,
             documentId: hc.images[0].id,
           });
-        docId = await writeFile();
+        docId = await writeFile(data?.images?.[0]);
       }
       if (hc) {
         await updateSectionElement.mutateAsync({
@@ -183,7 +189,7 @@ export const HeroCreation = ({ clubId, pageId }: HeroCreationProps) => {
         await deleteSectionElement.mutateAsync(cta.id);
       }
     } else {
-      const docId = await writeFile();
+      const docId = await writeFile(data.images?.[0]);
       const section = await createSection.mutateAsync({
         model: "HERO",
         pageId,
@@ -240,7 +246,7 @@ export const HeroCreation = ({ clubId, pageId }: HeroCreationProps) => {
   return (
     <div className="grid w-full grid-cols-2 gap-2">
       <div>
-        <h3 className="text-center">{t(updating ? "updating" : "creation")}</h3>
+        <h3>{t(updating ? "updating-section" : "creation-section")}</h3>
 
         <form
           className="grid grid-cols-[auto_1fr] gap-2 rounded border border-primary p-2"
@@ -329,7 +335,7 @@ export const HeroCreation = ({ clubId, pageId }: HeroCreationProps) => {
             </>
           ) : null}
           <div className="col-span-2 flex justify-between">
-            <button className="btn btn-primary" type="submit">
+            <button className="btn-primary btn" type="submit">
               {t("save-section")}
             </button>
             {updating ? (
@@ -347,19 +353,28 @@ export const HeroCreation = ({ clubId, pageId }: HeroCreationProps) => {
         </form>
       </div>
       <div className={`flex flex-col gap-2`}>
-        <h3 className="text-center">{t("preview")}</h3>
-        <div className="cover relative isolate flex aspect-[4/3] w-full flex-col items-center justify-center gap-4">
-          {imagePreview ? (
-            <div className="absolute inset-0 -z-20">
-              <img src={imagePreview} alt="" className="h-full object-cover" />
-            </div>
-          ) : null}
-          <div className="absolute inset-0 -z-10 bg-black/50"></div>
+        <h3 className="flex items-center justify-between">
+          <span>{t("preview")}</span>
+          <ThemeSelector onSelect={(t) => setPreviewTheme(t)} />
+        </h3>
+        <div
+          data-theme={previewTheme}
+          className={`cover flex aspect-[4/3] w-full flex-col items-center justify-center gap-4`}
+          style={{
+            backgroundImage: `${
+              imagePreview ? `url(${imagePreview})` : "unset"
+            }`,
+            backgroundColor: "rgb(0 0 0 / 0.5)",
+            backgroundSize: "cover",
+            backgroundPosition: "center",
+            backgroundBlendMode: "darken",
+          }}
+        >
           <p className="text-3xl font-bold text-white">{fields.title}</p>
           <p className="text-lg font-semibold text-white">{fields.subtitle}</p>
           <p className="text-gray-100">{fields.description}</p>
           {fields.cta && (
-            <button className="btn btn-primary btn-sm w-fit normal-case">
+            <button className="btn-primary btn-sm btn w-fit normal-case">
               {fields.cta}
             </button>
           )}
@@ -375,5 +390,9 @@ type HeroDisplayProps = {
 };
 
 export const HeroDisplay = ({ clubId, pageId }: HeroDisplayProps) => {
-  return <div>Hero</div>;
+  return (
+    <div>
+      Hero {clubId} {pageId}
+    </div>
+  );
 };

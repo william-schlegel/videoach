@@ -51,7 +51,7 @@ export const CreateCertification = ({ userId }: CreateCertificationProps) => {
   );
   const [file, setFile] = useState<File>();
 
-  const writeFile = useWriteFile(file, userId, "CERTIFICATION");
+  const writeFile = useWriteFile(userId, "CERTIFICATION");
 
   const utils = trpc.useContext();
 
@@ -89,7 +89,7 @@ export const CreateCertification = ({ userId }: CreateCertificationProps) => {
   }
 
   const onSubmit = async () => {
-    const documentId = await writeFile();
+    const documentId = await writeFile(file);
 
     addCertification.mutate({
       userId,

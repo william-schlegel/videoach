@@ -5,7 +5,7 @@ import { useTranslation } from "next-i18next";
 import { type ButtonSize } from "@ui/buttonIcon";
 import Spinner from "@ui/spinner";
 import { toast } from "react-toastify";
-import { type PageTarget } from "@prisma/client";
+import { type PageSectionModel, type PageTarget } from "@prisma/client";
 import SimpleForm from "@ui/simpleform";
 import {
   type Path,
@@ -19,9 +19,10 @@ type CreatePageProps = {
   variant?: TModalVariant;
 };
 
-type TSelectTarget = { value: PageTarget; label: string };
-
-export const PAGE_TARGET_LIST: TSelectTarget[] = [
+export const PAGE_TARGET_LIST: readonly {
+  readonly value: PageTarget;
+  readonly label: string;
+}[] = [
   { value: "HOME", label: "home" },
   { value: "ACTIVITIES", label: "activities" },
   { value: "ACTIVITY", label: "activity" },
@@ -29,14 +30,19 @@ export const PAGE_TARGET_LIST: TSelectTarget[] = [
   { value: "PLANS", label: "plans" },
   { value: "PRESENTATION", label: "presentation" },
   { value: "TEAM", label: "team" },
+  { value: "PLANNING", label: "planning" },
   { value: "VIDEOS", label: "videos" },
-];
+] as const;
 
-export const PAGE_SECTION_LIST = [
+export const PAGE_SECTION_LIST: readonly {
+  readonly value: PageSectionModel;
+  readonly label: string;
+}[] = [
   { value: "HERO", label: "hero" },
   { value: "ACTIVITY_GROUPS", label: "activity-groups" },
   { value: "ACTIVITIES", label: "activity-details" },
   { value: "LOCATION", label: "location" },
+  { value: "CONTACT", label: "contact" },
   { value: "SOCIAL", label: "social" },
   { value: "FEATURES", label: "features" },
   { value: "FOOTER", label: "footer" },

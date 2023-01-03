@@ -36,7 +36,7 @@
 }
 
 .pill {
-  @apply flex flex-wrap items-center gap-2 rounded-full border border-neutral bg-base-100 text-base-content;
+  @apply flex flex-wrap items-center gap-2 rounded-full border border-neutral bg-base-200 text-base-content;
   padding: 0.5rem;
 }
 

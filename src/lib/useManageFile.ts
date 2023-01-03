@@ -2,20 +2,21 @@ import { type UserDocumentType } from "@prisma/client";
 import { trpc } from "@trpcclient/trpc";
 
 export const useWriteFile = (
-  file: File | undefined,
   userId: string,
-  documentType: UserDocumentType
+  documentType: UserDocumentType,
+  maxSize: number = 1024 * 1024
 ) => {
   const createPresignedUrl =
     trpc.files.createPresignedUrl.useMutation().mutateAsync;
 
-  async function writeFile() {
+  async function writeFile(file: File | undefined) {
     if (!file) return undefined;
     const { url, fields, documentId } = await createPresignedUrl({
       userId,
       fileType: file.type,
       documentType,
       fileName: file.name,
+      maxSize,
     });
     const formData = new FormData();
     formData.append("Content-Type", file.type);

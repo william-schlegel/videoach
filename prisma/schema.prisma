@@ -79,6 +79,14 @@ model User {
   rating          Float           @default(0)
   cancelationDate DateTime?
   documents       UserDocument[]
+  pageStyle       String          @default("light")
+  page            Page?
+  address         String?
+  phone           String?
+  facebookLink    String?
+  twitterLink     String?
+  youtubeLink     String?
+  instagramLink   String?
 
   @@index([pricingId])
 }
@@ -140,6 +148,7 @@ model Club {
   members    User[]            @relation(name: "Member")
   calendars  OpeningCalendar[]
   pages      Page[]
+  pageStyle  String            @default("light")
 
   @@index([managerId])
 }
@@ -328,6 +337,7 @@ enum PageTarget {
   ACTIVITIES
   ACTIVITY
   TEAM
+  PLANNING
   PLANS
   CONTACT
   VIDEOS
@@ -340,6 +350,7 @@ enum PageSectionModel {
   LOCATION
   SOCIAL
   FEATURES
+  CONTACT
   FOOTER
 }
 
@@ -352,12 +363,7 @@ enum PageSectionElementType {
   FEATURE
   BUTTON
   NEWSLETTER
-}
-
-enum PageSectionStyle {
-  STANDARD
-  PARALAX
-  WAVES
+  OPTION
 }
 
 model PageSectionElement {
@@ -369,25 +375,35 @@ model PageSectionElement {
   content     String?
   link        String?
   pageId      String?
-  pageSection String?
-  sections    PageSection[]
+  pageSection PageSectionModel?
+  sectionId   String
+  section     PageSection             @relation(fields: [sectionId], references: [id], onDelete: Cascade)
+  optionValue String?
+
+  @@index([sectionId])
 }
 
 model PageSection {
   id       String               @id @default(cuid())
   model    PageSectionModel
-  style    PageSectionStyle     @default(STANDARD)
   elements PageSectionElement[]
-  pages    Page[]
+  pageId   String
+  page     Page                 @relation(fields: [pageId], references: [id], onDelete: Cascade)
+
+  @@index([pageId])
 }
 
 model Page {
-  id       String        @id @default(cuid())
-  name     String
-  target   PageTarget    @default(HOME)
-  sections PageSection[]
-  clubId   String
-  club     Club          @relation(fields: [clubId], references: [id], onDelete: Cascade)
+  id        String        @id @default(cuid())
+  name      String
+  target    PageTarget    @default(HOME)
+  sections  PageSection[]
+  clubId    String?
+  club      Club?         @relation(fields: [clubId], references: [id], onDelete: Cascade)
+  userId    String?       @unique
+  user      User?         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  published Boolean       @default(false)
 
   @@index([clubId])
+  @@index([userId])
 }

@@ -4,16 +4,15 @@ import { useEffect, useRef, type ReactNode } from "react";
 import Footer from "./footer";
 import Navbar from "./navbar";
 import { ToastContainer } from "react-toastify";
+import { type TThemes } from "./themeSelector";
 
 import "react-toastify/dist/ReactToastify.css";
 type Props = {
   children: ReactNode;
 };
 
-export type Themes = "light" | "dark" | "cupcake" | "cyberpunk";
-
 export default function Layout({ children }: Props) {
-  const [theme, setTheme] = useLocalStorage<Themes>("theme", "cupcake");
+  const [theme, setTheme] = useLocalStorage<TThemes>("theme", "cupcake");
   const wrapperRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {

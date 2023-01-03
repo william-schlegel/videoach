@@ -52,6 +52,7 @@ export const dashboardRouter = router({
           clubs: true,
           certifications: true,
           activityGroups: true,
+          page: true,
         },
       });
       return clubData;

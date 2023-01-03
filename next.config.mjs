@@ -25,6 +25,7 @@ const configNext = {
     remotePatterns: [
       { protocol: "https", hostname: "**.cloudfront.net" },
       { protocol: "https", hostname: "platform-lookaside.fbsbx.com" },
+      { protocol: "https", hostname: "videoach-*.s3.eu-west-3.amazonaws.com" },
     ],
   },
 };
