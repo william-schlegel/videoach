@@ -156,7 +156,11 @@ const NewActivity = ({ clubId, groupId }: NewActivityProps) => {
         {t("create-activity-group")}
         <span className="text-primary">{groupQuery.data?.name}</span>
       </h3>
-      <input value={name} onChange={(e) => setName(e.target.value)} />
+      <input
+        className="input-bordered input w-full"
+        value={name}
+        onChange={(e) => setName(e.target.value)}
+      />
       {error && (
         <p className="text-sm text-error">{t("activity-name-mandatory")}</p>
       )}
@@ -217,7 +221,11 @@ function UpdateActivity({
         {t("update-activity")}
         <span className="text-primary">{initialName}</span>
       </h3>
-      <input value={name} onChange={(e) => setName(e.target.value)} />
+      <input
+        className="input-bordered input w-full"
+        value={name}
+        onChange={(e) => setName(e.target.value)}
+      />
       {error && (
         <p className="text-sm text-error">{t("activity-name-mandatory")}</p>
       )}
@@ -294,7 +302,11 @@ export const NewGroup = ({ userId, variant = "Primary" }: NewGroupProps) => {
   return (
     <Modal title={t("new-group")} variant={variant} handleSubmit={addNewGroup}>
       <h3>Créer un nouveau groupe d&apos;activités</h3>
-      <input value={name} onChange={(e) => setName(e.target.value)} />
+      <input
+        className="input-bordered input w-full"
+        value={name}
+        onChange={(e) => setName(e.target.value)}
+      />
       {error && (
         <p className="text-sm text-error">Le nom doit être renseigné</p>
       )}
@@ -367,7 +379,11 @@ export function UpdateGroup({
         <Spinner />
       ) : (
         <>
-          <input value={name} onChange={(e) => setName(e.target.value)} />
+          <input
+            className="input-bordered input w-full"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+          />
           {error && (
             <p className="text-sm text-error">{t("group-name-mandatory")}</p>
           )}

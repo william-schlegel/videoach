@@ -96,6 +96,7 @@ export default function SimpleForm<T extends FieldValues>({
                         })}
                         type={field.type || "text"}
                         disabled={field.disabled}
+                        className="input-bordered input w-full"
                       />
                     )}
                     {errors && errors[fn] ? (

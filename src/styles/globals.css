@@ -24,9 +24,6 @@
   label {
     @apply label-text label font-semibold text-primary;
   }
-  input {
-    @apply input-bordered input w-full;
-  }
   textarea {
     @apply textarea-bordered textarea w-full;
   }

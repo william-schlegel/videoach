@@ -281,13 +281,25 @@ export const HeroCreation = ({ clubId, pageId }: HeroCreationProps) => {
             </div>
           ) : null}
           <label>{t("title")}</label>
-          <input {...register("title")} type="text" />
+          <input
+            {...register("title")}
+            type="text"
+            className="input-bordered input w-full"
+          />
           <label>{t("subtitle")}</label>
-          <input {...register("subtitle")} type="text" />
+          <input
+            {...register("subtitle")}
+            type="text"
+            className="input-bordered input w-full"
+          />
           <label>{t("description")}</label>
           <textarea {...register("description")} rows={4} />
           <label>{t("button-cta")}</label>
-          <input {...register("cta")} type="text" />
+          <input
+            {...register("cta")}
+            type="text"
+            className="input-bordered input w-full"
+          />
           {fields.cta ? (
             <>
               <label>{t("linked-page")}</label>
@@ -330,7 +342,11 @@ export const HeroCreation = ({ clubId, pageId }: HeroCreationProps) => {
                   <option value="https:">https://</option>
                   <option value="http:">http://</option>
                 </select>
-                <input type="text" {...register("url")} />
+                <input
+                  type="text"
+                  {...register("url")}
+                  className="input-bordered input w-full"
+                />
               </label>
             </>
           ) : null}

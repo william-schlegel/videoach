@@ -255,15 +255,31 @@ export const CoachCreation = ({ userId, pageId }: CoachCreationProps) => {
           <label>{t("name")}</label>
           <input defaultValue={sessionData?.user?.name ?? ""} disabled />
           <label>{t("info")}</label>
-          <input {...register("subtitle")} type="text" />
+          <input
+            {...register("subtitle")}
+            type="text"
+            className="input-bordered input w-full"
+          />
           <label>{t("description")}</label>
           <textarea {...register("description")} rows={4} />
           <label>{t("email")}</label>
-          <input {...register("email")} type="email" />
+          <input
+            {...register("email")}
+            type="email"
+            className="input-bordered input w-full"
+          />
           <label>{t("phone")}</label>
-          <input {...register("phone")} type="tel" />
+          <input
+            {...register("phone")}
+            type="tel"
+            className="input-bordered input w-full"
+          />
           <label>{t("button-cta")}</label>
-          <input {...register("cta")} type="text" />
+          <input
+            {...register("cta")}
+            type="text"
+            className="input-bordered input w-full"
+          />
           {fields.cta ? (
             <>
               <label>{t("linked-section")}</label>
@@ -300,7 +316,7 @@ export const CoachCreation = ({ userId, pageId }: CoachCreationProps) => {
             </label>
           </div>
           <div className="col-span-2 flex justify-between">
-            <button className="btn btn-primary" type="submit">
+            <button className="btn-primary btn" type="submit">
               {t("save-section")}
             </button>
           </div>
@@ -332,7 +348,7 @@ export const CoachCreation = ({ userId, pageId }: CoachCreationProps) => {
                 <p className="text-lg font-semibold">{fields.subtitle}</p>
                 <p className="text-gray-100">{fields.description}</p>
                 {fields.cta && (
-                  <button className="btn btn-primary btn-sm w-fit normal-case">
+                  <button className="btn-primary btn-sm btn w-fit normal-case">
                     {fields.cta}
                   </button>
                 )}
@@ -351,8 +367,8 @@ export const CoachCreation = ({ userId, pageId }: CoachCreationProps) => {
                   <div className="flex flex-wrap gap-2">
                     {queryCoachData.data?.certifications.map(
                       (certification) => (
-                        <div key={certification} className="pill">
-                          {certification}
+                        <div key={certification.id} className="pill">
+                          {certification.name}
                         </div>
                       )
                     )}
@@ -364,8 +380,8 @@ export const CoachCreation = ({ userId, pageId }: CoachCreationProps) => {
                   <h3>{t("coach-activities")}</h3>
                   <div className="flex flex-wrap gap-2">
                     {queryCoachData.data?.activities.map((activity) => (
-                      <div key={activity} className="pill">
-                        {activity}
+                      <div key={activity.id} className="pill">
+                        {activity.name}
                       </div>
                     ))}
                   </div>

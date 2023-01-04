@@ -95,13 +95,18 @@ export default function Profile() {
               required: t("name-mandatory"),
             })}
             type={"text"}
+            className="input-bordered input w-full"
           />
           {errors.name ? (
             <p className="text-sm text-error">{errors.name.message}</p>
           ) : null}
         </div>
         <label>{t("my-email")}</label>
-        <input {...register("email")} type={"email"} />
+        <input
+          {...register("email")}
+          type={"email"}
+          className="input-bordered input w-full"
+        />
         <label>{t("account-provider")}</label>
         <div className="flex gap-2">
           {userQuery.data?.accounts.map((account) => (
@@ -129,7 +134,7 @@ export default function Profile() {
             ))}
           </select>
         )}
-        <button className="btn btn-primary" disabled={updateUser.isLoading}>
+        <button className="btn-primary btn" disabled={updateUser.isLoading}>
           {t("save-profile")}
         </button>
       </form>

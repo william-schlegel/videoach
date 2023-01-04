@@ -83,7 +83,7 @@ function FormCalendar({ calendarValues, onCalendarChange }: FormCalendarProps) {
           type="date"
           value={formatDateAsYYYYMMDD(calendarValues.startDate)}
           onChange={(e) => onChange("startDate", new Date(e.target.value))}
-          className="text-center"
+          className="input-bordered input w-full text-center"
         />
       </div>
       <table className="w-full table-auto">
@@ -139,7 +139,7 @@ function FormCalendar({ calendarValues, onCalendarChange }: FormCalendarProps) {
                               e.target.value
                             )
                           }
-                          className="input-sm w-fit text-center"
+                          className="input-bordered input input-sm w-fit text-center"
                         />
                         <input
                           type="time"
@@ -153,7 +153,7 @@ function FormCalendar({ calendarValues, onCalendarChange }: FormCalendarProps) {
                               e.target.value
                             )
                           }
-                          className="input-sm w-fit text-center"
+                          className="input-bordered input input-sm w-fit text-center"
                         />
                       </td>
                       <td>

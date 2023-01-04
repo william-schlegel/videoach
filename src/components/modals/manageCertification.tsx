@@ -219,6 +219,7 @@ export const CreateCertification = ({ userId }: CreateCertificationProps) => {
               setObtentionDate(e.target.valueAsDate ?? new Date(Date.now()))
             }
             required
+            className="input-bordered input w-full"
           />
         </div>
         <div className="flex flex-col">
@@ -627,6 +628,7 @@ function CertificationGroupForm({
           value={data.name}
           onChange={(e) => setData({ ...data, name: e.currentTarget.value })}
           type={"text"}
+          className="input-bordered input w-full"
         />
         {data.name === "" ? (
           <p className="col-span-2 text-sm text-error">
@@ -676,6 +678,7 @@ function CertificationGroupForm({
               setModuleName(e.currentTarget.value);
             }}
             onKeyDown={(e) => handleKeyboard(e.key, e.currentTarget.value)}
+            className="input-bordered input w-full"
           />
           <h3>{t("certification.linked-activities")}</h3>
           {agQuery.isLoading ? (

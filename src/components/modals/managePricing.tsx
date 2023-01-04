@@ -332,6 +332,7 @@ function PricingForm({
               required: t("pricing.name-mandatory"),
             })}
             type={"text"}
+            className="input-bordered input w-full"
           />
           {errors.title ? (
             <p className="text-sm text-error">{errors.title.message}</p>
@@ -376,12 +377,20 @@ function PricingForm({
           <>
             <label>{t("pricing.monthly")}</label>
             <label className="input-group">
-              <input {...register("monthly")} type={"number"} />
+              <input
+                {...register("monthly")}
+                type={"number"}
+                className="input-bordered input w-full"
+              />
               <span>{t("pricing.euro-per-month")}</span>
             </label>
             <label>{t("pricing.yearly")}</label>
             <label className="input-group">
-              <input {...register("yearly")} type={"number"} />
+              <input
+                {...register("yearly")}
+                type={"number"}
+                className="input-bordered input w-full"
+              />
               <span>{t("pricing.euro-per-year")}</span>
             </label>
           </>
@@ -435,6 +444,7 @@ function PricingForm({
                 e.currentTarget.value = "";
               }
             }}
+            className="input-bordered input w-full"
           />
           <button
             onClick={() => {

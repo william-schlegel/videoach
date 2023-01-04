@@ -36,8 +36,8 @@ const PageSectionElementObject = z.object({
 });
 
 type GetCoachDataForPageReturn = {
-  certifications: string[];
-  activities: string[];
+  certifications: { id: string; name: string }[];
+  activities: { id: string; name: string }[];
 };
 
 export const pageRouter = router({
@@ -245,12 +245,14 @@ export const pageRouter = router({
           },
         },
       });
-      const activities = new Set<string>();
+      const activities = new Map<string, { id: string; name: string }>();
       if (user?.certifications)
         for (const mod of user.certifications)
-          for (const ag of mod.activityGroups) activities.add(ag.name);
-      const certifications = user?.certifications.map((c) => c.name) ?? [];
-      return { certifications, activities: Array.from(activities) };
+          for (const ag of mod.activityGroups)
+            activities.set(ag.id, { id: ag.id, name: ag.name });
+      const certifications =
+        user?.certifications.map((c) => ({ id: c.id, name: c.name })) ?? [];
+      return { certifications, activities: Array.from(activities.values()) };
     }),
   updatePagePublication: protectedProcedure
     .input(z.object({ pageId: z.string().cuid(), published: z.boolean() }))
