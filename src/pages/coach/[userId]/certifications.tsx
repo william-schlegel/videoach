@@ -19,6 +19,7 @@ import {
 } from "@modals/manageCertification";
 import ButtonIcon from "@ui/buttonIcon";
 import { toast } from "react-toastify";
+import Layout from "@root/src/components/layout";
 
 const ManageCertifications = ({
   userId,
@@ -58,7 +59,7 @@ const ManageCertifications = ({
     return <div>{t("coach-only")}</div>;
 
   return (
-    <div className="container mx-auto">
+    <Layout className="container mx-auto">
       <div className="mb-4 flex flex-row items-center gap-4">
         <h1>
           {t("manage-my-certifications", {
@@ -139,7 +140,7 @@ const ManageCertifications = ({
           </div>
         )}
       </div>
-    </div>
+    </Layout>
   );
 };
 

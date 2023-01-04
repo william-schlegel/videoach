@@ -31,7 +31,7 @@ function ButtonIcon({
     buttonVariant === "Icon-Outlined-Secondary";
 
   return (
-    <div className={"tooltip"} data-tip={title}>
+    <div className={"tooltip z-50"} data-tip={title}>
       <label
         htmlFor={btnId}
         className={`${primary ? "btn-primary" : "btn-secondary"} ${

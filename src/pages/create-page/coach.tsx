@@ -1,6 +1,7 @@
 import { authOptions } from "@auth/[...nextauth]";
 import { Role } from "@prisma/client";
 import nextI18nConfig from "@root/next-i18next.config.mjs";
+import Layout from "@root/src/components/layout";
 import { CoachCreation } from "@root/src/components/sections/coach";
 import { trpc } from "@trpcclient/trpc";
 import Spinner from "@ui/spinner";
@@ -19,7 +20,7 @@ function CoachPage({
   const queryPage = trpc.pages.getPageForCoach.useQuery(userId);
 
   return (
-    <main className="container mx-auto my-2 flex flex-col gap-2">
+    <Layout className="container mx-auto my-2 flex flex-col gap-2">
       <h1 className="flex items-center">{t("manage-page")}</h1>
       {queryPage.isLoading ? (
         <Spinner />
@@ -28,7 +29,7 @@ function CoachPage({
       ) : (
         <div>Error</div>
       )}
-    </main>
+    </Layout>
   );
 }
 

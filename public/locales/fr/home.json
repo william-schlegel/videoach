@@ -20,6 +20,8 @@
   "coach": "Coach",
   "rating": "Note",
   "certifications": "Certifications",
+  "page": "Page",
+  "page-coach": "Page de présentation de {{name}}",
   "pricing": {
     "usage": "Tarifs d'utilisation",
     "monthly": "Par mois",

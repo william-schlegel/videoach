@@ -19,6 +19,7 @@ import {
 } from "@modals/managePage";
 import Spinner from "@ui/spinner";
 import { HeroCreation } from "@root/src/components/sections/hero";
+import Layout from "@root/src/components/layout";
 
 function ClubPage({
   userId,
@@ -38,7 +39,7 @@ function ClubPage({
   });
 
   return (
-    <main className="container mx-auto my-2 flex flex-col gap-2">
+    <Layout className="container mx-auto my-2 flex flex-col gap-2">
       <h1 className="flex items-center">
         {t("manage-page")}
         <div className="ml-auto flex items-center gap-2">
@@ -83,7 +84,7 @@ function ClubPage({
         </aside>
         {pageId ? <PageContent clubId={clubId} pageId={pageId} /> : null}
       </div>
-    </main>
+    </Layout>
   );
 }
 

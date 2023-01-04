@@ -13,6 +13,7 @@ import { Pricing, PricingContainer } from "@ui/pricing";
 import { useTranslation } from "next-i18next";
 import { Feature, FeatureContainer } from "@ui/features";
 import Link from "next/link";
+import Layout from "@root/src/components/layout";
 
 function ManagerPage(
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -23,7 +24,7 @@ function ManagerPage(
   const { t } = useTranslation("home");
 
   return (
-    <div>
+    <Layout>
       <section className="hero bg-base-100">
         <div className="hero-content py-48 text-center">
           <div className="max-w-md">
@@ -73,13 +74,13 @@ function ManagerPage(
             ))}
           </PricingContainer>
           <Link href="/user/signin">
-            <button className="btn-accent btn-block btn my-4">
+            <button className="btn btn-accent btn-block my-4">
               {t("pricing.create-your-account")}
             </button>
           </Link>
         </div>
       </section>
-    </div>
+    </Layout>
   );
 }
 

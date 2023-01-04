@@ -29,6 +29,7 @@ import {
   useSensors,
 } from "@dnd-kit/core";
 import CollapsableGroup from "@ui/collapsableGroup";
+import Layout from "@root/src/components/layout";
 
 const ManageClubs = ({
   userId,
@@ -51,7 +52,7 @@ const ManageClubs = ({
     return <div>{t("manager-only")}</div>;
 
   return (
-    <div className="container mx-auto">
+    <Layout className="container mx-auto">
       <div className="mb-4 flex flex-row items-center gap-4">
         <h1>{t("manage-my-club", { count: clubQuery.data?.length ?? 0 })}</h1>
         <CreateClub />
@@ -77,7 +78,7 @@ const ManageClubs = ({
         )}
         {clubId === "" ? null : <ClubContent userId={userId} clubId={clubId} />}
       </div>
-    </div>
+    </Layout>
   );
 };
 
@@ -169,7 +170,7 @@ export function ClubContent({ userId, clubId }: ClubContentProps) {
                 {t("site", { count: clubQuery?.data?.sites?.length ?? 0 })}
               </h3>
               <Link
-                className="btn-secondary btn"
+                className="btn btn-secondary"
                 href={`${path}${clubId}/sites`}
               >
                 {t("manage-sites")}

@@ -1,6 +1,7 @@
 import { authOptions } from "@auth/[...nextauth]";
 import { Role } from "@prisma/client";
 import nextI18nConfig from "@root/next-i18next.config.mjs";
+import Layout from "@root/src/components/layout";
 import { trpc } from "@trpcclient/trpc";
 import Spinner from "@ui/spinner";
 import { type GetServerSidePropsContext } from "next";
@@ -29,8 +30,8 @@ const AdminDashboard = () => {
   if (adminQuery.isLoading) return <Spinner />;
 
   return (
-    <main className="container mx-auto my-2 flex flex-col gap-2">
-      <h1 className="flex justify-between">{t("manager-dashboard")}</h1>
+    <Layout className="container mx-auto my-2 flex flex-col gap-2">
+      <h1 className="flex justify-between">{t("admin-dashboard")}</h1>
       <section className="stats shadow">
         <div className="stat">
           <div className="stat-figure text-primary">
@@ -79,7 +80,7 @@ const AdminDashboard = () => {
           <h2>{t("kpi")}</h2>
         </article>
       </section>
-    </main>
+    </Layout>
   );
 };
 

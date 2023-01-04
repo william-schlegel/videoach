@@ -159,7 +159,7 @@ function FormCalendar({ calendarValues, onCalendarChange }: FormCalendarProps) {
                       <td>
                         <ButtonIcon
                           title={t("more-times")}
-                          iconComponent={<i className="bx bx-plus bx-sm" />}
+                          iconComponent={<i className="bx bx-plus bx-xs" />}
                           buttonVariant="Icon-Outlined-Secondary"
                           buttonSize="sm"
                         />
@@ -182,6 +182,7 @@ type ClubCalendarProps = {
 
 export const CreateClubCalendar = ({ clubId }: ClubCalendarProps) => {
   const { t } = useTranslation("calendar");
+  const utils = trpc.useContext();
   const { calendar, updateCalendar } = useFormCalendar();
   const saveCalendar = trpc.calendars.createCalendar.useMutation();
   const updateClub = trpc.clubs.updateClubCalendar.useMutation();
@@ -194,6 +195,7 @@ export const CreateClubCalendar = ({ clubId }: ClubCalendarProps) => {
             id: clubId,
             calendarId: data.id,
           });
+        utils.calendars.getCalendarForClub.invalidate(clubId);
       },
     });
   }
@@ -218,14 +220,16 @@ export const CreateClubCalendar = ({ clubId }: ClubCalendarProps) => {
 
 type SiteCalendarProps = {
   siteId: string;
+  clubId: string;
 };
 
-export const CreateSiteCalendar = ({ siteId }: SiteCalendarProps) => {
+export const CreateSiteCalendar = ({ siteId, clubId }: SiteCalendarProps) => {
   const { t } = useTranslation("calendar");
   const [showCalendar, setShowCalendar] = useState(false);
   const { calendar, updateCalendar } = useFormCalendar();
   const saveCalendar = trpc.calendars.createCalendar.useMutation();
   const updateSite = trpc.sites.updateSiteCalendar.useMutation();
+  const utils = trpc.useContext();
 
   function onSubmit() {
     saveCalendar.mutate(calendar, {
@@ -235,6 +239,7 @@ export const CreateSiteCalendar = ({ siteId }: SiteCalendarProps) => {
             id: siteId,
             calendarId: data.id,
           });
+        utils.calendars.getCalendarForSite.invalidate({ clubId, siteId });
       },
     });
   }

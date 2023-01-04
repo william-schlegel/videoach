@@ -19,6 +19,7 @@ import {
 } from "react-hook-form";
 import { DeleteUser, UpdateUser } from "@modals/manageUser";
 import { formatMoney } from "@lib/formatNumber";
+import Layout from "@root/src/components/layout";
 
 type UserFilter = {
   name?: string;
@@ -62,7 +63,7 @@ function UserManagement() {
     return <div>{t("admin-only")}</div>;
 
   return (
-    <div className="container mx-auto">
+    <Layout className="container mx-auto">
       <div className="mb-4 flex flex-row items-center gap-4">
         <h1>{t("user.manage-users")}</h1>
       </div>
@@ -114,7 +115,7 @@ function UserManagement() {
                 />
                 <button
                   onClick={handleSubmit(onSubmit, onError)}
-                  className="btn btn-primary btn-block mt-2 flex gap-4"
+                  className="btn-primary btn-block btn mt-2 flex gap-4"
                 >
                   <i className="bx bx-search bx-sm" />
                   {t("user.search")}
@@ -154,7 +155,7 @@ function UserManagement() {
         )}
         {userId === "" ? null : <UserContent userId={userId} />}
       </div>
-    </div>
+    </Layout>
   );
 }
 

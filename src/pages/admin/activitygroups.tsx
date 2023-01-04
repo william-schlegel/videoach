@@ -10,6 +10,7 @@ import { useState } from "react";
 import { useTranslation } from "next-i18next";
 import Spinner from "@ui/spinner";
 import { DeleteGroup, NewGroup, UpdateGroup } from "@modals/manageActivity";
+import Layout from "@root/src/components/layout";
 
 function ActivityGroupManagement() {
   const { data: sessionData } = useSession();
@@ -25,7 +26,7 @@ function ActivityGroupManagement() {
     return <div>{t("admin-only")}</div>;
 
   return (
-    <div className="container mx-auto">
+    <Layout className="container mx-auto">
       <div className="mb-4 flex flex-row items-center gap-4">
         <h1>{t("ag.manage-ag")}</h1>
         <NewGroup />
@@ -59,7 +60,7 @@ function ActivityGroupManagement() {
         )}
         {agId === "" ? null : <AGContent agId={agId} />}
       </div>
-    </div>
+    </Layout>
   );
 }
 
@@ -131,7 +132,7 @@ export function AGContent({ agId }: AGContentProps) {
             {activitiesQuery.data?.map((activity) => (
               <div key={activity.id} className="pill">
                 <span>{activity.name}</span>
-                <span className="badge badge-primary">
+                <span className="badge-primary badge">
                   {activity.club.name}
                 </span>
               </div>
@@ -144,7 +145,7 @@ export function AGContent({ agId }: AGContentProps) {
             {clubs.map((club) => (
               <div key={club.id} className="pill">
                 <span>{club.name}</span>
-                <span className="badge badge-primary">{club.activities}</span>
+                <span className="badge-primary badge">{club.activities}</span>
               </div>
             ))}
           </div>

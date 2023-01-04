@@ -1,6 +1,7 @@
 import { authOptions } from "@auth/[...nextauth]";
 import { Role } from "@prisma/client";
 import nextI18nConfig from "@root/next-i18next.config.mjs";
+import Layout from "@root/src/components/layout";
 import { trpc } from "@trpcclient/trpc";
 import Spinner from "@ui/spinner";
 import {
@@ -35,7 +36,7 @@ const CoachDashboard = ({
   const page = coachQuery.data?.page;
 
   return (
-    <main className="container mx-auto my-2 flex flex-col gap-2">
+    <Layout className="container mx-auto my-2 flex flex-col gap-2">
       <h1 className="flex items-center justify-between">
         {t("coach-dashboard")}
         <div className="flex items-center gap-4">
@@ -59,7 +60,7 @@ const CoachDashboard = ({
               </div>
             </div>
           ) : null}
-          <Link className="btn-secondary btn" href={`${userId}/certifications`}>
+          <Link className="btn btn-secondary" href={`${userId}/certifications`}>
             {t("manage-certifications")}
           </Link>
         </div>
@@ -114,7 +115,7 @@ const CoachDashboard = ({
           <h2>{t("note")}</h2>
         </article>
       </section>
-    </main>
+    </Layout>
   );
 };
 

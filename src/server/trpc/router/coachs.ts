@@ -86,6 +86,7 @@ export const coachRouter = router({
       where: { role: { in: ["COACH", "MANAGER_COACH"] } },
       include: {
         certifications: true,
+        page: true,
       },
     })
   ),

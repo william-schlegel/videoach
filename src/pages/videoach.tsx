@@ -8,6 +8,9 @@ import { env } from "../env/client.mjs";
 // import { useState } from "react";
 import { trpc } from "@trpcclient/trpc";
 import Rating from "@ui/rating";
+import Layout from "@root/src/components/layout";
+import Link from "next/link";
+import ButtonIcon from "@ui/buttonIcon";
 
 // type ClubSearchResult = {
 //   name: string;
@@ -42,7 +45,7 @@ const Home = () => {
   }
 
   return (
-    <div>
+    <Layout>
       <section className="bg-gradient-home-hero hero min-h-screen">
         <div className="hero-content flex-col lg:flex-row-reverse">
           <Image
@@ -58,19 +61,19 @@ const Home = () => {
             <p className="py-6">{t("hero-text")}</p>
             <div className="flex flex-wrap gap-2">
               <button
-                className="btn-accent btn"
+                className="btn btn-accent"
                 onClick={() => router.push("#find-club")}
               >
                 {t("btn-visitor")}
               </button>
               <button
-                className="btn-primary btn"
+                className="btn btn-primary"
                 onClick={() => router.push("/manager")}
               >
                 {t("btn-manager")}
               </button>
               <button
-                className="btn-secondary btn"
+                className="btn btn-secondary"
                 onClick={() => router.push("/coach")}
               >
                 {t("btn-coach")}
@@ -103,7 +106,7 @@ const Home = () => {
                   <span>Km</span>
                 </label>
               </div>
-              <button className="btn-primary btn flex items-center gap-4">
+              <button className="btn btn-primary flex items-center gap-4">
                 {t("search-club")}
                 <i className="bx bx-search bx-xs" />
               </button>
@@ -176,7 +179,7 @@ const Home = () => {
                   <span>Km</span>
                 </label>
               </div>
-              <button className="btn-primary btn flex items-center gap-4">
+              <button className="btn btn-primary flex items-center gap-4">
                 {t("search-coach")}
                 <i className="bx bx-search bx-xs" />
               </button>
@@ -188,6 +191,7 @@ const Home = () => {
                       <th>{t("distance")}</th>
                       <th>{t("rating")}</th>
                       <th>{t("certifications")}</th>
+                      <th>{t("page")}</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -205,6 +209,24 @@ const Home = () => {
                                 {cert.name}
                               </span>
                             ))
+                          ) : (
+                            <span>&nbsp;</span>
+                          )}
+                        </td>
+                        <td>
+                          {res.page?.published ? (
+                            <Link
+                              href={`/presentation-page/coach/${res.id}/${res.page.id}`}
+                            >
+                              <ButtonIcon
+                                title={t("page-coach", { name: res.name })}
+                                iconComponent={
+                                  <i className="bx bx-link-external bx-xs" />
+                                }
+                                buttonSize="xs"
+                                buttonVariant="Icon-Outlined-Primary"
+                              />
+                            </Link>
                           ) : (
                             <span>&nbsp;</span>
                           )}
@@ -233,7 +255,7 @@ const Home = () => {
           </div>
         </div>
       </section>
-    </div>
+    </Layout>
   );
 };
 

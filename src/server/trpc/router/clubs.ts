@@ -32,7 +32,7 @@ export const clubRouter = router({
   getAllClubs: publicProcedure.query(({ ctx }) =>
     ctx.prisma.club.findMany({
       orderBy: { name: "asc" },
-      include: { activities: { include: { group: true } } },
+      include: { activities: { include: { group: true } }, pages: true },
     })
   ),
   createClub: protectedProcedure

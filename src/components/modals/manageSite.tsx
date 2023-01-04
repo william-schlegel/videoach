@@ -36,8 +36,9 @@ export const CreateSite = ({ clubId }: CreateSiteProps) => {
 
   const createSite = trpc.sites.createSite.useMutation({
     onSuccess: () => {
-      utils.clubs.getClubById.invalidate(clubId),
-        toast.success(t("site-created") as string);
+      utils.clubs.getClubById.invalidate(clubId);
+      utils.sites.getSitesForClub.invalidate(clubId);
+      toast.success(t("site-created") as string);
     },
     onError(error) {
       toast.error(error.message);

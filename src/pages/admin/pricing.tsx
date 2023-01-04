@@ -17,6 +17,7 @@ import {
 } from "@modals/managePricing";
 import { Pricing as PricingComponent } from "@ui/pricing";
 import { getRoleName } from "../user/[userId]";
+import Layout from "@root/src/components/layout";
 
 type GroupedData = {
   name: string;
@@ -51,7 +52,7 @@ function PricingManagement() {
     return <div>{t("admin-only")}</div>;
 
   return (
-    <div className="container mx-auto">
+    <Layout className="container mx-auto">
       <div className="mb-4 flex flex-row items-center gap-4">
         <h1>{t("pricing.manage-my-pricing")}</h1>
         <CreatePricing />
@@ -87,7 +88,7 @@ function PricingManagement() {
         )}
         {pricingId === "" ? null : <PricingContent pricingId={pricingId} />}
       </div>
-    </div>
+    </Layout>
   );
 }
 

@@ -6,6 +6,7 @@ import { type PageSectionModel } from "@prisma/client";
 import { trpc } from "@trpcclient/trpc";
 import ButtonIcon from "@ui/buttonIcon";
 import Spinner from "@ui/spinner";
+import { useSession } from "next-auth/react";
 import { useTranslation } from "next-i18next";
 import Image from "next/image";
 import { useEffect, useState } from "react";
@@ -21,7 +22,6 @@ type CoachCreationProps = {
 
 type CoachCreationForm = {
   images?: FileList;
-  title: string;
   subtitle: string;
   description: string;
   phone: string;
@@ -44,6 +44,7 @@ export const CoachCreation = ({ userId, pageId }: CoachCreationProps) => {
   const fields = useWatch({ control });
   const utils = trpc.useContext();
   const [previewTheme, setPreviewTheme] = useState<TThemes>("cupcake");
+  const { data: sessionData } = useSession();
 
   const querySection = trpc.pages.getSectionByModel.useQuery(
     { pageId, model: "HERO" },
@@ -67,7 +68,6 @@ export const CoachCreation = ({ userId, pageId }: CoachCreationProps) => {
           cta: cta?.title ?? "",
           description: hc?.content ?? "",
           pageSection: cta?.pageSection ?? "HERO",
-          title: hc?.title ?? "",
           subtitle: hc?.subTitle ?? "",
           phone: queryCoach.data?.phone ?? "",
           email: queryCoach.data?.email ?? "",
@@ -139,7 +139,6 @@ export const CoachCreation = ({ userId, pageId }: CoachCreationProps) => {
     }
     await updateSectionElement.mutateAsync({
       id: hc.id,
-      title: data.title,
       subTitle: data.subtitle,
       content: data.description,
       images: docId ? [docId] : undefined,
@@ -254,7 +253,7 @@ export const CoachCreation = ({ userId, pageId }: CoachCreationProps) => {
             ) : null}
           </div>
           <label>{t("name")}</label>
-          <input {...register("title")} type="text" />
+          <input defaultValue={sessionData?.user?.name ?? ""} disabled />
           <label>{t("info")}</label>
           <input {...register("subtitle")} type="text" />
           <label>{t("description")}</label>
@@ -301,7 +300,7 @@ export const CoachCreation = ({ userId, pageId }: CoachCreationProps) => {
             </label>
           </div>
           <div className="col-span-2 flex justify-between">
-            <button className="btn-primary btn" type="submit">
+            <button className="btn btn-primary" type="submit">
               {t("save-section")}
             </button>
           </div>
@@ -321,17 +320,19 @@ export const CoachCreation = ({ userId, pageId }: CoachCreationProps) => {
                     src={imagePreview}
                     width={300}
                     height={300}
-                    alt={fields.title ?? "photo"}
+                    alt={sessionData?.user?.name ?? "photo"}
                     className="rounded-md shadow-md"
                   />
                 ) : null}
               </div>
               <div className="self-start">
-                <p className="text-3xl font-bold">{fields.title}</p>
+                <p className="text-3xl font-bold">
+                  {sessionData?.user?.name ?? ""}
+                </p>
                 <p className="text-lg font-semibold">{fields.subtitle}</p>
                 <p className="text-gray-100">{fields.description}</p>
                 {fields.cta && (
-                  <button className="btn-primary btn-sm btn w-fit normal-case">
+                  <button className="btn btn-primary btn-sm w-fit normal-case">
                     {fields.cta}
                   </button>
                 )}
@@ -378,15 +379,10 @@ export const CoachCreation = ({ userId, pageId }: CoachCreationProps) => {
   );
 };
 
-type HeroDisplayProps = {
-  clubId: string;
+type CoachDisplayProps = {
   pageId: string;
 };
 
-export const HeroDisplay = ({ clubId, pageId }: HeroDisplayProps) => {
-  return (
-    <div>
-      Hero {clubId} {pageId}
-    </div>
-  );
+export const CoachDisplay = ({ pageId }: CoachDisplayProps) => {
+  return <div>Hero {pageId}</div>;
 };

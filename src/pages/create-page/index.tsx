@@ -7,16 +7,17 @@ import { unstable_getServerSession } from "next-auth/next";
 import { useTranslation } from "next-i18next";
 import { useSession } from "next-auth/react";
 import Link from "next/link.js";
+import Layout from "@root/src/components/layout";
 
 const PageCreation = () => {
   const { data: sessionData } = useSession();
   const { t } = useTranslation();
   if (sessionData?.user?.role === Role.MANAGER_COACH)
     return (
-      <div className="">
+      <Layout>
         <Link href={"/create-page/coach"}>{t("coach")}</Link>
         <Link href={"/create-page/manager"}>{t("manager")}</Link>
-      </div>
+      </Layout>
     );
   return <div>You are not allowed to use this page</div>;
 };

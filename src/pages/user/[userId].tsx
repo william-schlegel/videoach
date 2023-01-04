@@ -10,6 +10,7 @@ import { Pricing, PricingContainer } from "@ui/pricing";
 import { remainingDays } from "@lib/formatDate";
 import Confirmation from "@ui/confirmation";
 import { toast } from "react-toastify";
+import Layout from "@root/src/components/layout";
 
 export const ROLE_LIST = [
   { label: "user", value: Role.MEMBER },
@@ -81,7 +82,7 @@ export default function Profile() {
     });
 
   return (
-    <article className="container mx-auto">
+    <Layout className="container mx-auto">
       <h1>{t("your-profile")}</h1>
       <form
         className={`grid grid-cols-[auto_1fr] gap-2`}
@@ -190,7 +191,7 @@ export default function Profile() {
           <h2>{t("payments")}</h2>
         </div>
       </div>
-    </article>
+    </Layout>
   );
 }
 

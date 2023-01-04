@@ -3,15 +3,14 @@ import Head from "next/head";
 import { useEffect, useRef, type ReactNode } from "react";
 import Footer from "./footer";
 import Navbar from "./navbar";
-import { ToastContainer } from "react-toastify";
 import { type TThemes } from "./themeSelector";
 
-import "react-toastify/dist/ReactToastify.css";
 type Props = {
   children: ReactNode;
+  className?: string;
 };
 
-export default function Layout({ children }: Props) {
+export default function Layout({ children, className }: Props) {
   const [theme, setTheme] = useLocalStorage<TThemes>("theme", "cupcake");
   const wrapperRef = useRef<HTMLDivElement>(null);
 
@@ -35,12 +34,8 @@ export default function Layout({ children }: Props) {
           theme={theme}
           onChangeTheme={(newTheme) => setTheme(newTheme)}
         />
-        <main className="bg-base-200 pb-4">{children}</main>
+        <main className={`bg-base-200 pb-4 ${className}`}>{children}</main>
         <Footer />
-        <ToastContainer
-          autoClose={3000}
-          theme={theme === "dark" ? "dark" : "colored"}
-        />
       </div>
     </>
   );

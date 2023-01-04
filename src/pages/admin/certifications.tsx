@@ -14,6 +14,7 @@ import {
   DeleteCertificationGroup,
   UpdateCertificationGroup,
 } from "@modals/manageCertification";
+import Layout from "@root/src/components/layout";
 
 function CertificationsManagement() {
   const { data: sessionData } = useSession();
@@ -29,7 +30,7 @@ function CertificationsManagement() {
     return <div>{t("admin-only")}</div>;
 
   return (
-    <div className="container mx-auto">
+    <Layout className="container mx-auto">
       <div className="mb-4 flex flex-row items-center gap-4">
         <h1>{t("certification.manage-cg")}</h1>
         <CreateCertificationGroup />
@@ -58,7 +59,7 @@ function CertificationsManagement() {
         )}
         {cgId === "" ? null : <CGContent cgId={cgId} />}
       </div>
-    </div>
+    </Layout>
   );
 }
 
@@ -90,7 +91,7 @@ export function CGContent({ cgId }: CGContentProps) {
             {cgQuery.data?.modules?.map((module) => (
               <div key={module.id} className="pill">
                 <span>{module.name}</span>
-                <span className="badge badge-primary">
+                <span className="badge-primary badge">
                   {module.activityGroups?.length}
                 </span>
               </div>

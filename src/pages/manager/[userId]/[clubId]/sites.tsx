@@ -17,6 +17,7 @@ import Link from "next/link";
 import { useRouter } from "next/router";
 import { CreateSiteCalendar } from "@modals/manageCalendar";
 import CalendarWeek from "@root/src/components/calendarWeek";
+import Layout from "@root/src/components/layout";
 
 const ManageSites = ({
   userId,
@@ -47,7 +48,7 @@ const ManageSites = ({
     return <div>{t("manager-only")}</div>;
 
   return (
-    <div className="container mx-auto">
+    <Layout className="container mx-auto">
       <div className="mb-4 flex flex-row items-center justify-between">
         <div className="flex items-center gap-4">
           <h1 className="flex items-center gap-4">
@@ -56,7 +57,7 @@ const ManageSites = ({
           </h1>
           <CreateSite clubId={clubId} />
         </div>
-        <Link className="btn-outline btn-primary btn" href={`${path}clubs`}>
+        <Link className="btn-outline btn btn-primary" href={`${path}clubs`}>
           {t("back-to-clubs")}
         </Link>
       </div>
@@ -83,7 +84,7 @@ const ManageSites = ({
           <SiteContent userId={userId} clubId={clubId} siteId={siteId} />
         )}
       </div>
-    </div>
+    </Layout>
   );
 };
 
@@ -128,7 +129,7 @@ export function SiteContent({ clubId, siteId }: SiteContentProps) {
         </div>
         <div className="flex items-center gap-2">
           <UpdateSite clubId={clubId} siteId={siteId} />
-          <CreateSiteCalendar siteId={siteId} />
+          <CreateSiteCalendar siteId={siteId} clubId={clubId} />
           <DeleteSite clubId={clubId} siteId={siteId} />
         </div>
       </div>
@@ -140,7 +141,7 @@ export function SiteContent({ clubId, siteId }: SiteContentProps) {
         <div className="flex-1 rounded border border-primary p-4 ">
           <div className="mb-4 flex flex-row items-center justify-between gap-4">
             <h3>{t("room", { count: siteQuery?.data?.rooms?.length ?? 0 })}</h3>
-            <Link className="btn-secondary btn" href={`${path}${siteId}/rooms`}>
+            <Link className="btn btn-secondary" href={`${path}${siteId}/rooms`}>
               {t("manage-rooms")}
             </Link>
           </div>

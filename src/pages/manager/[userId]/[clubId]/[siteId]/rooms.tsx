@@ -22,6 +22,7 @@ import {
   RESERVATIONS,
   UpdateRoom,
 } from "@modals/manageRoom";
+import Layout from "@root/src/components/layout";
 
 const ManageRooms = ({
   clubId,
@@ -52,7 +53,7 @@ const ManageRooms = ({
     return <div>{t("manager-only")}</div>;
 
   return (
-    <div className="container mx-auto">
+    <Layout className="container mx-auto">
       <div className="mb-4 flex flex-row items-center justify-between">
         <div className="flex items-center gap-4">
           <h1 className="flex items-center gap-4">
@@ -61,7 +62,7 @@ const ManageRooms = ({
           </h1>
           <CreateRoom siteId={siteId} variant={"Primary"} />
         </div>
-        <Link className="btn-outline btn-primary btn" href={`${path}sites`}>
+        <Link className="btn-outline btn btn-primary" href={`${path}sites`}>
           {t("back-to-sites")}
         </Link>
       </div>
@@ -80,7 +81,7 @@ const ManageRooms = ({
                 >
                   <span>{room.name}</span>
                   {room.unavailable ? (
-                    <span className="badge-error badge">
+                    <span className="badge badge-error">
                       {t("room-closed")}
                     </span>
                   ) : null}
@@ -93,7 +94,7 @@ const ManageRooms = ({
           <RoomContent clubId={clubId} roomId={roomId} siteId={siteId} />
         )}
       </div>
-    </div>
+    </Layout>
   );
 };
 
