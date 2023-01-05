@@ -27,7 +27,7 @@ export default function Layout({ children, className }: Props) {
       </Head>
       <div
         ref={wrapperRef}
-        className="flex h-screen flex-1 flex-col bg-base-200"
+        className="flex min-h-screen flex-1 flex-col bg-base-200"
         data-theme="cupcake"
       >
         <Navbar

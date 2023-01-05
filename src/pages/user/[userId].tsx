@@ -11,6 +11,8 @@ import { remainingDays } from "@lib/formatDate";
 import Confirmation from "@ui/confirmation";
 import { toast } from "react-toastify";
 import Layout from "@root/src/components/layout";
+import Map from "react-map-gl";
+import { env } from "@root/src/env/client.mjs";
 
 export const ROLE_LIST = [
   { label: "user", value: Role.MEMBER },
@@ -27,6 +29,11 @@ export function getRoleName(role: Role) {
 type FormValues = {
   name: string;
   email: string;
+  phone: string;
+  address: string;
+  googleAddress: string;
+  longitude: number;
+  latitude: number;
   role: Role;
 };
 
@@ -39,6 +46,11 @@ export default function Profile() {
       reset({
         name: data?.name || "",
         email: data?.email || "",
+        phone: data?.phone || "",
+        address: data?.address || "",
+        googleAddress: data?.googleAddress || "",
+        longitude: data?.longitude || 2.2944813,
+        latitude: data?.latitude || 48.8583701,
         role: data?.role || Role.MEMBER,
       });
     },
@@ -51,9 +63,16 @@ export default function Profile() {
     reset,
     control,
   } = useForm<FormValues>();
-  const role = useWatch({ control, name: "role", defaultValue: "MEMBER" });
+  const fields = useWatch({
+    control,
+    defaultValue: {
+      role: "MEMBER",
+    },
+  });
 
-  const pricingQuery = trpc.pricings.getPricingForRole.useQuery(role);
+  const pricingQuery = trpc.pricings.getPricingForRole.useQuery(
+    fields.role ?? "MEMBER"
+  );
   const planUpdate = trpc.users.changeUserPlan.useMutation({
     onSuccess() {
       utils.users.getUserById.invalidate(myUserId);
@@ -85,56 +104,107 @@ export default function Profile() {
     <Layout className="container mx-auto">
       <h1>{t("your-profile")}</h1>
       <form
-        className={`grid grid-cols-[auto_1fr] gap-2`}
+        className={`grid grid-cols-2 items-start gap-2`}
         onSubmit={handleSubmit(onSubmit)}
       >
-        <label>{t("change-name")}</label>
-        <div>
+        <div className={`grid grid-cols-[auto_1fr]  gap-2`}>
+          <label>{t("change-name")}</label>
+          <div>
+            <input
+              {...register("name", {
+                required: t("name-mandatory"),
+              })}
+              type={"text"}
+              className="input-bordered input w-full"
+            />
+            {errors.name ? (
+              <p className="text-sm text-error">{errors.name.message}</p>
+            ) : null}
+          </div>
+          <label>{t("my-email")}</label>
           <input
-            {...register("name", {
-              required: t("name-mandatory"),
-            })}
-            type={"text"}
+            {...register("email")}
+            type={"email"}
             className="input-bordered input w-full"
           />
-          {errors.name ? (
-            <p className="text-sm text-error">{errors.name.message}</p>
-          ) : null}
-        </div>
-        <label>{t("my-email")}</label>
-        <input
-          {...register("email")}
-          type={"email"}
-          className="input-bordered input w-full"
-        />
-        <label>{t("account-provider")}</label>
-        <div className="flex gap-2">
-          {userQuery.data?.accounts.map((account) => (
-            <span
-              key={account.id}
-              className="rounded border border-primary px-4 py-2"
-            >
-              {account.provider}
-            </span>
-          ))}
-        </div>
-        <label>{t("my-role")}</label>
-        {userQuery.data?.role === Role.ADMIN ? (
-          <div>{t("admin")}</div>
-        ) : (
-          <select
-            className="max-w-xs"
-            {...register("role")}
-            defaultValue={userQuery.data?.role}
-          >
-            {ROLE_LIST.filter((rl) => rl.value !== Role.ADMIN).map((rl) => (
-              <option key={rl.value} value={rl.value}>
-                {t(rl.label)}
-              </option>
+          <label>{t("phone")}</label>
+          <input
+            {...register("phone")}
+            type="tel"
+            className="input-bordered input w-full"
+          />
+          <label className="place-self-start">{t("address")}</label>
+          <textarea {...register("address")} rows={2} />
+          <label>{t("account-provider")}</label>
+          <div className="flex gap-2">
+            {userQuery.data?.accounts.map((account) => (
+              <span
+                key={account.id}
+                className="rounded border border-primary px-4 py-2"
+              >
+                {account.provider}
+              </span>
             ))}
-          </select>
+          </div>
+          <label>{t("my-role")}</label>
+          {userQuery.data?.role === Role.ADMIN ? (
+            <div>{t("admin")}</div>
+          ) : (
+            <select
+              className="max-w-xs"
+              {...register("role")}
+              defaultValue={userQuery.data?.role}
+            >
+              {ROLE_LIST.filter((rl) => rl.value !== Role.ADMIN).map((rl) => (
+                <option key={rl.value} value={rl.value}>
+                  {t(rl.label)}
+                </option>
+              ))}
+            </select>
+          )}
+        </div>
+        {fields?.role === "COACH" || fields.role === "MANAGER_COACH" ? (
+          <div className={`grid grid-cols-[auto_1fr]  gap-2`}>
+            <label>{t("google-address")}</label>
+            <input
+              {...register("googleAddress")}
+              className="input-bordered input w-full"
+            />
+            <div className="col-span-2 flex justify-between">
+              <label>{t("longitude")}</label>
+              <input
+                {...register("longitude")}
+                className="input-bordered input w-full"
+                disabled
+              />
+              <label>{t("latitude")}</label>
+              <input
+                {...register("latitude")}
+                className="input-bordered input w-full"
+                disabled
+              />
+            </div>
+            <div className="col-span-2 border border-primary p-1">
+              <Map
+                initialViewState={{
+                  longitude: 2.2944813,
+                  latitude: 48.8583701,
+                  zoom: 10,
+                }}
+                style={{ width: "100%", height: "20rem" }}
+                mapStyle="mapbox://styles/mapbox/streets-v9"
+                mapboxAccessToken={env.NEXT_PUBLIC_MAPBOX_TOKEN}
+                attributionControl={false}
+              />
+            </div>
+          </div>
+        ) : (
+          <div>&nbsp;</div>
         )}
-        <button className="btn-primary btn" disabled={updateUser.isLoading}>
+        <button
+          className="btn-primary btn col-span-2 w-fit"
+          disabled={updateUser.isLoading}
+        >
           {t("save-profile")}
         </button>
       </form>
@@ -143,12 +213,12 @@ export default function Profile() {
         <div className="flex flex-col gap-2 rounded-md border border-primary p-4">
           <h2>{t("plan")}</h2>
           {userQuery.data?.pricingId &&
-          userQuery.data.pricing?.roleTarget === role ? (
+          userQuery.data.pricing?.roleTarget === fields?.role ? (
             <>
               <label className="self-start">{t("actual-plan")}</label>
               <div className="flex gap-2">
                 <div className="rounded bg-primary px-4 py-2 text-primary-content">
-                  {userQuery.data.pricing.title}
+                  {userQuery.data.pricing?.title}
                 </div>
                 {userQuery.data.trialUntil ? (
                   <div className="rounded bg-secondary px-4 py-2 text-secondary-content">

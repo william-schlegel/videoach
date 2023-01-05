@@ -4,7 +4,7 @@ import Image from "next/image.js";
 import { useTranslation } from "next-i18next";
 import { useRouter } from "next/router.js";
 import Map from "react-map-gl";
-import { env } from "../env/client.mjs";
+import { env } from "@root/src/env/client.mjs";
 // import { useState } from "react";
 import { trpc } from "@trpcclient/trpc";
 import Rating from "@ui/rating";
@@ -61,19 +61,19 @@ const Home = () => {
             <p className="py-6">{t("hero-text")}</p>
             <div className="flex flex-wrap gap-2">
               <button
-                className="btn btn-accent"
+                className="btn-accent btn"
                 onClick={() => router.push("#find-club")}
               >
                 {t("btn-visitor")}
               </button>
               <button
-                className="btn btn-primary"
+                className="btn-primary btn"
                 onClick={() => router.push("/manager")}
               >
                 {t("btn-manager")}
               </button>
               <button
-                className="btn btn-secondary"
+                className="btn-secondary btn"
                 onClick={() => router.push("/coach")}
               >
                 {t("btn-coach")}
@@ -106,7 +106,7 @@ const Home = () => {
                   <span>Km</span>
                 </label>
               </div>
-              <button className="btn btn-primary flex items-center gap-4">
+              <button className="btn-primary btn flex items-center gap-4">
                 {t("search-club")}
                 <i className="bx bx-search bx-xs" />
               </button>
@@ -179,7 +179,7 @@ const Home = () => {
                   <span>Km</span>
                 </label>
               </div>
-              <button className="btn btn-primary flex items-center gap-4">
+              <button className="btn-primary btn flex items-center gap-4">
                 {t("search-coach")}
                 <i className="bx bx-search bx-xs" />
               </button>
@@ -217,6 +217,8 @@ const Home = () => {
                           {res.page?.published ? (
                             <Link
                               href={`/presentation-page/coach/${res.id}/${res.page.id}`}
+                              target="_blank"
+                              rel="noreferrer"
                             >
                               <ButtonIcon
                                 title={t("page-coach", { name: res.name })}

@@ -1,19 +1,19 @@
-import { serverSideTranslations } from "next-i18next/serverSideTranslations";
 import nextI18nConfig from "@root/next-i18next.config.mjs";
+import Layout from "@root/src/components/layout";
 import { createProxySSGHelpers } from "@trpc/react-query/ssg";
+import { trpc } from "@trpcclient/trpc";
+import { createContextInner } from "@trpcserver/context";
+import { appRouter } from "@trpcserver/router/_app";
+import { Feature, FeatureContainer } from "@ui/features";
+import { Pricing, PricingContainer } from "@ui/pricing";
 import type {
   GetServerSidePropsContext,
   InferGetServerSidePropsType,
 } from "next";
-import superjson from "superjson";
-import { createContextInner } from "@trpcserver/context";
-import { appRouter } from "@trpcserver/router/_app";
-import { trpc } from "@trpcclient/trpc";
-import { Pricing, PricingContainer } from "@ui/pricing";
 import { useTranslation } from "next-i18next";
-import { Feature, FeatureContainer } from "@ui/features";
+import { serverSideTranslations } from "next-i18next/serverSideTranslations";
 import Link from "next/link";
-import Layout from "@root/src/components/layout";
+import superjson from "superjson";
 
 function ManagerPage(
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -74,7 +74,7 @@ function ManagerPage(
             ))}
           </PricingContainer>
           <Link href="/user/signin">
-            <button className="btn btn-accent btn-block my-4">
+            <button className="btn-accent btn-block btn my-4">
               {t("pricing.create-your-account")}
             </button>
           </Link>

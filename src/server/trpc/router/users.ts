@@ -93,6 +93,11 @@ export const userRouter = router({
         id: z.string().cuid(),
         name: z.string().optional(),
         email: z.string().email().optional(),
+        phone: z.string().optional(),
+        address: z.string().optional(),
+        longitude: z.number().optional(),
+        latitude: z.number().optional(),
+        googleAddress: z.string().optional(),
         role: z.nativeEnum(Role),
       })
     )

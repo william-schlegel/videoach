@@ -62,5 +62,12 @@
   "with-certifications": "Montrer les certifications",
   "with-activities": "Montrer les activités",
   "page-published": "Page publiée",
-  "page-unpublished": "Page dépubliée"
+  "page-unpublished": "Page dépubliée",
+  "style-saved": "Style de la page enregistré",
+  "page-preview": "Prévisualiser la page dans une nouvelle fenêtre",
+  "save-style": "Enregistrer le style",
+  "contact-me-email": "Me contacter par mail",
+  "contact-me-phone": "Me contacter par téléphone",
+  "publish-page": "Publication de la page",
+  "where-to-find-me": "Où me trouver ?"
 }

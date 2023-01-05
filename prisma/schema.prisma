@@ -81,8 +81,11 @@ model User {
   documents       UserDocument[]
   pageStyle       String          @default("light")
   page            Page?
-  address         String?
   phone           String?
+  address         String?
+  googleAddress   String?
+  latitude        Float           @default(48.8583701)
+  longitude       Float           @default(2.2944813)
   facebookLink    String?
   twitterLink     String?
   youtubeLink     String?
@@ -138,17 +141,20 @@ model UserDocument {
 // ----------------------------------------------------------------------------------------------
 
 model Club {
-  id         String            @id @default(cuid())
-  name       String
-  address    String
-  managerId  String
-  manager    User              @relation(fields: [managerId], references: [id], onDelete: Cascade, name: "Manager")
-  sites      Site[]
-  activities Activity[]
-  members    User[]            @relation(name: "Member")
-  calendars  OpeningCalendar[]
-  pages      Page[]
-  pageStyle  String            @default("light")
+  id            String            @id @default(cuid())
+  name          String
+  address       String
+  managerId     String
+  manager       User              @relation(fields: [managerId], references: [id], onDelete: Cascade, name: "Manager")
+  sites         Site[]
+  activities    Activity[]
+  members       User[]            @relation(name: "Member")
+  calendars     OpeningCalendar[]
+  pages         Page[]
+  pageStyle     String            @default("light")
+  googleAddress String?
+  latitude      Float             @default(48.8583701)
+  longitude     Float             @default(2.2944813)
 
   @@index([managerId])
 }

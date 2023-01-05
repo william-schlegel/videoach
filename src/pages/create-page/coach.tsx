@@ -12,16 +12,62 @@ import {
 import { unstable_getServerSession } from "next-auth";
 import { useTranslation } from "next-i18next";
 import { serverSideTranslations } from "next-i18next/serverSideTranslations";
+import Link from "next/link";
+import { toast } from "react-toastify";
 
 function CoachPage({
   userId,
 }: InferGetServerSidePropsType<typeof getServerSideProps>) {
   const { t } = useTranslation("pages");
   const queryPage = trpc.pages.getPageForCoach.useQuery(userId);
+  const utils = trpc.useContext();
+  const publishPage = trpc.pages.updatePagePublication.useMutation({
+    onSuccess(data) {
+      utils.pages.getPageForCoach.invalidate(userId);
+      toast.success(
+        t(data.published ? "page-published" : "page-unpublished") as string
+      );
+    },
+  });
 
   return (
     <Layout className="container mx-auto my-2 flex flex-col gap-2">
-      <h1 className="flex items-center">{t("manage-page")}</h1>
+      <h1 className="flex items-center justify-between">
+        <span>{t("manage-page")}</span>
+
+        {queryPage.data?.id ? (
+          <div className="flex items-center gap-2">
+            <div className="pill">
+              <div className="form-control">
+                <label className="label cursor-pointer gap-4">
+                  <span className="label-text">{t("publish-page")}</span>
+                  <input
+                    type="checkbox"
+                    className="checkbox-primary checkbox"
+                    checked={queryPage.data?.published}
+                    onChange={(e) =>
+                      publishPage.mutate({
+                        pageId: queryPage.data?.id,
+                        published: e.target.checked,
+                      })
+                    }
+                  />
+                </label>
+              </div>
+            </div>
+
+            <Link
+              href={`/presentation-page/coach/${userId}/${queryPage.data.id}`}
+              target="_blank"
+              referrerPolicy="no-referrer"
+              className="btn-primary btn flex gap-2"
+            >
+              {t("page-preview")}
+              <i className="bx bx-link-external bx-xs" />
+            </Link>
+          </div>
+        ) : null}
+      </h1>
       {queryPage.isLoading ? (
         <Spinner />
       ) : queryPage.data?.id ? (

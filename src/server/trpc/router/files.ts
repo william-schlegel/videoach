@@ -1,7 +1,7 @@
 import { type UserDocument, UserDocumentType } from "@prisma/client";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
-import { router, protectedProcedure } from "../trpc";
+import { router, protectedProcedure, publicProcedure } from "../trpc";
 import { createPresignedPost } from "@aws-sdk/s3-presigned-post";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import {
@@ -71,7 +71,7 @@ export const fileRouter = router({
       });
       return { ...presigned, documentId: document.id };
     }),
-  getDocumentUrlById: protectedProcedure
+  getDocumentUrlById: publicProcedure
     .input(z.string())
     .query(async ({ ctx, input }) => {
       if (!input) return { url: "", fileype: "" };

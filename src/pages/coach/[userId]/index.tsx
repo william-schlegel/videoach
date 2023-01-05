@@ -12,7 +12,6 @@ import { unstable_getServerSession } from "next-auth";
 import { useTranslation } from "next-i18next";
 import { serverSideTranslations } from "next-i18next/serverSideTranslations";
 import Link from "next/link";
-import { toast } from "react-toastify";
 
 const CoachDashboard = ({
   userId,
@@ -22,45 +21,15 @@ const CoachDashboard = ({
   const clubCount = coachQuery.data?.clubs?.length ?? 0;
   const certificationCount = coachQuery.data?.certifications?.length ?? 0;
   const activityCount = coachQuery.data?.activityGroups?.length ?? 0;
-  const utils = trpc.useContext();
-  const publishPage = trpc.pages.updatePagePublication.useMutation({
-    onSuccess(data) {
-      utils.dashboards.getCoachDataForUserId.invalidate(userId);
-      toast.success(
-        t(data.published ? "page-published" : "page-unpublished") as string
-      );
-    },
-  });
 
   if (coachQuery.isLoading) return <Spinner />;
-  const page = coachQuery.data?.page;
 
   return (
     <Layout className="container mx-auto my-2 flex flex-col gap-2">
       <h1 className="flex items-center justify-between">
         {t("coach-dashboard")}
         <div className="flex items-center gap-4">
-          {page ? (
-            <div className="pill">
-              <div className="form-control">
-                <label className="label cursor-pointer gap-4">
-                  <span className="label-text">{t("publish-page")}</span>
-                  <input
-                    type="checkbox"
-                    className="checkbox-primary checkbox"
-                    checked={page.published}
-                    onChange={(e) =>
-                      publishPage.mutate({
-                        pageId: page.id,
-                        published: e.target.checked,
-                      })
-                    }
-                  />
-                </label>
-              </div>
-            </div>
-          ) : null}
-          <Link className="btn btn-secondary" href={`${userId}/certifications`}>
+          <Link className="btn-secondary btn" href={`${userId}/certifications`}>
             {t("manage-certifications")}
           </Link>
         </div>

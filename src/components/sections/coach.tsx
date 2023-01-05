@@ -9,11 +9,15 @@ import Spinner from "@ui/spinner";
 import { useSession } from "next-auth/react";
 import { useTranslation } from "next-i18next";
 import Image from "next/image";
+import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
 import type { SubmitHandler } from "react-hook-form";
 import { useForm, useWatch } from "react-hook-form";
+import { Layer, Map as MapComponent, Source } from "react-map-gl";
 import { toast } from "react-toastify";
 import ThemeSelector, { type TThemes } from "../themeSelector";
+import { env } from "@root/src/env/client.mjs";
+import turfCircle from "@turf/circle";
 
 type CoachCreationProps = {
   userId: string;
@@ -24,8 +28,6 @@ type CoachCreationForm = {
   images?: FileList;
   subtitle: string;
   description: string;
-  phone: string;
-  email: string;
   cta: string;
   pageSection: PageSectionModel;
   withCertifications: boolean;
@@ -45,7 +47,14 @@ export const CoachCreation = ({ userId, pageId }: CoachCreationProps) => {
   const utils = trpc.useContext();
   const [previewTheme, setPreviewTheme] = useState<TThemes>("cupcake");
   const { data: sessionData } = useSession();
-
+  const updatePageStyle = trpc.pages.updatePageStyleForCoach.useMutation({
+    onSuccess() {
+      toast.success(t("style-saved") as string);
+    },
+    onError(error) {
+      toast.error(error.message);
+    },
+  });
   const querySection = trpc.pages.getSectionByModel.useQuery(
     { pageId, model: "HERO" },
     {
@@ -53,7 +62,7 @@ export const CoachCreation = ({ userId, pageId }: CoachCreationProps) => {
         if (!data) return;
 
         const hc = data?.elements.find((e) => e.elementType === "HERO_CONTENT");
-        const cta = data?.elements.find((e) => e.elementType === "BUTTON");
+        const cta = data?.elements.find((e) => e.elementType === "CTA");
         const options = data?.elements.filter(
           (e) => e.elementType === "OPTION"
         );
@@ -69,8 +78,6 @@ export const CoachCreation = ({ userId, pageId }: CoachCreationProps) => {
           description: hc?.content ?? "",
           pageSection: cta?.pageSection ?? "HERO",
           subtitle: hc?.subTitle ?? "",
-          phone: queryCoach.data?.phone ?? "",
-          email: queryCoach.data?.email ?? "",
           withActivities:
             options.find((o) => o.title === "activities")?.optionValue ===
             "yes",
@@ -120,7 +127,7 @@ export const CoachCreation = ({ userId, pageId }: CoachCreationProps) => {
       return;
     }
     const cta = querySection?.data?.elements.find(
-      (e) => e.elementType === "BUTTON"
+      (e) => e.elementType === "CTA"
     );
     const optionActivities = querySection?.data?.elements.find(
       (e) => e.elementType === "OPTION" && e.title === "activities"
@@ -179,7 +186,7 @@ export const CoachCreation = ({ userId, pageId }: CoachCreationProps) => {
       } else {
         if (querySection.data?.id)
           await createSectionElement.mutateAsync({
-            elementType: "BUTTON",
+            elementType: "CTA",
             sectionId: querySection.data.id,
             title: data.cta,
             pageSection: data.pageSection,
@@ -262,18 +269,6 @@ export const CoachCreation = ({ userId, pageId }: CoachCreationProps) => {
           />
           <label>{t("description")}</label>
           <textarea {...register("description")} rows={4} />
-          <label>{t("email")}</label>
-          <input
-            {...register("email")}
-            type="email"
-            className="input-bordered input w-full"
-          />
-          <label>{t("phone")}</label>
-          <input
-            {...register("phone")}
-            type="tel"
-            className="input-bordered input w-full"
-          />
           <label>{t("button-cta")}</label>
           <input
             {...register("cta")}
@@ -326,68 +321,42 @@ export const CoachCreation = ({ userId, pageId }: CoachCreationProps) => {
         <div className={`flex flex-col gap-2`}>
           <h3 className="flex items-center justify-between">
             <span>{t("preview")}</span>
-            <ThemeSelector onSelect={(t) => setPreviewTheme(t)} />
+            <ThemeSelector
+              onSelect={(t) => setPreviewTheme(t)}
+              onSave={(t) => updatePageStyle.mutate({ userId, pageStyle: t })}
+            />
           </h3>
-          <div data-theme={previewTheme} className="py-4">
-            <div className="grid grid-cols-2 place-content-center gap-6 p-10">
-              <div className="flex justify-end">
-                {imagePreview ? (
-                  <Image
-                    src={imagePreview}
-                    width={300}
-                    height={300}
-                    alt={sessionData?.user?.name ?? "photo"}
-                    className="rounded-md shadow-md"
-                  />
-                ) : null}
-              </div>
-              <div className="self-start">
-                <p className="text-3xl font-bold">
-                  {sessionData?.user?.name ?? ""}
-                </p>
-                <p className="text-lg font-semibold">{fields.subtitle}</p>
-                <p className="text-gray-100">{fields.description}</p>
-                {fields.cta && (
-                  <button className="btn-primary btn-sm btn w-fit normal-case">
-                    {fields.cta}
-                  </button>
-                )}
-              </div>
-            </div>
-            <div
-              className={`grid ${
-                fields.withActivities && fields.withCertifications
-                  ? "grid-cols-2"
-                  : "grid-cols-1"
-              } gap-6 px-10`}
-            >
-              {fields.withCertifications ? (
-                <div>
-                  <h3>{t("coach-certifications")}</h3>
-                  <div className="flex flex-wrap gap-2">
-                    {queryCoachData.data?.certifications.map(
-                      (certification) => (
-                        <div key={certification.id} className="pill">
-                          {certification.name}
-                        </div>
-                      )
-                    )}
-                  </div>
-                </div>
-              ) : null}
-              {fields.withActivities ? (
-                <div>
-                  <h3>{t("coach-activities")}</h3>
-                  <div className="flex flex-wrap gap-2">
-                    {queryCoachData.data?.activities.map((activity) => (
-                      <div key={activity.id} className="pill">
-                        {activity.name}
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              ) : null}
-            </div>
+          <div data-theme={previewTheme} className="pt-4">
+            <PhotoSection
+              imageSrc={imagePreview}
+              userName={sessionData?.user?.name}
+              info={fields.subtitle}
+              description={fields.description}
+              email={queryCoach.data?.email}
+              phone={queryCoach.data?.phone}
+              cta={fields.cta}
+              preview
+            />
+            <CertificationsAndActivities
+              withActivities={!!fields.withActivities}
+              withCertifications={!!fields.withCertifications}
+              certifications={queryCoachData.data?.certifications ?? []}
+              activities={queryCoachData.data?.activities ?? []}
+              preview
+            />
+            <MapSection
+              longitude={
+                queryCoach.data?.googleAddress
+                  ? queryCoach.data?.longitude
+                  : undefined
+              }
+              latitude={
+                queryCoach.data?.googleAddress
+                  ? queryCoach.data?.latitude
+                  : undefined
+              }
+              preview
+            />
           </div>
         </div>
       </div>
@@ -400,5 +369,298 @@ type CoachDisplayProps = {
 };
 
 export const CoachDisplay = ({ pageId }: CoachDisplayProps) => {
-  return <div>Hero {pageId}</div>;
+  const queryPage = trpc.pages.getCoachPage.useQuery(pageId);
+  const pageData = queryPage.data?.pageData;
+  const hero = pageData?.page?.sections
+    .find((s) => s.model === "HERO")
+    ?.elements.find((e) => e.elementType === "HERO_CONTENT");
+  const queryImage = trpc.files.getDocumentUrlById.useQuery(
+    hero?.images?.[0]?.id ?? ""
+  );
+
+  if (queryPage.isLoading) return <Spinner />;
+  if (!queryPage.data) return <div>No page defined for this coach</div>;
+
+  const cta = pageData?.page?.sections
+    .find((s) => s.model === "HERO")
+    ?.elements.find((e) => e.elementType === "CTA");
+  const options = new Map(
+    pageData?.page?.sections
+      .find((s) => s.model === "HERO")
+      ?.elements.filter((e) => e.elementType === "OPTION")
+      .map((o) => [o.title, o.optionValue])
+  );
+
+  const activities = new Map<string, { id: string; name: string }>();
+  if (pageData?.certifications)
+    for (const mod of pageData.certifications)
+      for (const ag of mod.activityGroups)
+        activities.set(ag.id, { id: ag.id, name: ag.name });
+  const certifications =
+    pageData?.certifications.map((c) => ({ id: c.id, name: c.name })) ?? [];
+  const ca = { certifications, activities: Array.from(activities.values()) };
+
+  return (
+    <div
+      data-theme={pageData?.pageStyle ?? "light"}
+      className="flex min-h-screen flex-col items-center justify-center"
+    >
+      <PhotoSection
+        imageSrc={queryImage.data?.url}
+        userName={pageData?.name}
+        info={hero?.subTitle}
+        description={hero?.content}
+        email={pageData?.email}
+        phone={pageData?.phone}
+        cta={cta?.title}
+        ctaSection={cta?.pageSection}
+      />
+      <CertificationsAndActivities
+        withActivities={!!options.get("activities")}
+        withCertifications={!!options.get("certifications")}
+        certifications={ca.certifications}
+        activities={ca.activities}
+      />
+      <MapSection
+        longitude={pageData?.googleAddress ? pageData?.longitude : undefined}
+        latitude={pageData?.googleAddress ? pageData?.latitude : undefined}
+      />
+    </div>
+  );
 };
+
+type PhotoSectionProps = {
+  imageSrc?: string | null;
+  userName?: string | null;
+  phone?: string | null;
+  email?: string | null;
+  info?: string | null;
+  description?: string | null;
+  cta?: string | null;
+  ctaSection?: string | null;
+  preview?: boolean;
+};
+
+function PhotoSection({
+  imageSrc,
+  userName,
+  info,
+  description,
+  cta,
+  ctaSection,
+  preview = false,
+  email,
+  phone,
+}: PhotoSectionProps) {
+  const router = useRouter();
+  const { t } = useTranslation("pages");
+
+  return (
+    <div
+      className={`grid grid-cols-2 place-content-center ${
+        preview ? "gap-6" : "gap-16"
+      } p-10`}
+    >
+      <div className="flex justify-end">
+        {imageSrc ? (
+          <Image
+            src={imageSrc}
+            width={preview ? 300 : 600}
+            height={preview ? 300 : 600}
+            alt={userName ?? "photo"}
+            className="w-[clamp(300px,40vw,600px)] rounded-md shadow-md"
+          />
+        ) : null}
+      </div>
+      <div className="self-start">
+        <p
+          className={`${
+            preview
+              ? "text-3xl"
+              : "text-[clamp(2rem,5vw,5rem)] leading-[clamp(3rem,7.5vw,7.5rem)]"
+          } font-bold`}
+        >
+          {userName ?? ""}
+        </p>
+        <p
+          className={`${
+            preview
+              ? "text-lg"
+              : "text-[clamp(1.5rem,2.5vw,3rem)] leading-[clamp(2.25rem,3.75vw,4.5rem)]"
+          } font-semibold`}
+        >
+          {info}
+        </p>
+        <p className="text-gray-100">{description}</p>
+        {email ? (
+          <a
+            href={`mailto:${email}`}
+            target="_blank"
+            rel="noreferrer"
+            className={`btn-primary btn-block btn my-4 ${
+              preview ? "btn-sm" : "btn-lg"
+            } gap-4`}
+          >
+            {t("contact-me-email")}
+            <i className={`bx bx-envelope ${preview ? "bx-sm" : "bx-lg"}`} />
+          </a>
+        ) : null}
+        {phone ? (
+          <a
+            href={`tel:${phone}`}
+            target="_blank"
+            rel="noreferrer"
+            className={`btn-outline btn-secondary btn-block btn my-4 ${
+              preview ? "btn-sm" : "btn-lg"
+            } gap-4`}
+          >
+            {t("contact-me-phone")}
+            <i className={`bx bx-phone ${preview ? "bx-sm" : "bx-lg"}`} />
+          </a>
+        ) : null}
+        {cta && (
+          <button
+            className="btn-primary btn-sm btn w-fit normal-case"
+            onClick={() => {
+              if (ctaSection) router.push(`/#${ctaSection}`);
+            }}
+          >
+            {cta}
+          </button>
+        )}
+      </div>
+    </div>
+  );
+}
+
+type CertificationsAndActivitiesProps = {
+  withActivities: boolean;
+  withCertifications: boolean;
+  certifications: { id: string; name: string }[];
+  activities: { id: string; name: string }[];
+  preview?: boolean;
+};
+
+function CertificationsAndActivities({
+  withActivities,
+  withCertifications,
+  certifications,
+  activities,
+  preview = false,
+}: CertificationsAndActivitiesProps) {
+  const { t } = useTranslation("pages");
+  return (
+    <div
+      className={`grid ${
+        withActivities && withCertifications ? "grid-cols-2" : "grid-cols-1"
+      } ${preview ? "gap-6" : "gap-16"} mx-auto w-fit px-10`}
+    >
+      {withCertifications ? (
+        <div>
+          <h3
+            className={
+              preview
+                ? ""
+                : "text-[clamp(2rem,3vw,4rem)] leading-[clamp(3.5rem,4.5vw,5.5rem)]"
+            }
+          >
+            {t("coach-certifications")}
+          </h3>
+          <div className="flex flex-wrap gap-2">
+            {certifications.map((certification) => (
+              <div key={certification.id} className="pill">
+                {certification.name}
+              </div>
+            ))}
+          </div>
+        </div>
+      ) : null}
+      {withActivities ? (
+        <div>
+          <h3
+            className={
+              preview
+                ? ""
+                : "text-[clamp(2rem,3vw,4rem)] leading-[clamp(3.5rem,4.5vw,5.5rem)]"
+            }
+          >
+            {t("coach-activities")}
+          </h3>
+          <div className="flex flex-wrap gap-2">
+            {activities.map((activity) => (
+              <div key={activity.id} className="pill">
+                {activity.name}
+              </div>
+            ))}
+          </div>
+        </div>
+      ) : null}
+    </div>
+  );
+}
+
+type MapSectionProps = {
+  longitude?: number;
+  latitude?: number;
+  preview?: boolean;
+};
+
+function MapSection({ longitude, latitude, preview = false }: MapSectionProps) {
+  const { t } = useTranslation("pages");
+
+  if (!longitude || !latitude) return null;
+
+  const center = [longitude, latitude];
+  const circle = turfCircle(center, 7.5, {
+    steps: 64,
+    units: "kilometers",
+    properties: {},
+  });
+
+  return (
+    <div className={`${preview ? "mt-8" : "mt-24"} w-full bg-base-200`}>
+      <div className={`mx-auto max-w-4xl ${preview ? "p-8" : "p-24"}`}>
+        <h2
+          className={`w-full text-center ${
+            preview
+              ? ""
+              : "text-[clamp(2rem,3vw,4rem)] leading-[clamp(3.5rem,4.5vw,5.5rem)]"
+          }`}
+        >
+          {t("where-to-find-me")}
+        </h2>
+        <div className="col-span-2 w-full border border-primary">
+          <MapComponent
+            initialViewState={{
+              longitude: 2.2944813,
+              latitude: 48.8583701,
+              zoom: 10,
+            }}
+            style={{ width: "100%", height: preview ? "20rem" : "50vh" }}
+            mapStyle="mapbox://styles/mapbox/streets-v9"
+            mapboxAccessToken={env.NEXT_PUBLIC_MAPBOX_TOKEN}
+            attributionControl={false}
+          >
+            <Source type="geojson" data={circle}>
+              <Layer
+                type="fill"
+                paint={{
+                  "fill-color": "red",
+                  "fill-opacity": 0.2,
+                }}
+              />
+              <Layer
+                type="line"
+                paint={{
+                  "line-color": "red",
+                  "line-opacity": 1,
+                  "line-width": 5,
+                }}
+              />
+            </Source>
+          </MapComponent>
+        </div>
+      </div>
+    </div>
+  );
+}

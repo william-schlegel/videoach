@@ -231,6 +231,39 @@ export const pageRouter = router({
         },
       })
     ),
+  getCoachPage: publicProcedure
+    .input(z.string())
+    .query(async ({ ctx, input }) => {
+      const pageData = await ctx.prisma.user.findFirst({
+        where: { page: { id: input, target: "HOME", published: true } },
+        include: {
+          page: {
+            include: {
+              sections: {
+                include: {
+                  elements: {
+                    include: {
+                      images: true,
+                    },
+                  },
+                },
+              },
+            },
+          },
+          certifications: {
+            include: {
+              modules: true,
+              activityGroups: true,
+            },
+          },
+        },
+      });
+
+      const image = pageData?.page?.sections
+        .find((s) => s.model === "HERO")
+        ?.elements.find((e) => e.elementType === "HERO_CONTENT")?.images?.[0];
+      return { pageData, image };
+    }),
   getCoachDataForPage: publicProcedure
     .input(z.string())
     .query<GetCoachDataForPageReturn>(async ({ ctx, input }) => {
@@ -260,6 +293,21 @@ export const pageRouter = router({
       ctx.prisma.page.update({
         where: { id: input.pageId },
         data: { published: input.published },
+      })
+    ),
+  updatePageStyleForCoach: protectedProcedure
+    .input(
+      z.object({
+        userId: z.string().cuid(),
+        pageStyle: z.string(),
+      })
+    )
+    .mutation(({ ctx, input }) =>
+      ctx.prisma.user.update({
+        where: { id: input.userId },
+        data: {
+          pageStyle: input.pageStyle,
+        },
       })
     ),
 });
