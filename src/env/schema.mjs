@@ -41,6 +41,7 @@ export const serverSchema = z.object({
  */
 export const clientSchema = z.object({
   NEXT_PUBLIC_MAPBOX_TOKEN: z.string(),
+  NEXT_PUBLIC_MAPQUEST_KEY: z.string(),
   // NEXT_PUBLIC_BAR: z.string(),
 });
 
@@ -52,4 +53,5 @@ export const clientSchema = z.object({
  */
 export const clientEnv = {
   NEXT_PUBLIC_MAPBOX_TOKEN: process.env.NEXT_PUBLIC_MAPBOX_TOKEN,
+  NEXT_PUBLIC_MAPQUEST_KEY: process.env.NEXT_PUBLIC_MAPQUEST_KEY,
 };

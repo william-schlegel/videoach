@@ -97,8 +97,9 @@ export const userRouter = router({
         address: z.string().optional(),
         longitude: z.number().optional(),
         latitude: z.number().optional(),
-        googleAddress: z.string().optional(),
+        searchAddress: z.string().optional(),
         role: z.nativeEnum(Role),
+        range: z.number().min(0).max(100).optional(),
       })
     )
     .mutation(({ ctx, input }) => {

@@ -83,9 +83,10 @@ model User {
   page            Page?
   phone           String?
   address         String?
-  googleAddress   String?
+  searchAddress   String?
   latitude        Float           @default(48.8583701)
   longitude       Float           @default(2.2944813)
+  range           Float           @default(10)
   facebookLink    String?
   twitterLink     String?
   youtubeLink     String?
@@ -152,7 +153,7 @@ model Club {
   calendars     OpeningCalendar[]
   pages         Page[]
   pageStyle     String            @default("light")
-  googleAddress String?
+  searchAddress String?
   latitude      Float             @default(48.8583701)
   longitude     Float             @default(2.2944813)
 

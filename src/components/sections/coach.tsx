@@ -18,6 +18,7 @@ import { toast } from "react-toastify";
 import ThemeSelector, { type TThemes } from "../themeSelector";
 import { env } from "@root/src/env/client.mjs";
 import turfCircle from "@turf/circle";
+import hslToHex from "@lib/hslToHex";
 
 type CoachCreationProps = {
   userId: string;
@@ -346,16 +347,18 @@ export const CoachCreation = ({ userId, pageId }: CoachCreationProps) => {
             />
             <MapSection
               longitude={
-                queryCoach.data?.googleAddress
+                queryCoach.data?.searchAddress
                   ? queryCoach.data?.longitude
                   : undefined
               }
               latitude={
-                queryCoach.data?.googleAddress
+                queryCoach.data?.searchAddress
                   ? queryCoach.data?.latitude
                   : undefined
               }
+              range={queryCoach.data?.range ?? 10}
               preview
+              theme={previewTheme}
             />
           </div>
         </div>
@@ -422,8 +425,10 @@ export const CoachDisplay = ({ pageId }: CoachDisplayProps) => {
         activities={ca.activities}
       />
       <MapSection
-        longitude={pageData?.googleAddress ? pageData?.longitude : undefined}
-        latitude={pageData?.googleAddress ? pageData?.latitude : undefined}
+        longitude={pageData?.searchAddress ? pageData?.longitude : undefined}
+        latitude={pageData?.searchAddress ? pageData?.latitude : undefined}
+        theme={(pageData?.pageStyle as TThemes) ?? "light"}
+        range={pageData?.range ?? 10}
       />
     </div>
   );
@@ -491,7 +496,7 @@ function PhotoSection({
         >
           {info}
         </p>
-        <p className="text-gray-100">{description}</p>
+        <p className="text-neutral-content">{description}</p>
         {email ? (
           <a
             href={`mailto:${email}`}
@@ -603,15 +608,23 @@ type MapSectionProps = {
   longitude?: number;
   latitude?: number;
   preview?: boolean;
+  theme?: TThemes;
+  range: number;
 };
 
-function MapSection({ longitude, latitude, preview = false }: MapSectionProps) {
+function MapSection({
+  longitude,
+  latitude,
+  preview = false,
+  range,
+  theme = "cupcake",
+}: MapSectionProps) {
   const { t } = useTranslation("pages");
 
   if (!longitude || !latitude) return null;
 
   const center = [longitude, latitude];
-  const circle = turfCircle(center, 7.5, {
+  const circle = turfCircle(center, range, {
     steps: 64,
     units: "kilometers",
     properties: {},
@@ -634,27 +647,29 @@ function MapSection({ longitude, latitude, preview = false }: MapSectionProps) {
             initialViewState={{
               longitude: 2.2944813,
               latitude: 48.8583701,
-              zoom: 10,
+              zoom: 7,
             }}
             style={{ width: "100%", height: preview ? "20rem" : "50vh" }}
             mapStyle="mapbox://styles/mapbox/streets-v9"
             mapboxAccessToken={env.NEXT_PUBLIC_MAPBOX_TOKEN}
             attributionControl={false}
+            longitude={longitude}
+            latitude={latitude}
           >
             <Source type="geojson" data={circle}>
               <Layer
                 type="fill"
                 paint={{
-                  "fill-color": "red",
+                  "fill-color": hslToHex(theme, "--p"),
                   "fill-opacity": 0.2,
                 }}
               />
               <Layer
                 type="line"
                 paint={{
-                  "line-color": "red",
+                  "line-color": hslToHex(theme, "--p"),
                   "line-opacity": 1,
-                  "line-width": 5,
+                  "line-width": 2,
                 }}
               />
             </Source>

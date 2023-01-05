@@ -11,8 +11,14 @@ import { remainingDays } from "@lib/formatDate";
 import Confirmation from "@ui/confirmation";
 import { toast } from "react-toastify";
 import Layout from "@root/src/components/layout";
-import Map from "react-map-gl";
 import { env } from "@root/src/env/client.mjs";
+import AddressSearch from "@ui/addressSearch";
+import { Layer, Map as MapComponent, Source } from "react-map-gl";
+import turfCircle from "@turf/circle";
+import { useMemo } from "react";
+import useLocalStorage from "@lib/useLocalstorage";
+import { type TThemes } from "@root/src/components/themeSelector";
+import hslToHex from "@lib/hslToHex";
 
 export const ROLE_LIST = [
   { label: "user", value: Role.MEMBER },
@@ -31,15 +37,17 @@ type FormValues = {
   email: string;
   phone: string;
   address: string;
-  googleAddress: string;
+  searchAddress: string;
   longitude: number;
   latitude: number;
   role: Role;
+  range: number;
 };
 
 export default function Profile() {
   const router = useRouter();
   const { userId } = router.query;
+  const [theme] = useLocalStorage<TThemes>("theme", "cupcake");
   const myUserId = (Array.isArray(userId) ? userId[0] : userId) || "";
   const userQuery = trpc.users.getUserById.useQuery(myUserId, {
     onSuccess: (data) => {
@@ -48,10 +56,11 @@ export default function Profile() {
         email: data?.email || "",
         phone: data?.phone || "",
         address: data?.address || "",
-        googleAddress: data?.googleAddress || "",
+        searchAddress: data?.searchAddress || "",
         longitude: data?.longitude || 2.2944813,
         latitude: data?.latitude || 48.8583701,
         role: data?.role || Role.MEMBER,
+        range: data?.range || 10,
       });
     },
   });
@@ -62,6 +71,7 @@ export default function Profile() {
     formState: { errors },
     reset,
     control,
+    setValue,
   } = useForm<FormValues>();
   const fields = useWatch({
     control,
@@ -98,7 +108,20 @@ export default function Profile() {
     updateUser.mutate({
       id: myUserId,
       ...data,
+      range: Number(data.range),
     });
+
+  const circle = useMemo(() => {
+    const center = [
+      fields.longitude ?? 2.2944813,
+      fields.latitude ?? 48.8583701,
+    ];
+    return turfCircle(center, fields.range ?? 10, {
+      steps: 64,
+      units: "kilometers",
+      properties: {},
+    });
+  }, [fields.latitude, fields.longitude, fields.range]);
 
   return (
     <Layout className="container mx-auto">
@@ -165,11 +188,21 @@ export default function Profile() {
         </div>
         {fields?.role === "COACH" || fields.role === "MANAGER_COACH" ? (
           <div className={`grid grid-cols-[auto_1fr]  gap-2`}>
-            <label>{t("google-address")}</label>
-            <input
-              {...register("googleAddress")}
-              className="input-bordered input w-full"
+            <AddressSearch
+              label={t("google-address")}
+              defaultAddress={fields.searchAddress ?? ""}
+              onSearch={(lngLat, address) => {
+                setValue("searchAddress", address);
+                setValue("latitude", lngLat.latitude);
+                setValue("longitude", lngLat.longitude);
+              }}
+              className="col-span-2"
             />
+            {/* // <label>{t("google-address")}</label>
+            // <input
+            //   {...register("searchAddress")}
+            //   className="input-bordered input w-full"
+            // /> */}
             <div className="col-span-2 flex justify-between">
               <label>{t("longitude")}</label>
               <input
@@ -184,18 +217,53 @@ export default function Profile() {
                 disabled
               />
             </div>
-            <div className="col-span-2 border border-primary p-1">
-              <Map
+            <div className="flex gap-2">
+              <label>{t("range")}</label>
+              <div className="form-control">
+                <div className="input-group">
+                  <input
+                    type="number"
+                    className="input-bordered input"
+                    {...register("range")}
+                    min={0}
+                    max={100}
+                  />
+                  <span>km</span>
+                </div>
+              </div>
+            </div>
+            <div className="col-span-2 border-2 border-primary">
+              <MapComponent
                 initialViewState={{
                   longitude: 2.2944813,
                   latitude: 48.8583701,
-                  zoom: 10,
+                  zoom: 8,
                 }}
                 style={{ width: "100%", height: "20rem" }}
                 mapStyle="mapbox://styles/mapbox/streets-v9"
                 mapboxAccessToken={env.NEXT_PUBLIC_MAPBOX_TOKEN}
                 attributionControl={false}
-              />
+                longitude={fields.longitude}
+                latitude={fields.latitude}
+              >
+                <Source type="geojson" data={circle}>
+                  <Layer
+                    type="fill"
+                    paint={{
+                      "fill-color": hslToHex(theme, "--p"),
+                      "fill-opacity": 0.2,
+                    }}
+                  />
+                  <Layer
+                    type="line"
+                    paint={{
+                      "line-color": hslToHex(theme, "--p"),
+                      "line-opacity": 1,
+                      "line-width": 2,
+                    }}
+                  />
+                </Source>
+              </MapComponent>
             </div>
           </div>
         ) : (

@@ -24,10 +24,22 @@ const CoachDashboard = ({
 
   if (coachQuery.isLoading) return <Spinner />;
 
+  const published = coachQuery.data?.page?.published;
   return (
     <Layout className="container mx-auto my-2 flex flex-col gap-2">
       <h1 className="flex items-center justify-between">
-        {t("coach-dashboard")}
+        <div className="flex items-center gap-4">
+          <span>{t("coach-dashboard")}</span>
+          <span
+            className={`rounded px-4 py-2 text-sm ${
+              published
+                ? "bg-success text-success-content"
+                : "bg-warning text-warning-content"
+            }`}
+          >
+            {t(published ? "pages:page-published" : "pages:page-unpublished")}
+          </span>
+        </div>
         <div className="flex items-center gap-4">
           <Link className="btn-secondary btn" href={`${userId}/certifications`}>
             {t("manage-certifications")}
@@ -106,7 +118,7 @@ export const getServerSideProps = async ({
     props: {
       ...(await serverSideTranslations(
         locale ?? "fr",
-        ["common", "dashboard"],
+        ["common", "dashboard", "pages"],
         nextI18nConfig
       )),
       userId: session?.user?.id || "",
