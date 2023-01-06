@@ -4,15 +4,12 @@ import { useEffect, useState } from "react";
 
 type Props = {
   label: string;
-  defaultAddress: string;
+  defaultAddress?: string;
   className?: string;
-  onSearch: (
-    lngLat: { longitude: number; latitude: number },
-    address: string
-  ) => void;
+  onSearch: (adr: AddressData) => void;
 };
 
-type AddressData = {
+export type AddressData = {
   lat: number;
   lng: number;
   address: string;
@@ -22,9 +19,9 @@ const AddressSearch = ({
   defaultAddress,
   label,
   onSearch,
-}: // className,
-Props) => {
-  const [address, setAddress] = useState(defaultAddress);
+  className,
+}: Props) => {
+  const [address, setAddress] = useState(defaultAddress ?? "");
   const debouncedAddress = useDebounce<string>(address, 500);
   const [addresses, setAddresses] = useState<AddressData[]>([]);
 
@@ -41,7 +38,7 @@ Props) => {
   return (
     <>
       <label className="label"> {label} </label>
-      <div className="dropdown-bottom dropdown col-span-2">
+      <div className={`dropdown-bottom dropdown ${className}`}>
         <input
           className="input-bordered input w-full"
           value={address}
@@ -54,12 +51,10 @@ Props) => {
               <li key={`ADR-${idx}`}>
                 <button
                   type="button"
-                  onClick={() =>
-                    onSearch(
-                      { latitude: adr.lat, longitude: adr.lng },
-                      adr.address
-                    )
-                  }
+                  onClick={() => {
+                    onSearch(adr);
+                    setAddresses([]);
+                  }}
                 >
                   {adr.address}
                 </button>
@@ -80,6 +75,7 @@ async function searchAddresses(address: string): Promise<AddressData[]> {
   url.searchParams.append("location", address);
   const res = await fetch(url.href);
   const data = await res.json();
+  const chunks: string[] = [];
   const locations =
     data.results?.[0]?.locations?.map(
       (location: {
@@ -87,11 +83,19 @@ async function searchAddresses(address: string): Promise<AddressData[]> {
         postalCode: string;
         adminArea5: string;
         latLng: { lat: number; lng: number };
-      }) => ({
-        lat: location.latLng.lat,
-        lng: location.latLng.lng,
-        address: `${location.street}, ${location.postalCode}, ${location.adminArea5}`,
-      })
+      }) => {
+        if (location.street) chunks.push(location.street);
+        if (location.postalCode) chunks.push(location.postalCode);
+        if (location.adminArea5) chunks.push(location.adminArea5);
+        return {
+          lat: location.latLng.lat,
+          lng: location.latLng.lng,
+          address: chunks.reduce(
+            (prev, chunk) => (prev ? `${prev}, ${chunk}` : chunk),
+            ""
+          ),
+        };
+      }
     ) ?? [];
   return locations;
 }

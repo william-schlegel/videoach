@@ -191,18 +191,13 @@ export default function Profile() {
             <AddressSearch
               label={t("google-address")}
               defaultAddress={fields.searchAddress ?? ""}
-              onSearch={(lngLat, address) => {
-                setValue("searchAddress", address);
-                setValue("latitude", lngLat.latitude);
-                setValue("longitude", lngLat.longitude);
+              onSearch={(adr) => {
+                setValue("searchAddress", adr.address);
+                setValue("latitude", adr.lat);
+                setValue("longitude", adr.lng);
               }}
               className="col-span-2"
             />
-            {/* // <label>{t("google-address")}</label>
-            // <input
-            //   {...register("searchAddress")}
-            //   className="input-bordered input w-full"
-            // /> */}
             <div className="col-span-2 flex justify-between">
               <label>{t("longitude")}</label>
               <input

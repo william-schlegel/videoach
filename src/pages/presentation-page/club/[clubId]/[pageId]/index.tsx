@@ -1,6 +1,6 @@
 import nextI18nConfig from "@root/next-i18next.config.mjs";
 import { HeroDisplay } from "@root/src/components/sections/hero";
-import PageNavigation from "@root/src/pages/create-page/PageNavigation";
+import PageNavigation from "@root/src/pages/create-page/pageNavigation";
 import { createProxySSGHelpers } from "@trpc/react-query/ssg";
 import { trpc } from "@trpcclient/trpc";
 import { createContextInner } from "@trpcserver/context";

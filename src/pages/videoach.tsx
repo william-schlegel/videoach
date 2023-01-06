@@ -3,7 +3,7 @@ import nextI18nConfig from "../../next-i18next.config.mjs";
 import Image from "next/image.js";
 import { useTranslation } from "next-i18next";
 import { useRouter } from "next/router.js";
-import Map from "react-map-gl";
+import Map, { Layer, Source } from "react-map-gl";
 import { env } from "@root/src/env/client.mjs";
 // import { useState } from "react";
 import { trpc } from "@trpcclient/trpc";
@@ -11,6 +11,12 @@ import Rating from "@ui/rating";
 import Layout from "@root/src/components/layout";
 import Link from "next/link";
 import ButtonIcon from "@ui/buttonIcon";
+import AddressSearch, { type AddressData } from "@ui/addressSearch";
+import { useMemo, useState } from "react";
+import hslToHex from "@lib/hslToHex";
+import turfCircle from "@turf/circle";
+import useLocalStorage from "@lib/useLocalstorage";
+import { type TThemes } from "@root/src/components/themeSelector";
 
 // type ClubSearchResult = {
 //   name: string;
@@ -33,6 +39,13 @@ const Home = () => {
   // const [coachSearch, setCoachSearch] = useState<CoachSearchResult[]>([]);
   const clubSearch = trpc.clubs.getAllClubs.useQuery();
   const coachSearch = trpc.coachs.getAllCoachs.useQuery();
+  const [myAddress, setMyAddress] = useState<AddressData>({
+    address: "",
+    lat: 48.8583701,
+    lng: 2.2944813,
+  });
+  const [range, setRange] = useState(10);
+  const [theme] = useLocalStorage<TThemes>("theme", "cupcake");
 
   type clubItem = typeof clubSearch.data extends (infer U)[] | undefined
     ? U
@@ -43,6 +56,15 @@ const Home = () => {
     const set = new Set(grps);
     return Array.from(set).sort((a, b) => a.localeCompare(b));
   }
+  const circle = useMemo(() => {
+    const center = [myAddress.lng ?? 2.2944813, myAddress.lat ?? 48.8583701];
+    const c = turfCircle(center, range ?? 10, {
+      steps: 64,
+      units: "kilometers",
+      properties: {},
+    });
+    return c;
+  }, [myAddress.lat, myAddress.lng, range]);
 
   return (
     <Layout>
@@ -61,19 +83,19 @@ const Home = () => {
             <p className="py-6">{t("hero-text")}</p>
             <div className="flex flex-wrap gap-2">
               <button
-                className="btn btn-accent"
+                className="btn-accent btn"
                 onClick={() => router.push("#find-club")}
               >
                 {t("btn-visitor")}
               </button>
               <button
-                className="btn btn-primary"
+                className="btn-primary btn"
                 onClick={() => router.push("/manager")}
               >
                 {t("btn-manager")}
               </button>
               <button
-                className="btn btn-secondary"
+                className="btn-secondary btn"
                 onClick={() => router.push("/coach")}
               >
                 {t("btn-coach")}
@@ -86,27 +108,28 @@ const Home = () => {
         <div className="container mx-auto p-4">
           <h2>{t("find-club")}</h2>
           <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
-            <div className="flex flex-col items-center">
-              <div className="form-control w-full max-w-sm">
-                <label className="label">
-                  <span className="label-text">{t("my-address")}</span>
-                </label>
-                <input type="text" className="input-bordered input w-full" />
+            <div className="flex flex-col items-center gap-4">
+              <div className="w-full max-w-sm text-start">
+                <AddressSearch
+                  label={t("my-address")}
+                  onSearch={(adr) => setMyAddress(adr)}
+                  defaultAddress={myAddress.address}
+                  className="w-full"
+                />
               </div>
-              <div className="form-control w-full max-w-xs">
-                <label className="label">
-                  <span className="label-text">{t("search-radius")}</span>
-                </label>
-                <label className="input-group">
+              <div className="grid w-full max-w-sm grid-flow-col gap-4 text-start">
+                <label>{t("search-radius")}</label>
+                <div className="input-group">
                   <input
                     type="number"
                     className="input-bordered input w-full text-end"
-                    defaultValue={50}
+                    value={range}
+                    onChange={(e) => setRange(e.target.valueAsNumber)}
                   />
                   <span>Km</span>
-                </label>
+                </div>
               </div>
-              <button className="btn btn-primary flex items-center gap-4">
+              <button className="btn-primary btn flex items-center gap-4">
                 {t("search-club")}
                 <i className="bx bx-search bx-xs" />
               </button>
@@ -166,16 +189,32 @@ const Home = () => {
             <div className="min-h-[50vh]">
               <div className="h-full border border-primary">
                 <Map
-                  initialViewState={{
-                    longitude: 2.1942669,
-                    latitude: 49.0912333,
-                    zoom: 12,
-                  }}
+                  initialViewState={{ zoom: 12 }}
                   style={{ width: "100%", height: "100%" }}
                   mapStyle="mapbox://styles/mapbox/streets-v9"
                   mapboxAccessToken={env.NEXT_PUBLIC_MAPBOX_TOKEN}
                   attributionControl={false}
-                />
+                  longitude={myAddress.lng}
+                  latitude={myAddress.lat}
+                >
+                  <Source type="geojson" data={circle}>
+                    <Layer
+                      type="fill"
+                      paint={{
+                        "fill-color": hslToHex(theme, "--p"),
+                        "fill-opacity": 0.2,
+                      }}
+                    />
+                    <Layer
+                      type="line"
+                      paint={{
+                        "line-color": hslToHex(theme, "--p"),
+                        "line-opacity": 1,
+                        "line-width": 2,
+                      }}
+                    />
+                  </Source>
+                </Map>
               </div>
             </div>
           </div>
@@ -185,27 +224,28 @@ const Home = () => {
         <div className="container mx-auto p-4">
           <h2>{t("find-coach")}</h2>
           <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
-            <div className="flex flex-col items-center">
-              <div className="form-control w-full max-w-sm">
-                <label className="label">
-                  <span className="label-text">{t("my-address")}</span>
-                </label>
-                <input type="text" className="input-bordered input w-full" />
+            <div className="flex flex-col items-center gap-4">
+              <div className="w-full max-w-sm text-start">
+                <AddressSearch
+                  label={t("my-address")}
+                  onSearch={(adr) => setMyAddress(adr)}
+                  defaultAddress={myAddress.address}
+                  className="w-full"
+                />
               </div>
-              <div className="form-control w-full max-w-xs">
-                <label className="label">
-                  <span className="label-text">{t("search-radius")}</span>
-                </label>
-                <label className="input-group">
+              <div className="grid w-full max-w-sm grid-flow-col gap-4 text-start">
+                <label>{t("search-radius")}</label>
+                <div className="input-group">
                   <input
                     type="number"
                     className="input-bordered input w-full text-end"
-                    defaultValue={50}
+                    value={range}
+                    onChange={(e) => setRange(e.target.valueAsNumber)}
                   />
                   <span>Km</span>
-                </label>
+                </div>
               </div>
-              <button className="btn btn-primary flex items-center gap-4">
+              <button className="btn-primary btn flex items-center gap-4">
                 {t("search-coach")}
                 <i className="bx bx-search bx-xs" />
               </button>
@@ -270,16 +310,32 @@ const Home = () => {
             <div className="min-h-[50vh]">
               <div className="h-full border border-primary">
                 <Map
-                  initialViewState={{
-                    longitude: 2.1942669,
-                    latitude: 49.0912333,
-                    zoom: 12,
-                  }}
+                  initialViewState={{ zoom: 12 }}
                   style={{ width: "100%", height: "100%" }}
                   mapStyle="mapbox://styles/mapbox/streets-v9"
                   mapboxAccessToken={env.NEXT_PUBLIC_MAPBOX_TOKEN}
                   attributionControl={false}
-                />
+                  longitude={myAddress.lng}
+                  latitude={myAddress.lat}
+                >
+                  <Source type="geojson" data={circle}>
+                    <Layer
+                      type="fill"
+                      paint={{
+                        "fill-color": hslToHex(theme, "--p"),
+                        "fill-opacity": 0.2,
+                      }}
+                    />
+                    <Layer
+                      type="line"
+                      paint={{
+                        "line-color": hslToHex(theme, "--p"),
+                        "line-opacity": 1,
+                        "line-width": 2,
+                      }}
+                    />
+                  </Source>
+                </Map>
               </div>
             </div>
           </div>
