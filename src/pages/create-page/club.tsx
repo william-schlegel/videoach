@@ -20,6 +20,8 @@ import {
 import Spinner from "@ui/spinner";
 import { HeroCreation } from "@root/src/components/sections/hero";
 import Layout from "@root/src/components/layout";
+import Link from "next/link";
+import { toast } from "react-toastify";
 
 function ClubPage({
   userId,
@@ -58,7 +60,7 @@ function ClubPage({
         </div>
       </h1>
       <div className="flex gap-4">
-        <aside className="flex min-w-fit flex-col gap-2">
+        <aside className="flex min-w-fit flex-grow flex-col gap-2">
           <h4>{t("pages")}</h4>
           <CreatePage clubId={clubId} />
           <ul className="menu overflow-hidden rounded border border-secondary bg-base-100">
@@ -70,12 +72,21 @@ function ClubPage({
                     className="flex flex-1 items-center justify-between"
                   >
                     <span>{page.name}</span>
-                    <span className="badge-secondary badge">
-                      {t(
-                        PAGE_TARGET_LIST.find((t) => t.value === page.target)
-                          ?.label ?? ""
-                      )}
-                    </span>
+                    <div className="flex items-center gap-2">
+                      <span className="badge badge-secondary">
+                        {t(
+                          PAGE_TARGET_LIST.find((t) => t.value === page.target)
+                            ?.label ?? ""
+                        )}
+                      </span>
+                      <i
+                        className={`bx bx-xs aspect-square rounded-full bg-base-100 ${
+                          page.published
+                            ? "bx-check text-success"
+                            : "bx-x text-error"
+                        }`}
+                      />
+                    </div>
                   </button>
                 </div>
               </li>
@@ -101,13 +112,52 @@ const PageContent = ({ pageId, clubId }: PageContentProps) => {
     PAGE_SECTION_LIST[0]?.value ?? "HERO"
   );
   const { t } = useTranslation("pages");
+  const utils = trpc.useContext();
+
+  const publishPage = trpc.pages.updatePagePublication.useMutation({
+    onSuccess(data) {
+      utils.pages.getPageById.invalidate(pageId);
+      utils.pages.getPagesForClub.invalidate(clubId);
+      toast.success(
+        t(data.published ? "page-published" : "page-unpublished") as string
+      );
+    },
+  });
 
   if (queryPage.isLoading) return <Spinner />;
   return (
     <article className="flex flex-grow flex-col gap-4">
       <h2 className="flex items-center justify-between">
         {queryPage.data?.name}
-        <div className="flex gap-2">
+        <div className="flex items-center gap-2">
+          <div className="pill">
+            <div className="form-control">
+              <label className="label cursor-pointer gap-4">
+                <span className="label-text">{t("publish-page")}</span>
+                <input
+                  type="checkbox"
+                  className="checkbox-primary checkbox"
+                  checked={queryPage.data?.published}
+                  onChange={(e) =>
+                    publishPage.mutate({
+                      pageId,
+                      published: e.target.checked,
+                    })
+                  }
+                />
+              </label>
+            </div>
+          </div>
+          <Link
+            href={`/presentation-page/club/${clubId}/${pageId}`}
+            target="_blank"
+            referrerPolicy="no-referrer"
+            className="btn btn-primary flex gap-2"
+          >
+            {t("page-preview")}
+            <i className="bx bx-link-external bx-xs" />
+          </Link>
+
           <UpdatePage clubId={clubId} pageId={pageId} />
           <DeletePage clubId={clubId} pageId={pageId} />
         </div>

@@ -19,6 +19,7 @@ import ThemeSelector, { type TThemes } from "../themeSelector";
 import { env } from "@root/src/env/client.mjs";
 import turfCircle from "@turf/circle";
 import hslToHex from "@lib/hslToHex";
+import Head from "next/head";
 
 type CoachCreationProps = {
   userId: string;
@@ -56,8 +57,8 @@ export const CoachCreation = ({ userId, pageId }: CoachCreationProps) => {
       toast.error(error.message);
     },
   });
-  const querySection = trpc.pages.getSectionByModel.useQuery(
-    { pageId, model: "HERO" },
+  const querySection = trpc.pages.getPageSection.useQuery(
+    { pageId, section: "HERO" },
     {
       onSuccess: async (data) => {
         if (!data) return;
@@ -110,7 +111,6 @@ export const CoachCreation = ({ userId, pageId }: CoachCreationProps) => {
   const updateSectionElement = trpc.pages.updatePageSectionElement.useMutation({
     onSuccess() {
       toast.success(t("section-updated") as string);
-      // utils.pages.getSectionByModel.invalidate("HERO");
     },
     onError(error) {
       toast.error(error.message);
@@ -312,7 +312,7 @@ export const CoachCreation = ({ userId, pageId }: CoachCreationProps) => {
             </label>
           </div>
           <div className="col-span-2 flex justify-between">
-            <button className="btn-primary btn" type="submit">
+            <button className="btn btn-primary" type="submit">
               {t("save-section")}
             </button>
           </div>
@@ -408,6 +408,9 @@ export const CoachDisplay = ({ pageId }: CoachDisplayProps) => {
       data-theme={pageData?.pageStyle ?? "light"}
       className="flex min-h-screen flex-col items-center justify-center"
     >
+      <Head>
+        <title>{pageData?.name}</title>
+      </Head>
       <PhotoSection
         imageSrc={queryImage.data?.url}
         userName={pageData?.name}
@@ -502,7 +505,7 @@ function PhotoSection({
             href={`mailto:${email}`}
             target="_blank"
             rel="noreferrer"
-            className={`btn-primary btn-block btn my-4 ${
+            className={`btn btn-primary btn-block my-4 ${
               preview ? "btn-sm" : "btn-lg"
             } gap-4`}
           >
@@ -515,7 +518,7 @@ function PhotoSection({
             href={`tel:${phone}`}
             target="_blank"
             rel="noreferrer"
-            className={`btn-outline btn-secondary btn-block btn my-4 ${
+            className={`btn-outline btn btn-secondary btn-block my-4 ${
               preview ? "btn-sm" : "btn-lg"
             } gap-4`}
           >
@@ -525,7 +528,7 @@ function PhotoSection({
         ) : null}
         {cta && (
           <button
-            className="btn-primary btn-sm btn w-fit normal-case"
+            className="btn btn-primary btn-sm w-fit normal-case"
             onClick={() => {
               if (ctaSection) router.push(`/#${ctaSection}`);
             }}

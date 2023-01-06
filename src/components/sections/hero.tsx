@@ -8,6 +8,7 @@ import ButtonIcon from "@ui/buttonIcon";
 import Confirmation from "@ui/confirmation";
 import Spinner from "@ui/spinner";
 import { useTranslation } from "next-i18next";
+import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
 import type { SubmitHandler } from "react-hook-form";
 import { useForm, useWatch } from "react-hook-form";
@@ -44,8 +45,8 @@ export const HeroCreation = ({ clubId, pageId }: HeroCreationProps) => {
   const [updating, setUpdating] = useState(false);
   const [previewTheme, setPreviewTheme] = useState<TThemes>("cupcake");
 
-  const querySection = trpc.pages.getSectionByModel.useQuery(
-    { pageId, model: "HERO" },
+  const querySection = trpc.pages.getPageSection.useQuery(
+    { pageId, section: "HERO" },
     {
       onSuccess: async (data) => {
         if (!data) {
@@ -53,7 +54,7 @@ export const HeroCreation = ({ clubId, pageId }: HeroCreationProps) => {
           return;
         }
         const hc = data?.elements.find((e) => e.elementType === "HERO_CONTENT");
-        const cta = data?.elements.find((e) => e.elementType === "BUTTON");
+        const cta = data?.elements.find((e) => e.elementType === "CTA");
         if (hc?.images?.[0]) {
           const { url } = await utils.files.getDocumentUrlById.fetch(
             hc.images[0].id
@@ -88,7 +89,7 @@ export const HeroCreation = ({ clubId, pageId }: HeroCreationProps) => {
   const createSection = trpc.pages.createPageSection.useMutation({
     onSuccess() {
       toast.success(t("section-created") as string);
-      utils.pages.getSectionByModel.invalidate({ pageId, model: "HERO" });
+      utils.pages.getPageSection.invalidate({ pageId, section: "HERO" });
       reset();
       setImagePreview("");
     },
@@ -111,7 +112,7 @@ export const HeroCreation = ({ clubId, pageId }: HeroCreationProps) => {
         data.elements.map((elem) => deleteSectionElement.mutateAsync(elem.id))
       );
       toast.success(t("section-deleted") as string);
-      utils.pages.getSectionByModel.invalidate({ pageId, model: "HERO" });
+      utils.pages.getPageSection.invalidate({ pageId, section: "HERO" });
       reset();
       setImagePreview("");
     },
@@ -125,13 +126,21 @@ export const HeroCreation = ({ clubId, pageId }: HeroCreationProps) => {
   const updateSectionElement = trpc.pages.updatePageSectionElement.useMutation({
     onSuccess() {
       toast.success(t("section-updated") as string);
-      utils.pages.getSectionByModel.invalidate({ pageId, model: "HERO" });
+      utils.pages.getPageSection.invalidate({ pageId, section: "HERO" });
     },
     onError(error) {
       toast.error(error.message);
     },
   });
   const deleteUserDocument = trpc.files.deleteUserDocument.useMutation();
+  const updatePageStyle = trpc.pages.updatePageStyleForClub.useMutation({
+    onSuccess() {
+      toast.success(t("style-saved") as string);
+    },
+    onError(error) {
+      toast.error(error.message);
+    },
+  });
 
   const onSubmit: SubmitHandler<HeroCreationForm> = async (data) => {
     console.log("hero section onSubmit data", data);
@@ -140,7 +149,7 @@ export const HeroCreation = ({ clubId, pageId }: HeroCreationProps) => {
         (e) => e.elementType === "HERO_CONTENT"
       );
       const cta = querySection?.data?.elements.find(
-        (e) => e.elementType === "BUTTON"
+        (e) => e.elementType === "CTA"
       );
       let docId: string | undefined;
       if (data.images?.[0]) {
@@ -176,7 +185,7 @@ export const HeroCreation = ({ clubId, pageId }: HeroCreationProps) => {
         } else {
           if (querySection.data?.id)
             await createSectionElement.mutateAsync({
-              elementType: "BUTTON",
+              elementType: "CTA",
               sectionId: querySection.data.id,
               title: data.cta,
               link: data.url ? `${data.protocol}//${data.url}` : undefined,
@@ -204,7 +213,7 @@ export const HeroCreation = ({ clubId, pageId }: HeroCreationProps) => {
       });
       if (data.cta) {
         await createSectionElement.mutateAsync({
-          elementType: "BUTTON",
+          elementType: "CTA",
           sectionId: section.id,
           title: data.cta,
           link: data.url ? `${data.protocol}//${data.url}` : undefined,
@@ -351,7 +360,7 @@ export const HeroCreation = ({ clubId, pageId }: HeroCreationProps) => {
             </>
           ) : null}
           <div className="col-span-2 flex justify-between">
-            <button className="btn-primary btn" type="submit">
+            <button className="btn btn-primary" type="submit">
               {t("save-section")}
             </button>
             {updating ? (
@@ -371,29 +380,20 @@ export const HeroCreation = ({ clubId, pageId }: HeroCreationProps) => {
       <div className={`flex flex-col gap-2`}>
         <h3 className="flex items-center justify-between">
           <span>{t("preview")}</span>
-          <ThemeSelector onSelect={(t) => setPreviewTheme(t)} />
+          <ThemeSelector
+            onSelect={(t) => setPreviewTheme(t)}
+            onSave={(t) => updatePageStyle.mutate({ clubId, pageStyle: t })}
+          />
         </h3>
-        <div
-          data-theme={previewTheme}
-          className={`cover flex aspect-[4/3] w-full flex-col items-center justify-center gap-4`}
-          style={{
-            backgroundImage: `${
-              imagePreview ? `url(${imagePreview})` : "unset"
-            }`,
-            backgroundColor: "rgb(0 0 0 / 0.5)",
-            backgroundSize: "cover",
-            backgroundPosition: "center",
-            backgroundBlendMode: "darken",
-          }}
-        >
-          <p className="text-3xl font-bold text-white">{fields.title}</p>
-          <p className="text-lg font-semibold text-white">{fields.subtitle}</p>
-          <p className="text-gray-100">{fields.description}</p>
-          {fields.cta && (
-            <button className="btn-primary btn-sm btn w-fit normal-case">
-              {fields.cta}
-            </button>
-          )}
+        <div data-theme={previewTheme}>
+          <HeroContent
+            imageSrc={imagePreview}
+            title={fields.title}
+            subtitle={fields.subtitle}
+            description={fields.description}
+            cta={fields.cta}
+            preview={true}
+          />
         </div>
       </div>
     </div>
@@ -406,9 +406,101 @@ type HeroDisplayProps = {
 };
 
 export const HeroDisplay = ({ clubId, pageId }: HeroDisplayProps) => {
+  const querySection = trpc.pages.getPageSection.useQuery({
+    pageId,
+    section: "HERO",
+  });
+  const heroContent = querySection.data?.elements.find(
+    (e) => e.elementType === "HERO_CONTENT"
+  );
+  const queryImage = trpc.files.getDocumentUrlById.useQuery(
+    heroContent?.images?.[0]?.id ?? ""
+  );
+  const cta = querySection.data?.elements.find((e) => e.elementType === "CTA");
+
+  if (querySection.isLoading) return <Spinner />;
+  if (!querySection.data) return <div>Hero section unavailable</div>;
+
   return (
-    <div>
-      Hero {clubId} {pageId}
-    </div>
+    <HeroContent
+      imageSrc={queryImage.data?.url}
+      title={heroContent?.title ?? ""}
+      subtitle={heroContent?.subTitle ?? ""}
+      description={heroContent?.content ?? ""}
+      cta={cta?.title ?? ""}
+      ctaLink={
+        cta?.link ??
+        `/presentation-page/club/${clubId}/${cta?.pageId}#${cta?.pageSection}`
+      }
+    />
   );
 };
+
+type HeroContentProps = {
+  imageSrc?: string;
+  title?: string;
+  subtitle?: string;
+  description?: string;
+  cta?: string;
+  ctaLink?: string;
+  preview?: boolean;
+};
+
+function HeroContent({
+  imageSrc,
+  title,
+  subtitle,
+  description,
+  cta,
+  ctaLink,
+  preview = false,
+}: HeroContentProps) {
+  const router = useRouter();
+
+  return (
+    <div
+      className={`cover flex ${
+        preview ? "aspect-[4/3]" : "min-h-screen"
+      } w-full flex-col items-center justify-center gap-4`}
+      style={{
+        backgroundImage: `${imageSrc ? `url(${imageSrc})` : "unset"}`,
+        backgroundColor: "rgb(0 0 0 / 0.5)",
+        backgroundSize: "cover",
+        backgroundPosition: "center",
+        backgroundBlendMode: "darken",
+      }}
+    >
+      <p
+        className={`${
+          preview
+            ? "text-3xl"
+            : "text-[clamp(4rem,5vw,6rem)] leading-[clamp(6rem,7.5vw,9rem)]"
+        } font-bold text-white`}
+      >
+        {title}
+      </p>
+      <p
+        className={`${
+          preview
+            ? "text-lg"
+            : "text-[clamp(1.5rem,2.5vw,3rem)] leading-[clamp(2.25rem,3.75vw,4.5rem)]"
+        } font-semibold text-white`}
+      >
+        {subtitle}
+      </p>
+      <p className="text-gray-100">{description}</p>
+      {cta && (
+        <button
+          className={`btn btn-primary ${
+            preview ? "btn-sm" : "btn-xl"
+          } w-fit normal-case`}
+          onClick={() => {
+            if (ctaLink) router.push(ctaLink);
+          }}
+        >
+          {cta}
+        </button>
+      )}
+    </div>
+  );
+}

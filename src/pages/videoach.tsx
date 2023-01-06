@@ -61,19 +61,19 @@ const Home = () => {
             <p className="py-6">{t("hero-text")}</p>
             <div className="flex flex-wrap gap-2">
               <button
-                className="btn-accent btn"
+                className="btn btn-accent"
                 onClick={() => router.push("#find-club")}
               >
                 {t("btn-visitor")}
               </button>
               <button
-                className="btn-primary btn"
+                className="btn btn-primary"
                 onClick={() => router.push("/manager")}
               >
                 {t("btn-manager")}
               </button>
               <button
-                className="btn-secondary btn"
+                className="btn btn-secondary"
                 onClick={() => router.push("/coach")}
               >
                 {t("btn-coach")}
@@ -106,7 +106,7 @@ const Home = () => {
                   <span>Km</span>
                 </label>
               </div>
-              <button className="btn-primary btn flex items-center gap-4">
+              <button className="btn btn-primary flex items-center gap-4">
                 {t("search-club")}
                 <i className="bx bx-search bx-xs" />
               </button>
@@ -117,6 +117,7 @@ const Home = () => {
                       <th>{t("club")}</th>
                       <th>{t("distance")}</th>
                       <th>{t("activities")}</th>
+                      <th>{t("page")}</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -124,12 +125,37 @@ const Home = () => {
                       <tr key={res.name}>
                         <td>{res.name}</td>
                         <td>{/*res.distance*/ "(tbd)"}&nbsp;km</td>
-                        <td className="flex flex-wrap gap-1">
-                          {getGroups(res).map((g) => (
-                            <span key={g} className="pill pill-xs">
-                              {g}
-                            </span>
-                          ))}
+                        <td>
+                          <div className="flex flex-wrap gap-1">
+                            {getGroups(res).map((g) => (
+                              <span key={g} className="pill pill-xs">
+                                {g}
+                              </span>
+                            ))}
+                          </div>
+                        </td>
+                        <td>
+                          {res.pages.find((p) => p.target === "HOME")
+                            ?.published ? (
+                            <Link
+                              href={`/presentation-page/club/${res.id}/${
+                                res.pages.find((p) => p.target === "HOME")?.id
+                              }`}
+                              target="_blank"
+                              rel="noreferrer"
+                            >
+                              <ButtonIcon
+                                title={t("page-club", { name: res.name })}
+                                iconComponent={
+                                  <i className="bx bx-link-external bx-xs" />
+                                }
+                                buttonSize="xs"
+                                buttonVariant="Icon-Outlined-Primary"
+                              />
+                            </Link>
+                          ) : (
+                            <span>&nbsp;</span>
+                          )}
                         </td>
                       </tr>
                     ))}
@@ -179,7 +205,7 @@ const Home = () => {
                   <span>Km</span>
                 </label>
               </div>
-              <button className="btn-primary btn flex items-center gap-4">
+              <button className="btn btn-primary flex items-center gap-4">
                 {t("search-coach")}
                 <i className="bx bx-search bx-xs" />
               </button>
@@ -202,16 +228,18 @@ const Home = () => {
                         <td>
                           <Rating note={res.rating} />
                         </td>
-                        <td className="flex flex-wrap gap-1">
-                          {res.certifications.length ? (
-                            res.certifications.map((cert) => (
-                              <span key={cert.id} className="pill pill-xs">
-                                {cert.name}
-                              </span>
-                            ))
-                          ) : (
-                            <span>&nbsp;</span>
-                          )}
+                        <td>
+                          <div className="flex flex-wrap gap-1">
+                            {res.certifications.length ? (
+                              res.certifications.map((cert) => (
+                                <span key={cert.id} className="pill pill-xs">
+                                  {cert.name}
+                                </span>
+                              ))
+                            ) : (
+                              <span>&nbsp;</span>
+                            )}
+                          </div>
                         </td>
                         <td>
                           {res.page?.published ? (

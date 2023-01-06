@@ -106,6 +106,26 @@ export const pageRouter = router({
       },
     })
   ),
+  getPageSection: publicProcedure
+    .input(
+      z.object({
+        pageId: z.string().cuid(),
+        section: z.nativeEnum(PageSectionModel),
+      })
+    )
+    .query(({ ctx, input }) =>
+      ctx.prisma.pageSection.findFirst({
+        where: {
+          pageId: input.pageId,
+          model: input.section,
+        },
+        include: {
+          elements: {
+            include: { images: true },
+          },
+        },
+      })
+    ),
   createPage: protectedProcedure
     .input(PageObject.omit({ id: true }))
     .mutation(({ ctx, input }) =>
@@ -128,24 +148,6 @@ export const pageRouter = router({
       where: { id: input },
     })
   ),
-  getSectionByModel: protectedProcedure
-    .input(
-      z.object({
-        pageId: z.string().cuid().optional(),
-        model: z.nativeEnum(PageSectionModel),
-      })
-    )
-    .query(({ ctx, input }) => {
-      if (!input.pageId) return null;
-      return ctx.prisma.pageSection.findFirst({
-        where: { pageId: input.pageId, model: input.model },
-        include: {
-          elements: {
-            include: { images: true },
-          },
-        },
-      });
-    }),
   createPageSection: protectedProcedure
     .input(PageSectionObject.omit({ id: true }))
     .mutation(({ ctx, input }) =>
@@ -231,6 +233,36 @@ export const pageRouter = router({
         },
       })
     ),
+  getClubPage: publicProcedure
+    .input(z.string())
+    .query(async ({ ctx, input }) => {
+      const page = await ctx.prisma.page.findFirst({
+        where: { id: input, published: true },
+        include: {
+          sections: {
+            include: {
+              elements: {
+                include: {
+                  images: true,
+                },
+              },
+            },
+          },
+        },
+      });
+      const clubId = page?.clubId ?? "";
+      const allPages = await ctx.prisma.page.findMany({
+        where: { clubId, published: true },
+      });
+      const club = await ctx.prisma.club.findUnique({ where: { id: clubId } });
+      return {
+        clubId,
+        sections: page?.sections ?? [],
+        pages: allPages.map((p) => p.target),
+        theme: club?.pageStyle ?? "light",
+        clubName: club?.name ?? "",
+      };
+    }),
   getCoachPage: publicProcedure
     .input(z.string())
     .query(async ({ ctx, input }) => {
@@ -305,6 +337,21 @@ export const pageRouter = router({
     .mutation(({ ctx, input }) =>
       ctx.prisma.user.update({
         where: { id: input.userId },
+        data: {
+          pageStyle: input.pageStyle,
+        },
+      })
+    ),
+  updatePageStyleForClub: protectedProcedure
+    .input(
+      z.object({
+        clubId: z.string().cuid(),
+        pageStyle: z.string(),
+      })
+    )
+    .mutation(({ ctx, input }) =>
+      ctx.prisma.club.update({
+        where: { id: input.clubId },
         data: {
           pageStyle: input.pageStyle,
         },

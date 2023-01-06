@@ -18,10 +18,18 @@ const MENUS: MenuDefinitionType[] = [
     page: "/",
     access: ["ADMIN", "COACH", "MANAGER", "MANAGER_COACH", "MEMBER"],
   },
-  { label: "navigation.find-club", page: "/#find-club", access: ["VISITOR"] },
+  {
+    label: "navigation.find-club",
+    page: "/videoach#find-club",
+    access: ["VISITOR"],
+  },
   { label: "navigation.activity", page: "/activites", access: ["MEMBER"] },
   { label: "navigation.planning", page: "/planning", access: ["MEMBER"] },
-  { label: "navigation.find-coach", page: "/#find-coach", access: ["VISITOR"] },
+  {
+    label: "navigation.find-coach",
+    page: "/videoach#find-coach",
+    access: ["VISITOR"],
+  },
   { label: "navigation.manager-offer", page: "/manager", access: ["VISITOR"] },
   { label: "navigation.coach-offer", page: "/coach", access: ["VISITOR"] },
   {

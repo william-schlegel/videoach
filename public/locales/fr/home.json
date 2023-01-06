@@ -22,6 +22,7 @@
   "certifications": "Certifications",
   "page": "Page",
   "page-coach": "Page de présentation de {{name}}",
+  "page-club": "Page du club {{name}}",
   "pricing": {
     "usage": "Tarifs d'utilisation",
     "monthly": "Par mois",
