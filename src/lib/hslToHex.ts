@@ -1,11 +1,15 @@
+const DEFAULT_COLOR = "lightblue";
+
 export default function hslToHex(theme: string, cssVar: string) {
+  if (typeof window === "undefined") return DEFAULT_COLOR;
+  if (typeof document === "undefined") return DEFAULT_COLOR;
   const element = document.querySelector(`[data-theme=${theme}]`);
-  if (!element) return "lightblue";
+  if (!element) return DEFAULT_COLOR;
   const values = getComputedStyle(element).getPropertyValue(cssVar).split(" ");
   const h = Number(values[1]);
   const s = Number(values[2]?.slice(0, -1));
   let l = Number(values[3]?.slice(0, -1));
-  if (isNaN(h) || isNaN(s) || isNaN(l)) return "lightblue";
+  if (isNaN(h) || isNaN(s) || isNaN(l)) return DEFAULT_COLOR;
   l /= 100;
   const a = (s * Math.min(l, 1 - l)) / 100;
   const f = (n: number) => {

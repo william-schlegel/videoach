@@ -189,7 +189,7 @@ const Home = () => {
             <div className="min-h-[50vh]">
               <div className="h-full border border-primary">
                 <Map
-                  initialViewState={{ zoom: 12 }}
+                  initialViewState={{ zoom: 9 }}
                   style={{ width: "100%", height: "100%" }}
                   mapStyle="mapbox://styles/mapbox/streets-v9"
                   mapboxAccessToken={env.NEXT_PUBLIC_MAPBOX_TOKEN}
@@ -310,7 +310,7 @@ const Home = () => {
             <div className="min-h-[50vh]">
               <div className="h-full border border-primary">
                 <Map
-                  initialViewState={{ zoom: 12 }}
+                  initialViewState={{ zoom: 9 }}
                   style={{ width: "100%", height: "100%" }}
                   mapStyle="mapbox://styles/mapbox/streets-v9"
                   mapboxAccessToken={env.NEXT_PUBLIC_MAPBOX_TOKEN}
