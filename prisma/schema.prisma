@@ -58,39 +58,41 @@ enum Role {
 }
 
 model User {
-  id              String          @id @default(cuid())
-  name            String?
-  email           String?         @unique
-  emailVerified   DateTime?
-  image           String?
-  accounts        Account[]
-  sessions        Session[]
-  activityGroups  ActivityGroup[]
-  managedClubs    Club[]          @relation("Manager")
-  clubs           Club[]          @relation("Member")
-  role            Role            @default(MEMBER)
-  certifications  Certification[]
-  pricingId       String?
-  pricing         Pricing?        @relation(fields: [pricingId], references: [id])
-  monthlyPayment  Boolean         @default(false)
-  trialUntil      DateTime?
-  paiements       Paiement[]
-  dueDate         DateTime?
-  rating          Float           @default(0)
-  cancelationDate DateTime?
-  documents       UserDocument[]
-  pageStyle       String          @default("light")
-  page            Page?
-  phone           String?
-  address         String?
-  searchAddress   String?
-  latitude        Float           @default(48.8583701)
-  longitude       Float           @default(2.2944813)
-  range           Float           @default(10)
-  facebookLink    String?
-  twitterLink     String?
-  youtubeLink     String?
-  instagramLink   String?
+  id                 String             @id @default(cuid())
+  name               String?
+  email              String?            @unique
+  emailVerified      DateTime?
+  image              String?
+  accounts           Account[]
+  sessions           Session[]
+  activityGroups     ActivityGroup[]
+  managedClubs       Club[]             @relation("Manager")
+  clubs              Club[]             @relation("Member")
+  role               Role               @default(MEMBER)
+  certifications     Certification[]
+  pricingId          String?
+  pricing            Pricing?           @relation(fields: [pricingId], references: [id])
+  monthlyPayment     Boolean            @default(false)
+  trialUntil         DateTime?
+  paiements          Paiement[]
+  dueDate            DateTime?
+  rating             Float              @default(0)
+  cancelationDate    DateTime?
+  documents          UserDocument[]
+  pageStyle          String             @default("light")
+  page               Page?
+  phone              String?
+  address            String?
+  searchAddress      String?
+  latitude           Float              @default(48.8583701)
+  longitude          Float              @default(2.2944813)
+  range              Float              @default(10)
+  facebookLink       String?
+  twitterLink        String?
+  youtubeLink        String?
+  instagramLink      String?
+  planningActivities PlanningActivity[]
+  plannings          Planning[]
 
   @@index([pricingId])
 }
@@ -156,19 +158,22 @@ model Club {
   searchAddress String?
   latitude      Float             @default(48.8583701)
   longitude     Float             @default(2.2944813)
+  plannings     Planning[]
 
   @@index([managerId])
 }
 
 model Site {
-  id           String            @id @default(cuid())
-  name         String
-  address      String
-  clubId       String
-  club         Club              @relation(fields: [clubId], references: [id], onDelete: Cascade)
-  rooms        Room[]
-  openWithClub Boolean           @default(true)
-  calendars    OpeningCalendar[]
+  id                 String             @id @default(cuid())
+  name               String
+  address            String
+  clubId             String
+  club               Club               @relation(fields: [clubId], references: [id], onDelete: Cascade)
+  rooms              Room[]
+  openWithClub       Boolean            @default(true)
+  calendars          OpeningCalendar[]
+  plannings          Planning[]
+  planningActivities PlanningActivity[]
 
   @@index([clubId])
 }
@@ -180,17 +185,19 @@ enum RoomReservation {
 }
 
 model Room {
-  id           String            @id @default(cuid())
-  name         String
-  reservation  RoomReservation   @default(NONE)
-  capacity     Int
-  unavailable  Boolean           @default(false)
-  openWithClub Boolean           @default(true)
-  openWithSite Boolean           @default(true)
-  calendars    OpeningCalendar[]
-  siteId       String
-  site         Site              @relation(fields: [siteId], references: [id], onDelete: Cascade)
-  activities   Activity[]
+  id                 String             @id @default(cuid())
+  name               String
+  reservation        RoomReservation    @default(NONE)
+  capacity           Int
+  unavailable        Boolean            @default(false)
+  openWithClub       Boolean            @default(true)
+  openWithSite       Boolean            @default(true)
+  calendars          OpeningCalendar[]
+  siteId             String
+  site               Site               @relation(fields: [siteId], references: [id], onDelete: Cascade)
+  activities         Activity[]
+  plannings          Planning[]
+  planningActivities PlanningActivity[]
 
   @@index([siteId])
 }
@@ -211,18 +218,20 @@ model ActivityGroup {
   userId               String?
   certifications       Certification[]
   certificationModules CertificationModule[]
+  planningActivities   PlanningActivity[]
 
   @@index([userId])
 }
 
 model Activity {
-  id      String        @id @default(cuid())
-  name    String
-  groupId String
-  group   ActivityGroup @relation(fields: [groupId], references: [id], onDelete: Cascade)
-  clubId  String
-  club    Club          @relation(fields: [clubId], references: [id], onDelete: Cascade)
-  rooms   Room[]
+  id                 String             @id @default(cuid())
+  name               String
+  groupId            String
+  group              ActivityGroup      @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  clubId             String
+  club               Club               @relation(fields: [clubId], references: [id], onDelete: Cascade)
+  rooms              Room[]
+  planningActivities PlanningActivity[]
 
   @@index([groupId])
   @@index([clubId])
@@ -413,4 +422,57 @@ model Page {
 
   @@index([clubId])
   @@index([userId])
+}
+
+// ----------------------------------------------------------------------------------------------
+
+//                             PLANNING
+
+// ----------------------------------------------------------------------------------------------
+
+model Planning {
+  id                 String             @id @default(cuid())
+  name               String?
+  clubId             String
+  club               Club               @relation(fields: [clubId], references: [id], onDelete: Cascade)
+  siteId             String?
+  site               Site?              @relation(fields: [siteId], references: [id])
+  roomId             String?
+  room               Room?              @relation(fields: [roomId], references: [id])
+  startDate          DateTime           @default(now())
+  endDate            DateTime?
+  planningActivities PlanningActivity[]
+  coachId            String?
+  coach              User?              @relation(fields: [coachId], references: [id])
+
+  @@index([clubId])
+  @@index([siteId])
+  @@index([roomId])
+  @@index([coachId])
+}
+
+model PlanningActivity {
+  id              String        @id @default(cuid())
+  planningId      String
+  planning        Planning      @relation(fields: [planningId], references: [id], onDelete: Cascade)
+  activityGroupId String
+  activityGroup   ActivityGroup @relation(fields: [activityGroupId], references: [id], onDelete: Cascade)
+  activityId      String
+  activity        Activity      @relation(fields: [activityId], references: [id], onDelete: Cascade)
+  siteId          String?
+  site            Site?         @relation(fields: [siteId], references: [id])
+  roomId          String?
+  room            Room?         @relation(fields: [roomId], references: [id])
+  day             DayName
+  startTime       String
+  endTime         String
+  coachId         String?
+  coach           User?         @relation(fields: [coachId], references: [id])
+
+  @@index([planningId])
+  @@index([activityGroupId])
+  @@index([activityId])
+  @@index([siteId])
+  @@index([roomId])
+  @@index([coachId])
 }
