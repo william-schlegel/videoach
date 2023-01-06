@@ -19,8 +19,8 @@ const s3 = new S3Client({
   },
 });
 
-const Bucket =
-  process.env.NODE_ENV === "production" ? "videoach-prod" : "videoach-dev";
+const Bucket = "videoach-dev";
+//process.env.NODE_ENV === "production" ? "videoach-prod" : "videoach-dev";
 
 interface DocMetadata extends UserDocument {
   url: string;
