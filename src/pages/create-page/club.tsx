@@ -73,7 +73,7 @@ function ClubPage({
                   >
                     <span>{page.name}</span>
                     <div className="flex items-center gap-2">
-                      <span className="badge badge-secondary">
+                      <span className="badge-secondary badge">
                         {t(
                           PAGE_TARGET_LIST.find((t) => t.value === page.target)
                             ?.label ?? ""
@@ -127,8 +127,8 @@ const PageContent = ({ pageId, clubId }: PageContentProps) => {
   if (queryPage.isLoading) return <Spinner />;
   return (
     <article className="flex flex-grow flex-col gap-4">
-      <h2 className="flex items-center justify-between">
-        {queryPage.data?.name}
+      <div className="flex items-center justify-between">
+        <h2> {queryPage.data?.name}</h2>
         <div className="flex items-center gap-2">
           <div className="pill">
             <div className="form-control">
@@ -152,7 +152,7 @@ const PageContent = ({ pageId, clubId }: PageContentProps) => {
             href={`/presentation-page/club/${clubId}/${pageId}`}
             target="_blank"
             referrerPolicy="no-referrer"
-            className="btn btn-primary flex gap-2"
+            className="btn-primary btn flex gap-2"
           >
             {t("page-preview")}
             <i className="bx bx-link-external bx-xs" />
@@ -161,7 +161,7 @@ const PageContent = ({ pageId, clubId }: PageContentProps) => {
           <UpdatePage clubId={clubId} pageId={pageId} />
           <DeletePage clubId={clubId} pageId={pageId} />
         </div>
-      </h2>
+      </div>
       <div className="btn-group">
         {PAGE_SECTION_LIST.map((sec) => (
           <button

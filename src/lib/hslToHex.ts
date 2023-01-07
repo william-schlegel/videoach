@@ -1,5 +1,11 @@
 const DEFAULT_COLOR = "lightblue";
 
+/**
+ * Convert a daisyui css var (--p, --s) from hsl value to rgb
+ * @param theme daisyui theme
+ * @param cssVar css var to convert
+ * @returns value as a color #RRGGBB
+ */
 export default function hslToHex(theme: string, cssVar: string) {
   if (typeof window === "undefined") return DEFAULT_COLOR;
   if (typeof document === "undefined") return DEFAULT_COLOR;

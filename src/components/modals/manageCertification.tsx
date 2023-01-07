@@ -211,7 +211,7 @@ export const CreateCertification = ({ userId }: CreateCertificationProps) => {
       </div>
       <form className={`mt-2 grid grid-cols-2 gap-2`}>
         <div className="flex flex-col">
-          <label>{t("obtention-date")}</label>
+          <label className="required">{t("obtention-date")}</label>
           <input
             type="date"
             value={formatDateAsYYYYMMDD(obtentionDate)}

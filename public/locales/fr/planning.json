@@ -6,5 +6,21 @@
   "plannings": "Plannings",
   "planning-created": "Planning créé avec succès",
   "create-new-planning": "Créer un nouveau planning",
-  "name": "Nom"
+  "start-date": "Date de démarrage",
+  "end-date": "Date de fin",
+  "name": "Nom",
+  "date-mandatory": "La date est obligaoire",
+  "for-site": "Ce planning concerne un site d'activité particulier",
+  "site": "Site d'activité",
+  "for-room": "Ce planning concerne une salle en particulier",
+  "room": "Salle",
+  "from": "A partir du",
+  "planning-deletion": "Supprimer ce planning",
+  "planning-deletion-message": "Supprimer ce planning ?|La suppression est irréversible",
+  "planning-deletion-confirmation": "Supprimer ce planning",
+  "planning-deleted": "Planning supprimé avec succès",
+  "update-planning": "Mettre à jour le planning",
+  "duplicate-planning": "Dupliquer le planning",
+  "planning-updated": "Planning mis à jour",
+  "activities": "Activités"
 }

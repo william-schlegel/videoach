@@ -58,7 +58,11 @@ export default function SimpleForm<T extends FieldValues>({
             <Fragment key={fn}>
               {field.type === "checkbox" ? (
                 <div className="form-control col-span-2">
-                  <label className="label cursor-pointer justify-start gap-4">
+                  <label
+                    className={`label cursor-pointer justify-start gap-4 ${
+                      field.required ? "required" : ""
+                    }`}
+                  >
                     <input
                       type="checkbox"
                       className="checkbox-primary checkbox"
@@ -71,7 +75,9 @@ export default function SimpleForm<T extends FieldValues>({
               ) : (
                 <>
                   {field.label !== undefined ? (
-                    <label>{field.label}</label>
+                    <label className={field.required ? "required" : ""}>
+                      {field.label}
+                    </label>
                   ) : null}
                   <div
                     className={field.label === undefined ? "col-span-2" : ""}
@@ -79,7 +85,7 @@ export default function SimpleForm<T extends FieldValues>({
                     {field.component ? (
                       field.component
                     ) : field.unit !== undefined ? (
-                      <label className="input-group">
+                      <div className="input-group">
                         <input
                           {...register(fn as Path<T>, {
                             required: field.required ?? false,
@@ -88,7 +94,7 @@ export default function SimpleForm<T extends FieldValues>({
                           disabled={field.disabled}
                         />
                         <span>{field.unit}</span>
-                      </label>
+                      </div>
                     ) : (
                       <input
                         {...register(fn as Path<T>, {

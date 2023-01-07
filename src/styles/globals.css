@@ -24,24 +24,30 @@
   label {
     @apply label-text label font-semibold text-primary;
   }
+
+  label.required::after {
+    content: "*";
+    color: red;
+    font-size: 0.8em;
+    padding-inline-start: 0.25em;
+  }
+
+  /*label:has(+ input["required"])::after*/
+
   textarea {
     @apply textarea-bordered textarea w-full;
   }
   select {
     @apply select-bordered select w-full;
   }
-}
+  .pill {
+    @apply flex flex-wrap items-center gap-2 border border-neutral bg-base-200 p-[0.5rem] text-base-content;
+    border-radius: var(--rounded-btn, 0.5rem);
+  }
 
-.pill {
-  @apply flex flex-wrap items-center gap-2 border border-neutral bg-base-200 text-base-content;
-  padding: 0.5rem;
-  border-radius: var(--rounded-btn, 0.5rem);
-}
-
-.pill-xs {
-  @apply text-xs;
-  padding-inline: 0.25rem;
-  padding-block: 0.125rem;
+  .pill-xs {
+    @apply px-[0.25rem] py-[0.125rem] text-xs;
+  }
 }
 
 .bg-gradient-home-hero {

@@ -1,18 +1,18 @@
 import Modal, { type TModalVariant } from "@ui/modal";
 import Confirmation from "@ui/confirmation";
 import { useTranslation } from "next-i18next";
-import { type ButtonSize } from "@ui/buttonIcon";
 import Spinner from "@ui/spinner";
 import { toast } from "react-toastify";
-import { type PageSectionModel, type PageTarget } from "@prisma/client";
-import SimpleForm from "@ui/simpleform";
 import {
-  type Path,
   type SubmitErrorHandler,
   type SubmitHandler,
   useForm,
+  useWatch,
 } from "react-hook-form";
 import { trpc } from "@trpcclient/trpc";
+import { formatDateAsYYYYMMDD } from "@lib/formatDate";
+import dayjs from "dayjs";
+import { useState } from "react";
 
 type CreatePlanningProps = {
   clubId: string;
@@ -21,6 +21,12 @@ type CreatePlanningProps = {
 
 type CreatePlanningFormValues = {
   name: string;
+  startDate: Date;
+  endDate: Date;
+  forSite: boolean;
+  siteId: string;
+  forRoom: boolean;
+  roomId: string;
 };
 
 export const CreatePlanning = ({
@@ -37,12 +43,15 @@ export const CreatePlanning = ({
       toast.error(error.message);
     },
   });
+  const queryClub = trpc.clubs.getClubById.useQuery(clubId);
   const {
     register,
     handleSubmit,
     formState: { errors },
-    getValues,
+    control,
   } = useForm<CreatePlanningFormValues>();
+
+  const fields = useWatch({ control });
 
   const { t } = useTranslation("planning");
 
@@ -50,7 +59,14 @@ export const CreatePlanning = ({
     console.log("data", data);
     createPlanning.mutate({
       clubId,
-      ...data,
+      name: data.name ? data.name : undefined,
+      startDate: data.startDate,
+      endDate: dayjs(data.endDate).isValid() ? data.endDate : undefined,
+      siteId: data.forSite && data.siteId ? data.siteId : undefined,
+      roomId:
+        data.forSite && data.siteId && data.forRoom && data.roomId
+          ? data.roomId
+          : undefined,
     });
   };
 
@@ -65,16 +81,267 @@ export const CreatePlanning = ({
       handleSubmit={handleSubmit(onSubmit, onError)}
     >
       <h3>{t("create-new-planning")}</h3>
-      <SimpleForm
-        errors={errors}
-        register={register}
-        fields={[
-          {
-            label: t("name"),
-            name: "name",
-          },
-        ]}
-      />
+      <form
+        onSubmit={handleSubmit(onSubmit, onError)}
+        className="grid grid-cols-[auto_1fr] gap-2"
+      >
+        <label>{t("name")}</label>
+        <input className="input-bordered input w-full" {...register("name")} />
+        <label className="required">{t("start-date")}</label>
+        <div className="flex flex-col gap-2">
+          <input
+            className="input-bordered input w-full"
+            {...register("startDate", {
+              valueAsDate: true,
+              required: t("date-mandatory"),
+            })}
+            type="date"
+            defaultValue={formatDateAsYYYYMMDD()}
+          />
+          {errors.startDate ? (
+            <p className="text-sm text-error">{t("date-mandatory")}</p>
+          ) : null}
+        </div>
+        <label>{t("end-date")}</label>
+        <input
+          className="input-bordered input w-full"
+          {...register("endDate", { valueAsDate: true })}
+          type="date"
+        />
+        <div className="form-control col-span-2">
+          <label className="label cursor-pointer justify-start gap-4">
+            <input
+              type="checkbox"
+              className="checkbox-primary checkbox"
+              {...register("forSite")}
+              defaultChecked={false}
+            />
+            <span className="label-text">{t("for-site")}</span>
+          </label>
+        </div>
+        {fields.forSite ? (
+          <>
+            <label>{t("site")}</label>
+            <select {...register("siteId")}>
+              {queryClub.data?.sites.map((site) => (
+                <option key={site.id} value={site.id}>
+                  {site.name}
+                </option>
+              ))}
+            </select>
+            <div className="form-control col-span-2">
+              <label className="label cursor-pointer justify-start gap-4">
+                <input
+                  type="checkbox"
+                  className="checkbox-primary checkbox"
+                  {...register("forRoom")}
+                  defaultChecked={false}
+                />
+                <span className="label-text">{t("for-room")}</span>
+              </label>
+            </div>
+            {fields.forRoom && fields.siteId ? (
+              <>
+                <label>{t("room")}</label>
+                <select {...register("roomId")}>
+                  {queryClub.data?.sites
+                    .find((s) => s.id === fields.siteId)
+                    ?.rooms.map((room) => (
+                      <option key={room.id} value={room.id}>
+                        {room.name}
+                      </option>
+                    ))}
+                </select>
+              </>
+            ) : null}
+          </>
+        ) : null}
+      </form>
     </Modal>
   );
 };
+
+type UpdatePlanningProps = {
+  clubId: string;
+  planningId: string;
+  variant?: TModalVariant;
+  duplicate?: boolean;
+};
+
+type UpdatePlanningFormValues = {
+  name: string | null;
+  startDate: Date;
+  endDate?: Date | null;
+  siteId?: string | null;
+  roomId?: string | null;
+};
+
+export function UpdatePlanning({
+  clubId,
+  planningId,
+  variant = "Icon-Outlined-Primary",
+  duplicate = false,
+}: UpdatePlanningProps) {
+  const [siteName, setSiteName] = useState("");
+  const [roomName, setRoomName] = useState("");
+  const utils = trpc.useContext();
+
+  const queryPlanning = trpc.plannings.getPlanningById.useQuery(planningId, {
+    onSuccess(data) {
+      console.log("data :>> ", data);
+      reset({
+        name: data?.name,
+        startDate: data?.startDate ?? new Date(Date.now()),
+        endDate: data?.endDate,
+        siteId: data?.siteId,
+        roomId: data?.roomId,
+      });
+      setSiteName(data?.site?.name ?? "");
+      setRoomName(data?.room?.name ?? "");
+    },
+  });
+  const updatePlanning = trpc.plannings.updatePlanningForClub.useMutation({
+    onSuccess: () => {
+      utils.plannings.getPlanningsForClub.invalidate(clubId);
+      toast.success(t("planning-updated") as string);
+    },
+    onError(error) {
+      toast.error(error.message);
+    },
+  });
+  const duplicatePlanning = trpc.plannings.duplicatePlanningForClub.useMutation(
+    {
+      onSuccess: () => {
+        utils.plannings.getPlanningsForClub.invalidate(clubId);
+        toast.success(t("planning-created") as string);
+      },
+      onError(error) {
+        toast.error(error.message);
+      },
+    }
+  );
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+    reset,
+  } = useForm<UpdatePlanningFormValues>();
+
+  const { t } = useTranslation("planning");
+
+  const onSubmit: SubmitHandler<UpdatePlanningFormValues> = (data) => {
+    if (duplicate) {
+      duplicatePlanning.mutate({
+        id: planningId,
+        name: data.name ? data.name : undefined,
+        startDate: data.startDate,
+        endDate:
+          data.endDate && dayjs(data.endDate).isValid()
+            ? data.endDate
+            : undefined,
+      });
+    } else {
+      updatePlanning.mutate({
+        name: data.name ? data.name : undefined,
+        startDate: data.startDate,
+        endDate:
+          data.endDate && dayjs(data.endDate).isValid()
+            ? data.endDate
+            : undefined,
+      });
+    }
+  };
+
+  const onError: SubmitErrorHandler<UpdatePlanningFormValues> = (errors) => {
+    console.log("errors", errors);
+  };
+
+  if (queryPlanning.isLoading) return <Spinner />;
+  return (
+    <Modal
+      title={t(duplicate ? "duplicate-planning" : "update-planning")}
+      buttonIcon={
+        <i className={`bx ${duplicate ? "bx-duplicate" : "bx-edit"} bx-sm`} />
+      }
+      handleSubmit={handleSubmit(onSubmit, onError)}
+      variant={variant}
+    >
+      <h3 className="flex gap-2">
+        {t(duplicate ? "duplicate-planning" : "update-planning")}
+      </h3>
+      {siteName ? (
+        <div className="mb-2 flex gap-2">
+          <span className="badge-primary badge flex gap-2">
+            <span>{t("site")}:</span>
+            <span>{siteName}</span>
+          </span>
+          {roomName ? (
+            <span className="badge-primary badge flex gap-2">
+              <span>{t("room")}:</span>
+              <span>{roomName}</span>
+            </span>
+          ) : null}
+        </div>
+      ) : null}
+      <form
+        onSubmit={handleSubmit(onSubmit, onError)}
+        className="grid grid-cols-[auto_1fr] gap-2"
+      >
+        <label>{t("name")}</label>
+        <input className="input-bordered input w-full" {...register("name")} />
+        <label className="required">{t("start-date")}</label>
+        <div className="flex flex-col gap-2">
+          <input
+            className="input-bordered input w-full"
+            {...register("startDate", {
+              valueAsDate: true,
+              required: t("date-mandatory"),
+            })}
+            type="date"
+            defaultValue={formatDateAsYYYYMMDD()}
+          />
+          {errors.startDate ? (
+            <p className="text-sm text-error">{t("date-mandatory")}</p>
+          ) : null}
+        </div>
+        <label>{t("end-date")}</label>
+        <input
+          className="input-bordered input w-full"
+          {...register("endDate", { valueAsDate: true })}
+          type="date"
+        />
+      </form>
+    </Modal>
+  );
+}
+
+export function DeletePlanning({
+  clubId,
+  planningId,
+  variant = "Icon-Outlined-Secondary",
+}: UpdatePlanningProps) {
+  const utils = trpc.useContext();
+  const { t } = useTranslation("planning");
+
+  const deletePlanning = trpc.plannings.deletePlanning.useMutation({
+    onSuccess: () => {
+      utils.plannings.getPlanningsForClub.invalidate(clubId);
+      toast.success(t("planning-deleted") as string);
+    },
+    onError(error) {
+      toast.error(error.message);
+    },
+  });
+
+  return (
+    <Confirmation
+      message={t("planning-deletion-message")}
+      title={t("planning-deletion")}
+      onConfirm={() => {
+        deletePlanning.mutate(planningId);
+      }}
+      buttonIcon={<i className="bx bx-trash bx-sm" />}
+      variant={variant}
+    />
+  );
+}
