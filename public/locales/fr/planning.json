@@ -22,5 +22,14 @@
   "update-planning": "Mettre à jour le planning",
   "duplicate-planning": "Dupliquer le planning",
   "planning-updated": "Planning mis à jour",
-  "activities": "Activités"
+  "activities": "Activités",
+  "new-course": "Nouveau cours",
+  "validation": "Enregistrer",
+  "day": "Jour",
+  "activity": "Activité",
+  "start-hour": "Heure de début du cours",
+  "start-hour-mandatory": "L'heure de début est obligatoire",
+  "duration": "Durée",
+  "duration-mandatory": "La durée est obligtoire",
+  "minutes": "Minutes"
 }

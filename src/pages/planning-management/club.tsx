@@ -1,5 +1,5 @@
 import { authOptions } from "@auth/[...nextauth]";
-import type { Planning } from "@prisma/client";
+import type { Planning, RoomReservation } from "@prisma/client";
 import { Role } from "@prisma/client";
 import {
   type InferGetServerSidePropsType,
@@ -10,7 +10,7 @@ import { serverSideTranslations } from "next-i18next/serverSideTranslations";
 import nextI18nConfig from "@root/next-i18next.config.mjs";
 import { trpc } from "@trpcclient/trpc";
 import { useTranslation } from "next-i18next";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import Spinner from "@ui/spinner";
 import Layout from "@root/src/components/layout";
 import Link from "next/link";
@@ -23,6 +23,15 @@ import {
 import dayjs from "dayjs";
 import { formatDateLocalized } from "@lib/formatDate";
 import { DAYS } from "@modals/manageCalendar";
+import {
+  type DragEndEvent,
+  PointerSensor,
+  useSensor,
+  useSensors,
+} from "@dnd-kit/core";
+import { DndContext, useDraggable, useDroppable } from "@dnd-kit/core";
+import { CSS } from "@dnd-kit/utilities";
+import { useForm } from "react-hook-form";
 
 function ClubPlanning({
   userId,
@@ -126,6 +135,20 @@ type PlanningContentProps = {
   userId: string;
 };
 
+type DropData = {
+  day?: string;
+  site?: string;
+  activity?: string;
+};
+
+type DropFormData = {
+  startHour: string;
+  duration: number;
+  roomId: string;
+  coachId: string;
+  reservation: RoomReservation;
+};
+
 const PlanningContent = ({
   planningId,
   clubId,
@@ -138,165 +161,246 @@ const PlanningContent = ({
     clubId,
     userId,
   });
+  const refModalDrop = useRef<HTMLInputElement>(null);
+  const [dropData, setDropData] = useState<DropData>({});
+
+  const sensors = useSensors(
+    useSensor(PointerSensor, {
+      activationConstraint: {
+        distance: 10,
+      },
+    })
+  );
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+    reset,
+  } = useForm<DropFormData>();
+
+  function handleDragEnd(event: DragEndEvent) {
+    const { active, over } = event;
+
+    const overDay = DAYS.find(
+      (d) => d.value === over?.data.current?.day
+    )?.label;
+    const day = overDay ? t(`calendar:${overDay}`) : "?";
+    const site =
+      queryClub.data?.sites.find((s) => s.id === over?.data.current?.site)
+        ?.name ?? "?";
+    const activity =
+      queryActivities.data?.activities.find((a) => a.id === active.id)?.name ??
+      "?";
+    reset();
+    setDropData({
+      day,
+      site,
+      activity,
+    });
+    if (refModalDrop.current) refModalDrop.current.checked = true;
+  }
+
+  function handleSaveActivity(data: DropFormData) {
+    console.log("save :>> ", { data });
+  }
+
+  if (errors) console.log("errors :>> ", errors);
 
   if (queryPlanning.isLoading) return <Spinner />;
   return (
-    <article className="flex flex-grow flex-col gap-4">
-      <section className="flex items-center justify-between">
-        <h2>
-          {queryPlanning.data ? (
-            <PlanningName planning={queryPlanning.data} />
-          ) : (
-            "-"
-          )}
-        </h2>
-        <div className="flex items-center gap-2">
-          <UpdatePlanning clubId={clubId} planningId={planningId} />
-          <UpdatePlanning clubId={clubId} planningId={planningId} duplicate />
-          <DeletePlanning clubId={clubId} planningId={planningId} />
-        </div>
-      </section>
-      <section className="grid grid-cols-[auto_1fr] gap-2">
-        <aside className="flex flex-col gap-1 overflow-hidden rounded border border-secondary">
-          <span className="bg-secondary px-4 text-center text-secondary-content">
-            {t("activities")}
-          </span>
-          {queryActivities.data?.activities.map((activity) => (
-            <span
-              key={activity.id}
-              className="pill mx-2 justify-center bg-base-100"
-            >
-              {activity.name}
-            </span>
-          ))}
-        </aside>
-
-        <div className="grid grid-cols-[auto_1fr]">
-          <div>
-            <div className="h-12"></div>
-            <div>
-              <div className="flex max-h-[70vh] w-10 shrink-0 flex-col overflow-y-auto border-r border-base-200 bg-base-100 text-center">
-                {Array.from({ length: 24 }, (_, k) => k).map((hour) => (
-                  <p
-                    key={hour}
-                    className="h-6 border-b border-base-200 text-xs leading-6 text-base-300"
-                  >
-                    {`0${hour}`.slice(-2)}:00
-                  </p>
-                ))}
+    <DndContext onDragEnd={handleDragEnd} sensors={sensors}>
+      <input
+        type="checkbox"
+        id="modal-drop"
+        className="modal-toggle"
+        ref={refModalDrop}
+      />
+      <div className="modal">
+        <form
+          onSubmit={handleSubmit(handleSaveActivity)}
+          className="modal-box relative"
+        >
+          <label
+            htmlFor="modal-drop"
+            className="btn btn-secondary btn-sm btn-circle absolute right-2 top-2"
+          >
+            <i className="bx bx-x bx-sm" />
+          </label>
+          <h3 className="text-lg font-bold">{t("new-course")}</h3>
+          <h2 className="flex items-center gap-4">
+            {t("day")}
+            <span className="text-secondary">{dropData.day}</span>
+          </h2>
+          <div className="flex items-center gap-4">
+            <label>{t("site")}</label>
+            <span>{dropData.site}</span>
+            <label>{t("activity")}</label>
+            <span>{dropData.activity}</span>
+          </div>
+          <div className="grid grid-cols-[auto_1fr] gap-2">
+            <label className="required">{t("start-hour")}</label>
+            <div className="flex flex-col gap-2">
+              <input
+                type="time"
+                {...register("startHour", {
+                  required: t("start-hour-mandatory"),
+                })}
+                className="input-bordered input w-fit self-end"
+              />
+              {errors.startHour && (
+                <p className="text-sm text-error">{errors.startHour.message}</p>
+              )}
+            </div>
+            <label className="required">{t("duration")}</label>
+            <div className="flex flex-col gap-2">
+              <div className="form-control">
+                <div className="input-group">
+                  <input
+                    type="number"
+                    {...register("duration", {
+                      valueAsNumber: true,
+                      validate: (v) => Number(v) > 1,
+                      required: t("duration-mandatory"),
+                    })}
+                    className="input-bordered input w-full"
+                  />
+                  <span>{t("minutes")}</span>
+                </div>
               </div>
+              {errors.duration && (
+                <p className="text-sm text-error">{errors.duration.message}</p>
+              )}
             </div>
           </div>
-          <div className="flex max-w-full gap-[1px] overflow-auto">
-            {DAYS.map((day) => (
-              <div key={day.value} className="shrink-0">
-                <div className="w-max-fit flex h-12 flex-shrink-0 flex-col overflow-hidden">
-                  <span className="bg-primary text-center text-primary-content">
-                    {t(`calendar:${day.label}`)}
-                  </span>
-                  <div
-                    className={`grid gap-[1px]`}
-                    style={{
-                      gridTemplateColumns: `repeat(${
-                        queryClub.data?.sites.length ?? 1
-                      }, minmax(0, 1fr)`,
-                    }}
-                  >
-                    {queryClub.data?.sites.map((site) => (
-                      <div key={site.id}>
-                        <div className="max-w-[8em] shrink-0 overflow-hidden text-ellipsis whitespace-nowrap bg-secondary px-2 text-center text-secondary-content">
-                          {site.name}
-                        </div>
-                      </div>
-                    ))}
-                  </div>
+          <div className="modal-action">
+            <label htmlFor="modal-drop">
+              <button className="btn btn-primary">{t("validation")}</button>
+            </label>
+          </div>
+        </form>
+      </div>
+      <article className="flex flex-grow flex-col gap-4">
+        <section className="flex items-center justify-between">
+          <h2>
+            {queryPlanning.data ? (
+              <PlanningName planning={queryPlanning.data} />
+            ) : (
+              "-"
+            )}
+          </h2>
+          <div className="flex items-center gap-2">
+            <UpdatePlanning clubId={clubId} planningId={planningId} />
+            <UpdatePlanning clubId={clubId} planningId={planningId} duplicate />
+            <DeletePlanning clubId={clubId} planningId={planningId} />
+          </div>
+        </section>
+        <section className="grid grid-cols-[auto_1fr] gap-2">
+          <aside className="flex flex-col gap-1 border border-secondary">
+            <span className="bg-secondary px-4 text-center text-secondary-content">
+              {t("activities")}
+            </span>
+            {queryActivities.data?.activities.map((activity) => (
+              <Activity
+                key={activity.id}
+                id={activity.id}
+                name={activity.name}
+              />
+            ))}
+          </aside>
+
+          <div className="grid grid-cols-[auto_1fr]">
+            <div>
+              <div className="h-12"></div>
+              <div>
+                <div className="flex max-h-[70vh] w-10 shrink-0 flex-col overflow-y-auto border-r border-base-200 bg-base-100 text-center">
+                  {Array.from({ length: 24 }, (_, k) => k).map((hour) => (
+                    <p
+                      key={hour}
+                      className="h-6 border-b border-base-200 text-xs leading-6 text-base-300"
+                    >
+                      {`0${hour}`.slice(-2)}:00
+                    </p>
+                  ))}
                 </div>
-                <div
-                  className={`grid gap-x-[1px]`}
-                  style={{
-                    gridTemplateColumns: `repeat(${
-                      queryClub.data?.sites.length ?? 1
-                    }, minmax(0, 1fr)`,
-                  }}
-                >
-                  {queryClub.data?.sites.map((site) => (
-                    <div key={site.id}>
-                      {Array.from({ length: 24 }, (_, k) => k).map((hour) => (
-                        <p
-                          key={hour}
-                          className="h-6 basis-full border-b border-base-200 bg-base-100"
-                        ></p>
+              </div>
+            </div>
+            <div className="flex max-w-full gap-[1px] overflow-auto">
+              {DAYS.map((day) => (
+                <div key={day.value} className="shrink-0">
+                  <div className="w-max-fit flex flex-shrink-0 flex-col">
+                    <span className="h-6 bg-primary text-center leading-6 text-primary-content">
+                      {t(`calendar:${day.label}`)}
+                    </span>
+                    <div
+                      className={`grid gap-[1px]`}
+                      style={{
+                        gridTemplateColumns: `repeat(${
+                          queryClub.data?.sites.length ?? 1
+                        }, minmax(0, 1fr)`,
+                      }}
+                    >
+                      {queryClub.data?.sites.map((site) => (
+                        <div key={site.id}>
+                          <div className="h-6 max-w-[8em] shrink-0 overflow-hidden text-ellipsis whitespace-nowrap bg-secondary px-2 text-center leading-6 text-secondary-content">
+                            {site.name}
+                          </div>
+                          <Site
+                            key={site.id}
+                            id={`${day.value} ${site.id}`}
+                            data={{ day: day.value, site: site.id }}
+                          />
+                        </div>
                       ))}
                     </div>
-                  ))}
+                  </div>
                 </div>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        {/* 
-        <div className="flex max-w-full flex-col overflow-auto">
-          <div className="flex gap-[1px]">
-            <div className="w-10 shrink-0"></div>
-            {DAYS.map((day) => (
-              <div
-                key={day.value}
-                className="w-max-fit flex flex-shrink-0 flex-col overflow-hidden"
-              >
-                <span className="bg-primary text-center text-primary-content">
-                  {t(`calendar:${day.label}`)}
-                </span>
-                <div
-                  className={`grid gap-[1px]`}
-                  style={{
-                    gridTemplateColumns: `repeat(${
-                      queryClub.data?.sites.length ?? 1
-                    }, minmax(0, 1fr)`,
-                  }}
-                >
-                  {queryClub.data?.sites.map((site) => (
-                    <div key={site.id}>
-                      <div className="max-w-[8em] shrink-0 overflow-hidden text-ellipsis whitespace-nowrap bg-secondary px-2 text-center text-secondary-content">
-                        {site.name}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            ))}
-          </div>
-          <div className="flex">
-            <div className="flex max-h-[70vh] w-10 shrink-0 flex-col overflow-y-auto border border-base-200 bg-base-100 text-end">
-              {Array.from({ length: 24 }, (_, k) => k).map((hour) => (
-                <p
-                  key={hour}
-                  className="h-6 shrink-0 border-b border-base-200 text-xs text-base-300"
-                >
-                  {`0${hour}`.slice(-2)}:00
-                </p>
               ))}
             </div>
-
-            {DAYS.map((day) => (
-              <div
-                key={day.value}
-                className="flex max-h-[70vh] w-10 shrink-0 flex-col overflow-y-auto border border-base-200 bg-base-100 text-end"
-              >
-                {Array.from({ length: 24 }, (_, k) => k).map((hour) => (
-                  <p
-                    key={hour}
-                    className="h-6 shrink-0 border-b border-base-200"
-                  ></p>
-                ))}
-              </div>
-            ))}
           </div>
-        </div> */}
-      </section>
-    </article>
+        </section>
+      </article>
+    </DndContext>
   );
 };
+
+function Activity({ id, name }: { id: string; name: string }) {
+  const { attributes, listeners, setNodeRef, transform } = useDraggable({ id });
+  const style = {
+    transform: CSS.Translate.toString(transform),
+  };
+
+  return (
+    <button
+      ref={setNodeRef}
+      style={style}
+      {...listeners}
+      {...attributes}
+      className="pill z-10 mx-2 justify-center bg-base-100"
+    >
+      {name}
+    </button>
+  );
+}
+
+type SiteProps = {
+  id: string;
+  data: {
+    day: string;
+    site: string;
+  };
+};
+
+function Site({ id, data }: SiteProps) {
+  const { setNodeRef, isOver } = useDroppable({ id, data });
+  return (
+    <div
+      ref={setNodeRef}
+      className={`h-[36rem] ${isOver ? "bg-base-200" : "bg-base-100"}`} // 24 * h-6 = 1.5rem
+    >
+      &nbsp;
+    </div>
+  );
+}
 
 export const getServerSideProps = async ({
   locale,

@@ -56,7 +56,6 @@ export const CreatePlanning = ({
   const { t } = useTranslation("planning");
 
   const onSubmit: SubmitHandler<CreatePlanningFormValues> = (data) => {
-    console.log("data", data);
     createPlanning.mutate({
       clubId,
       name: data.name ? data.name : undefined,
@@ -188,7 +187,6 @@ export function UpdatePlanning({
 
   const queryPlanning = trpc.plannings.getPlanningById.useQuery(planningId, {
     onSuccess(data) {
-      console.log("data :>> ", data);
       reset({
         name: data?.name,
         startDate: data?.startDate ?? new Date(Date.now()),
