@@ -15,6 +15,7 @@ import { toast } from "react-toastify";
 import Image from "next/image";
 import CollapsableGroup from "@ui/collapsableGroup";
 import Link from "next/link";
+import Rating from "@ui/rating";
 
 type ClubFormValues = {
   name: string;
@@ -252,66 +253,120 @@ export const AddCoachToClub = ({ clubId }: { clubId: string }) => {
       </select>
       {queryCoach.data ? (
         <div className="mt-4 grid grid-cols-[auto_1fr] gap-2">
-          {photo.data?.url ? (
-            <Image
-              src={photo.data.url}
-              width={300}
-              height={300}
-              alt=""
-              style={{ objectFit: "contain" }}
-              className="rounded-md shadow"
-            />
-          ) : (
-            <img
-              src={queryCoach.data?.image ?? ""}
-              width={300}
-              height={300}
-              alt=""
-              style={{ objectFit: "contain" }}
-              className="rounded-md shadow"
-            />
-          )}
-
-          <div>
-            <h4>{t("activities")}</h4>
-            <div className="flex flex-wrap gap-2">
-              {queryCoach.data.activityGroups.map((ag) => (
-                <span key={ag.id} className="pill">
-                  {ag.name}
-                </span>
-              ))}
-            </div>
-            <h4>{t("certifications")}</h4>
-            <div className="flex flex-wrap gap-2">
-              {queryCoach.data.certifications.map((ag) => (
-                <CollapsableGroup
-                  key={ag.id}
-                  groupName={ag.name}
-                  className="bg-base-100 normal-case"
-                >
-                  {ag.modules.map((mod) => (
-                    <span key={mod.id} className="pill pill-xs">
-                      {mod.name}
-                    </span>
-                  ))}
-                </CollapsableGroup>
-              ))}
-            </div>
-            {queryCoach.data.page?.id ? (
-              <Link
-                href={`/presentation-page/coach/${queryCoach.data.id}/${queryCoach.data.page.id}`}
-                target="_blank"
-                rel="noreferrer"
-              >
-                <button className="btn btn-primary mt-4 flex items-center gap-4">
-                  <span>{t("view-page")}</span>
-                  <i className="bx bx-link-external bx-xs" />
-                </button>
-              </Link>
-            ) : null}
-          </div>
+          <CoachDataPresentation
+            url={photo.data?.url ?? null}
+            image={queryCoach.data.image ?? "/images/dummy.jpg"}
+            activityGroups={queryCoach.data.activityGroups.map((ag) => ({
+              id: ag.id,
+              name: ag.name,
+            }))}
+            certifications={queryCoach.data.certifications.map((cert) => ({
+              id: cert.id,
+              name: cert.name,
+              modules: cert.modules.map((mod) => ({
+                id: mod.id,
+                name: mod.name,
+              })),
+            }))}
+            rating={queryCoach.data.rating}
+            id={queryCoach.data.id}
+            pageId={queryCoach.data.page?.id}
+          />
         </div>
       ) : null}
     </Modal>
   );
 };
+
+type IdName = {
+  id: string;
+  name: string;
+};
+
+type CoachDataPresentationProps = {
+  url: string | null;
+  image: string;
+  activityGroups: IdName[];
+  certifications: { id: string; name: string; modules: IdName[] }[];
+  rating: number;
+  id: string;
+  pageId?: string;
+};
+
+export function CoachDataPresentation({
+  url,
+  image,
+  activityGroups,
+  certifications,
+  rating,
+  id,
+  pageId,
+}: CoachDataPresentationProps) {
+  const { t } = useTranslation("club");
+  return (
+    <>
+      {url ? (
+        <Image
+          src={url}
+          width={300}
+          height={300}
+          alt=""
+          style={{ objectFit: "contain" }}
+          className="rounded-md shadow"
+        />
+      ) : (
+        <img
+          src={image}
+          width={300}
+          height={300}
+          alt=""
+          style={{ objectFit: "contain" }}
+          className="rounded-md shadow"
+        />
+      )}
+
+      <div className="flex flex-col gap-2">
+        <label>{t("activities")}</label>
+        <div className="flex flex-wrap gap-2">
+          {activityGroups.map((ag) => (
+            <span key={ag.id} className="pill">
+              {ag.name}
+            </span>
+          ))}
+        </div>
+        <label>{t("certifications")}</label>
+        <div className="flex flex-wrap gap-2">
+          {certifications.map((cert) => (
+            <CollapsableGroup
+              key={cert.id}
+              groupName={cert.name}
+              className="bg-base-100 normal-case"
+            >
+              {cert.modules.map((mod) => (
+                <span key={mod.id} className="pill pill-xs">
+                  {mod.name}
+                </span>
+              ))}
+            </CollapsableGroup>
+          ))}
+        </div>
+        <div className="flex items-center gap-4">
+          <label>{t("rating")}</label>
+          <Rating note={rating} />
+        </div>
+        {pageId ? (
+          <Link
+            href={`/presentation-page/coach/${id}/${pageId}`}
+            target="_blank"
+            rel="noreferrer"
+          >
+            <button className="btn btn-primary flex items-center gap-4">
+              <span>{t("view-page")}</span>
+              <i className="bx bx-link-external bx-xs" />
+            </button>
+          </Link>
+        ) : null}
+      </div>
+    </>
+  );
+}

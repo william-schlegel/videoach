@@ -1,5 +1,4 @@
 import { authOptions } from "@auth/[...nextauth]";
-import type { Planning, RoomReservation } from "@prisma/client";
 import { Role } from "@prisma/client";
 import {
   type InferGetServerSidePropsType,
@@ -10,11 +9,8 @@ import { serverSideTranslations } from "next-i18next/serverSideTranslations";
 import nextI18nConfig from "@root/next-i18next.config.mjs";
 import { trpc } from "@trpcclient/trpc";
 import { useTranslation } from "next-i18next";
-import Spinner from "@ui/spinner";
 import Layout from "@root/src/components/layout";
-import Link from "next/link";
-import { toast } from "react-toastify";
-import { AddCoachToClub } from "@modals/manageClub";
+import { AddCoachToClub, CoachDataPresentation } from "@modals/manageClub";
 import { useState } from "react";
 
 function CoachManagementForClub({
@@ -29,6 +25,10 @@ function CoachManagementForClub({
     },
   });
   const queryCoachs = trpc.coachs.getCoachsForClub.useQuery(clubId);
+  const queryCoach = trpc.coachs.getCoachById.useQuery(coachId);
+  const photo = trpc.files.getDocumentUrlById.useQuery(
+    queryCoach.data?.page?.sections?.[0]?.elements?.[0]?.images?.[0]?.id ?? ""
+  );
 
   return (
     <Layout className="container mx-auto my-2 flex flex-col gap-2">
@@ -68,13 +68,27 @@ function CoachManagementForClub({
             ))}
           </ul>
         </aside>
-        {/*planningId ? (
-          <PlanningContent
-            clubId={clubId}
-            planningId={planningId}
-            userId={userId}
+        {queryCoach.data ? (
+          <CoachDataPresentation
+            url={photo.data?.url ?? null}
+            image={queryCoach.data.image ?? "/images/dummy.jpg"}
+            activityGroups={queryCoach.data.activityGroups.map((ag) => ({
+              id: ag.id,
+              name: ag.name,
+            }))}
+            certifications={queryCoach.data.certifications.map((cert) => ({
+              id: cert.id,
+              name: cert.name,
+              modules: cert.modules.map((mod) => ({
+                id: mod.id,
+                name: mod.name,
+              })),
+            }))}
+            rating={queryCoach.data.rating}
+            id={queryCoach.data.id}
+            pageId={queryCoach.data.page?.id}
           />
-        ) : null*/}
+        ) : null}
       </div>
     </Layout>
   );

@@ -1,3 +1,4 @@
+import { DayName } from "@prisma/client";
 import { z } from "zod";
 import { router, protectedProcedure } from "../trpc";
 
@@ -9,6 +10,18 @@ const planningObject = z.object({
   roomId: z.string().cuid().optional(),
   endDate: z.date().optional(),
   name: z.string().optional(),
+});
+
+const planningActivityObject = z.object({
+  id: z.string().cuid(),
+  planningId: z.string().cuid(),
+  activityId: z.string().cuid(),
+  siteId: z.string().cuid(),
+  roomId: z.string().cuid(),
+  day: z.nativeEnum(DayName),
+  startTime: z.string(),
+  duration: z.number(),
+  coachId: z.string().cuid(),
 });
 
 export const planningRouter = router({
@@ -27,7 +40,14 @@ export const planningRouter = router({
       ctx.prisma.planning.findUnique({
         where: { id: input },
         include: {
-          planningActivities: true,
+          planningActivities: {
+            include: {
+              activity: true,
+              site: true,
+              room: true,
+              coach: true,
+            },
+          },
           site: {
             select: { name: true },
           },
@@ -73,8 +93,7 @@ export const planningRouter = router({
               data: org.planningActivities.map((pa) => ({
                 day: pa.day,
                 startTime: pa.startTime,
-                endTime: pa.endTime,
-                activityGroupId: pa.activityGroupId,
+                duration: pa.duration,
                 activityId: pa.activityId,
                 coachId: pa.coachId,
                 siteId: pa.siteId,
@@ -91,5 +110,10 @@ export const planningRouter = router({
       ctx.prisma.planning.delete({
         where: { id: input },
       })
+    ),
+  addPlanningActivity: protectedProcedure
+    .input(planningActivityObject.omit({ id: true }))
+    .mutation(({ ctx, input }) =>
+      ctx.prisma.planningActivity.create({ data: input })
     ),
 });

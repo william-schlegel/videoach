@@ -102,5 +102,6 @@
   "select-club": "Sélectionner le club",
   "coachs": "Liste des coachs",
   "certifications": "Certifications",
-  "view-page": "Voir sa page de présentation"
+  "view-page": "Voir sa page de présentation",
+  "rating": "Note"
 }

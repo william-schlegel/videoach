@@ -1,6 +1,13 @@
 import { authOptions } from "@auth/[...nextauth]";
-import type { Planning, RoomReservation } from "@prisma/client";
-import { Role } from "@prisma/client";
+import type {
+  Activity,
+  DayName,
+  Planning,
+  Room,
+  User,
+  Site,
+} from "@prisma/client";
+import { Role, PlanningActivity } from "@prisma/client";
 import {
   type InferGetServerSidePropsType,
   type GetServerSidePropsContext,
@@ -10,11 +17,10 @@ import { serverSideTranslations } from "next-i18next/serverSideTranslations";
 import nextI18nConfig from "@root/next-i18next.config.mjs";
 import { trpc } from "@trpcclient/trpc";
 import { useTranslation } from "next-i18next";
+import type { ReactNode } from "react";
 import { useRef, useState } from "react";
 import Spinner from "@ui/spinner";
 import Layout from "@root/src/components/layout";
-import Link from "next/link";
-import { toast } from "react-toastify";
 import {
   CreatePlanning,
   DeletePlanning,
@@ -32,6 +38,13 @@ import {
 import { DndContext, useDraggable, useDroppable } from "@dnd-kit/core";
 import { CSS } from "@dnd-kit/utilities";
 import { useForm } from "react-hook-form";
+
+const HHOUR = "h-12"; // 3rem 48px
+const HHOUR_PX = 48;
+const LEADINGHOUR = "leading-12";
+const START_HOUR = 7;
+const NB_HOUR = 15;
+const HSITE = "h-[45rem]";
 
 function ClubPlanning({
   userId,
@@ -136,17 +149,20 @@ type PlanningContentProps = {
 };
 
 type DropData = {
-  day?: string;
-  site?: string;
-  activity?: string;
+  day: DayName;
+  dayName: string;
+  siteName: string;
+  activityId: string;
+  activityName: string;
+  siteId: string;
+  rooms: Room[];
 };
 
 type DropFormData = {
-  startHour: string;
+  startTime: string;
   duration: number;
   roomId: string;
   coachId: string;
-  reservation: RoomReservation;
 };
 
 const PlanningContent = ({
@@ -162,7 +178,15 @@ const PlanningContent = ({
     userId,
   });
   const refModalDrop = useRef<HTMLInputElement>(null);
-  const [dropData, setDropData] = useState<DropData>({});
+  const [dropData, setDropData] = useState<DropData>({
+    day: "MONDAY",
+    dayName: "",
+    siteName: "",
+    activityId: "",
+    activityName: "",
+    siteId: "",
+    rooms: [],
+  });
 
   const sensors = useSensors(
     useSensor(PointerSensor, {
@@ -171,44 +195,60 @@ const PlanningContent = ({
       },
     })
   );
+  const utils = trpc.useContext();
   const {
     register,
     handleSubmit,
     formState: { errors },
     reset,
   } = useForm<DropFormData>();
+  const queryCoachs = trpc.coachs.getCoachsForClub.useQuery(clubId);
+  const addActivity = trpc.plannings.addPlanningActivity.useMutation({
+    onSuccess() {
+      utils.plannings.getPlanningById.invalidate(planningId);
+    },
+  });
 
   function handleDragEnd(event: DragEndEvent) {
     const { active, over } = event;
 
-    const overDay = DAYS.find(
-      (d) => d.value === over?.data.current?.day
-    )?.label;
-    const day = overDay ? t(`calendar:${overDay}`) : "?";
-    const site =
-      queryClub.data?.sites.find((s) => s.id === over?.data.current?.site)
-        ?.name ?? "?";
-    const activity =
+    const overDay = DAYS.find((d) => d.value === over?.data.current?.day);
+    const dayName = overDay?.label ? t(`calendar:${overDay.label}`) : "?";
+    const siteId = over?.data.current?.site;
+    const site = queryClub.data?.sites.find((s) => s.id === siteId);
+    const siteName = site?.name ?? "?";
+    const activityName =
       queryActivities.data?.activities.find((a) => a.id === active.id)?.name ??
       "?";
+    const rooms = site?.rooms ?? [];
     reset();
     setDropData({
-      day,
-      site,
-      activity,
+      day: overDay?.value ?? "MONDAY",
+      dayName,
+      siteName,
+      activityName,
+      siteId,
+      rooms,
+      activityId: active.id as string,
     });
     if (refModalDrop.current) refModalDrop.current.checked = true;
   }
 
   function handleSaveActivity(data: DropFormData) {
-    console.log("save :>> ", { data });
+    addActivity.mutate({
+      planningId,
+      siteId: dropData.siteId,
+      activityId: dropData.activityId,
+      day: dropData.day,
+      ...data,
+    });
+    if (refModalDrop.current) refModalDrop.current.checked = false;
   }
-
-  if (errors) console.log("errors :>> ", errors);
 
   if (queryPlanning.isLoading) return <Spinner />;
   return (
     <DndContext onDragEnd={handleDragEnd} sensors={sensors}>
+      {/* add activity modal */}
       <input
         type="checkbox"
         id="modal-drop"
@@ -229,26 +269,26 @@ const PlanningContent = ({
           <h3 className="text-lg font-bold">{t("new-course")}</h3>
           <h2 className="flex items-center gap-4">
             {t("day")}
-            <span className="text-secondary">{dropData.day}</span>
+            <span className="text-secondary">{dropData.dayName}</span>
           </h2>
           <div className="flex items-center gap-4">
             <label>{t("site")}</label>
-            <span>{dropData.site}</span>
+            <span>{dropData.siteName}</span>
             <label>{t("activity")}</label>
-            <span>{dropData.activity}</span>
+            <span>{dropData.activityName}</span>
           </div>
           <div className="grid grid-cols-[auto_1fr] gap-2">
             <label className="required">{t("start-hour")}</label>
             <div className="flex flex-col gap-2">
               <input
                 type="time"
-                {...register("startHour", {
+                {...register("startTime", {
                   required: t("start-hour-mandatory"),
                 })}
-                className="input-bordered input w-fit self-end"
+                className="input-bordered input w-fit self-start"
               />
-              {errors.startHour && (
-                <p className="text-sm text-error">{errors.startHour.message}</p>
+              {errors.startTime && (
+                <p className="text-sm text-error">{errors.startTime.message}</p>
               )}
             </div>
             <label className="required">{t("duration")}</label>
@@ -271,6 +311,22 @@ const PlanningContent = ({
                 <p className="text-sm text-error">{errors.duration.message}</p>
               )}
             </div>
+            <label>{t("coach")}</label>
+            <select className="w-full" {...register("coachId")}>
+              {queryCoachs.data?.map((coach) => (
+                <option key={coach.id} value={coach.id}>
+                  {coach.name}
+                </option>
+              ))}
+            </select>
+            <label>{t("room")}</label>
+            <select className="w-full" {...register("roomId")}>
+              {dropData.rooms?.map((room) => (
+                <option key={room.id} value={room.id}>
+                  {room.name}
+                </option>
+              ))}
+            </select>
           </div>
           <div className="modal-action">
             <label htmlFor="modal-drop">
@@ -279,6 +335,7 @@ const PlanningContent = ({
           </div>
         </form>
       </div>
+      {/* planning content */}
       <article className="flex flex-grow flex-col gap-4">
         <section className="flex items-center justify-between">
           <h2>
@@ -300,7 +357,7 @@ const PlanningContent = ({
               {t("activities")}
             </span>
             {queryActivities.data?.activities.map((activity) => (
-              <Activity
+              <DraggableActivity
                 key={activity.id}
                 id={activity.id}
                 name={activity.name}
@@ -312,11 +369,14 @@ const PlanningContent = ({
             <div>
               <div className="h-12"></div>
               <div>
-                <div className="flex max-h-[70vh] w-10 shrink-0 flex-col overflow-y-auto border-r border-base-200 bg-base-100 text-center">
-                  {Array.from({ length: 24 }, (_, k) => k).map((hour) => (
+                <div className="flex w-10 shrink-0 flex-col overflow-y-auto border-r border-base-200 bg-base-100 text-center">
+                  {Array.from(
+                    { length: NB_HOUR },
+                    (_, k) => k + START_HOUR
+                  ).map((hour) => (
                     <p
                       key={hour}
-                      className="h-6 border-b border-base-200 text-xs leading-6 text-base-300"
+                      className={`${HHOUR} border-b border-base-200 text-xs ${LEADINGHOUR} text-base-300`}
                     >
                       {`0${hour}`.slice(-2)}:00
                     </p>
@@ -344,11 +404,23 @@ const PlanningContent = ({
                           <div className="h-6 max-w-[8em] shrink-0 overflow-hidden text-ellipsis whitespace-nowrap bg-secondary px-2 text-center leading-6 text-secondary-content">
                             {site.name}
                           </div>
-                          <Site
+                          <DropSite
                             key={site.id}
                             id={`${day.value} ${site.id}`}
                             data={{ day: day.value, site: site.id }}
-                          />
+                          >
+                            {queryPlanning.data?.planningActivities
+                              .filter(
+                                (pa) =>
+                                  pa.day === day.value && pa.siteId === site.id
+                              )
+                              .map((activity) => (
+                                <PlanningActivity
+                                  key={activity.id}
+                                  planningActivity={activity}
+                                />
+                              ))}
+                          </DropSite>
                         </div>
                       ))}
                     </div>
@@ -363,7 +435,34 @@ const PlanningContent = ({
   );
 };
 
-function Activity({ id, name }: { id: string; name: string }) {
+type PlanningActivityProps = {
+  planningActivity: PlanningActivity & {
+    site: Site | null;
+    room: Room | null;
+    activity: Activity;
+    coach: User | null;
+  };
+};
+
+function PlanningActivity({ planningActivity }: PlanningActivityProps) {
+  const hm = planningActivity.startTime.split(":");
+  const top = HHOUR_PX * (Number(hm[0]) - START_HOUR + Number(hm[1]) / 60);
+  const height = HHOUR_PX * (planningActivity.duration / 60);
+
+  return (
+    <div
+      className="absolute left-0 flex w-full items-center justify-center bg-secondary"
+      style={{ top, height }}
+    >
+      <span className="text-sm">
+        {planningActivity.activity.name} ({planningActivity.duration}
+        {"'"})
+      </span>
+    </div>
+  );
+}
+
+function DraggableActivity({ id, name }: { id: string; name: string }) {
   const { attributes, listeners, setNodeRef, transform } = useDraggable({ id });
   const style = {
     transform: CSS.Translate.toString(transform),
@@ -382,22 +481,23 @@ function Activity({ id, name }: { id: string; name: string }) {
   );
 }
 
-type SiteProps = {
+type DropSiteProps = {
   id: string;
   data: {
     day: string;
     site: string;
   };
+  children: ReactNode;
 };
 
-function Site({ id, data }: SiteProps) {
+function DropSite({ id, data, children }: DropSiteProps) {
   const { setNodeRef, isOver } = useDroppable({ id, data });
   return (
     <div
       ref={setNodeRef}
-      className={`h-[36rem] ${isOver ? "bg-base-200" : "bg-base-100"}`} // 24 * h-6 = 1.5rem
+      className={`relative ${HSITE} ${isOver ? "bg-base-200" : "bg-base-100"}`}
     >
-      &nbsp;
+      {children}
     </div>
   );
 }
