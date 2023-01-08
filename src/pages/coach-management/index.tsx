@@ -4,25 +4,25 @@ import { serverSideTranslations } from "next-i18next/serverSideTranslations";
 import nextI18nConfig from "@root/next-i18next.config.mjs";
 import { authOptions } from "../api/auth/[...nextauth]";
 import { unstable_getServerSession } from "next-auth/next";
-import { useTranslation } from "next-i18next";
-import { useSession } from "next-auth/react";
-import Link from "next/link.js";
-import Layout from "@root/src/components/layout";
+// import { useTranslation } from "next-i18next";
+// import { useSession } from "next-auth/react";
+// import Link from "next/link.js";
+// import Layout from "@root/src/components/layout";
 
-const PlanningManagement = () => {
-  const { data: sessionData } = useSession();
-  const { t } = useTranslation("planning");
-  if (sessionData?.user?.role === Role.MANAGER_COACH)
-    return (
-      <Layout>
-        <Link href={"/planning-management/coach"}>{t("coach")}</Link>
-        <Link href={"/planning-management/club"}>{t("club")}</Link>
-      </Layout>
-    );
+const CoachManagement = () => {
+  // const { data: sessionData } = useSession();
+  // const { t } = useTranslation("planning");
+  // if (sessionData?.user?.role === Role.MANAGER_COACH)
+  //   return (
+  //     <Layout>
+  //       <Link href={"/planning-management/coach"}>{t("coach")}</Link>
+  //       <Link href={"/planning-management/club"}>{t("club")}</Link>
+  //     </Layout>
+  //   );
   return <div>You are not allowed to use this page</div>;
 };
 
-export default PlanningManagement;
+export default CoachManagement;
 
 export const getServerSideProps = async ({
   locale,
@@ -32,10 +32,11 @@ export const getServerSideProps = async ({
   const session = await unstable_getServerSession(req, res, authOptions);
   let destination = "";
   if (session) {
-    if (session.user?.role === Role.COACH)
-      destination = `/planning-management/coach`;
-    if (session.user?.role === Role.MANAGER)
-      destination = `/planning-management/club`;
+    if (
+      session.user?.role === Role.MANAGER ||
+      session.user?.role === Role.MANAGER_COACH
+    )
+      destination = `/coach-management/club`;
   }
 
   return {
@@ -49,7 +50,7 @@ export const getServerSideProps = async ({
       session,
       ...(await serverSideTranslations(
         locale ?? "fr",
-        ["common", "planning"],
+        ["common"],
         nextI18nConfig
       )),
     },

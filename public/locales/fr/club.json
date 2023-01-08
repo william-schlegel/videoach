@@ -96,5 +96,11 @@
   "group-deleted": "Groupe d'activité supprimé",
   "activity-created": "Activité créée",
   "activity-updated": "Activité mise à jour",
-  "activity-deleted": "Activité supprimée"
+  "activity-deleted": "Activité supprimée",
+  "find-coach": "Trouver un coach",
+  "add-coach": "Ajouter un coach",
+  "select-club": "Sélectionner le club",
+  "coachs": "Liste des coachs",
+  "certifications": "Certifications",
+  "view-page": "Voir sa page de présentation"
 }

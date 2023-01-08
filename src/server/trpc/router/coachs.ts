@@ -18,9 +18,37 @@ export const coachRouter = router({
     return ctx.prisma.user.findUnique({
       where: { id: input },
       include: {
-        activityGroups: true,
-        certifications: true,
+        activityGroups: {
+          include: {
+            activities: true,
+          },
+        },
+        certifications: {
+          include: {
+            modules: true,
+            document: true,
+          },
+        },
         clubs: true,
+        page: {
+          include: {
+            sections: {
+              where: {
+                model: "HERO",
+              },
+              include: {
+                elements: {
+                  where: {
+                    elementType: "HERO_CONTENT",
+                  },
+                  select: {
+                    images: true,
+                  },
+                },
+              },
+            },
+          },
+        },
       },
     });
   }),
@@ -87,6 +115,14 @@ export const coachRouter = router({
       include: {
         certifications: true,
         page: true,
+      },
+    })
+  ),
+  getCoachsForClub: publicProcedure.input(z.string()).query(({ input, ctx }) =>
+    ctx.prisma.user.findMany({
+      where: {
+        role: { in: ["COACH", "MANAGER_COACH"] },
+        clubs: { some: { id: input } },
       },
     })
   ),

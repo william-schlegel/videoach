@@ -1,4 +1,5 @@
-import { type PropsWithoutRef } from "react";
+/* eslint-disable @next/next/no-img-element */
+import { useState, type PropsWithoutRef } from "react";
 import { useSession } from "next-auth/react";
 import { trpc } from "../../utils/trpc";
 import {
@@ -11,6 +12,9 @@ import SimpleForm from "@ui/simpleform";
 import Confirmation from "@ui/confirmation";
 import { useTranslation } from "next-i18next";
 import { toast } from "react-toastify";
+import Image from "next/image";
+import CollapsableGroup from "@ui/collapsableGroup";
+import Link from "next/link";
 
 type ClubFormValues = {
   name: string;
@@ -202,3 +206,112 @@ export const DeleteClub = ({ clubId }: PropsWithoutRef<PropsUpdateDelete>) => {
 };
 
 export default CreateClub;
+
+export const AddCoachToClub = ({ clubId }: { clubId: string }) => {
+  const queryCoachs = trpc.coachs.getAllCoachs.useQuery(undefined, {
+    onSuccess(data) {
+      if (coachId === "") setCoachId(data?.[0]?.id ?? "");
+    },
+  });
+  const addCoachToClub = trpc.clubs.updateClubCoach.useMutation();
+  const [coachId, setCoachId] = useState("");
+  const { t } = useTranslation("club");
+  const queryCoach = trpc.coachs.getCoachById.useQuery(coachId);
+  const photo = trpc.files.getDocumentUrlById.useQuery(
+    queryCoach.data?.page?.sections?.[0]?.elements?.[0]?.images?.[0]?.id ?? ""
+  );
+
+  const onSubmit = () => {
+    if (!coachId) return;
+    addCoachToClub.mutate({ id: clubId, coachId });
+  };
+
+  return (
+    <Modal
+      title={t("add-coach")}
+      handleSubmit={onSubmit}
+      submitButtonText="Enregistrer"
+      buttonIcon={<i className="bx bx-plus bx-sm" />}
+      variant={"Primary"}
+      className="w-11/12 max-w-3xl"
+    >
+      <h3>{t("find-coach")}</h3>
+      <select
+        className="w-full"
+        value={coachId}
+        onChange={(e) => setCoachId(e.target.value)}
+      >
+        {queryCoachs.data?.map((coach) => (
+          <option key={coach.id} value={coach.id}>
+            {coach.name}
+            {"   ("}
+            {coach.email}
+            {")"}
+          </option>
+        ))}
+      </select>
+      {queryCoach.data ? (
+        <div className="mt-4 grid grid-cols-[auto_1fr] gap-2">
+          {photo.data?.url ? (
+            <Image
+              src={photo.data.url}
+              width={300}
+              height={300}
+              alt=""
+              style={{ objectFit: "contain" }}
+              className="rounded-md shadow"
+            />
+          ) : (
+            <img
+              src={queryCoach.data?.image ?? ""}
+              width={300}
+              height={300}
+              alt=""
+              style={{ objectFit: "contain" }}
+              className="rounded-md shadow"
+            />
+          )}
+
+          <div>
+            <h4>{t("activities")}</h4>
+            <div className="flex flex-wrap gap-2">
+              {queryCoach.data.activityGroups.map((ag) => (
+                <span key={ag.id} className="pill">
+                  {ag.name}
+                </span>
+              ))}
+            </div>
+            <h4>{t("certifications")}</h4>
+            <div className="flex flex-wrap gap-2">
+              {queryCoach.data.certifications.map((ag) => (
+                <CollapsableGroup
+                  key={ag.id}
+                  groupName={ag.name}
+                  className="bg-base-100 normal-case"
+                >
+                  {ag.modules.map((mod) => (
+                    <span key={mod.id} className="pill pill-xs">
+                      {mod.name}
+                    </span>
+                  ))}
+                </CollapsableGroup>
+              ))}
+            </div>
+            {queryCoach.data.page?.id ? (
+              <Link
+                href={`/presentation-page/coach/${queryCoach.data.id}/${queryCoach.data.page.id}`}
+                target="_blank"
+                rel="noreferrer"
+              >
+                <button className="btn btn-primary mt-4 flex items-center gap-4">
+                  <span>{t("view-page")}</span>
+                  <i className="bx bx-link-external bx-xs" />
+                </button>
+              </Link>
+            ) : null}
+          </div>
+        </div>
+      ) : null}
+    </Modal>
+  );
+};
