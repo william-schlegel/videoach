@@ -18,6 +18,18 @@ export const DAYS = [
   { value: DayName.SUNDAY, label: "sunday" },
 ] as const;
 
+export function useDayName() {
+  const { t } = useTranslation("calendar");
+  function getLabel(value?: DayName | null) {
+    return DAYS.find((d) => d.value === value)?.label ?? "monday";
+  }
+
+  function getName(value?: DayName | null) {
+    return t(DAYS.find((d) => d.value === value)?.label ?? "monday");
+  }
+  return { getName, getLabel };
+}
+
 type WorkingHoursSchema = {
   opening: string;
   closing: string;

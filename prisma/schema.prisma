@@ -456,8 +456,8 @@ model PlanningActivity {
   planning   Planning @relation(fields: [planningId], references: [id], onDelete: Cascade)
   activityId String
   activity   Activity @relation(fields: [activityId], references: [id], onDelete: Cascade)
-  siteId     String?
-  site       Site?    @relation(fields: [siteId], references: [id])
+  siteId     String
+  site       Site     @relation(fields: [siteId], references: [id])
   roomId     String?
   room       Room?    @relation(fields: [roomId], references: [id])
   day        DayName

@@ -17,11 +17,11 @@ const planningActivityObject = z.object({
   planningId: z.string().cuid(),
   activityId: z.string().cuid(),
   siteId: z.string().cuid(),
-  roomId: z.string().cuid(),
+  roomId: z.string().cuid().optional(),
   day: z.nativeEnum(DayName),
   startTime: z.string(),
   duration: z.number(),
-  coachId: z.string().cuid(),
+  coachId: z.string().cuid().optional(),
 });
 
 export const planningRouter = router({
@@ -57,6 +57,22 @@ export const planningRouter = router({
         },
       })
     ),
+  getPlanningActivityById: protectedProcedure
+    .input(z.string().cuid().nullable())
+    .query(({ ctx, input }) => {
+      if (!input) return null;
+      return ctx.prisma.planningActivity.findUnique({
+        where: { id: input },
+        include: {
+          activity: true,
+          site: {
+            include: { rooms: true },
+          },
+          room: true,
+          coach: true,
+        },
+      });
+    }),
   createPlanningForClub: protectedProcedure
     .input(planningObject.omit({ id: true }))
     .mutation(({ ctx, input }) =>
@@ -115,5 +131,20 @@ export const planningRouter = router({
     .input(planningActivityObject.omit({ id: true }))
     .mutation(({ ctx, input }) =>
       ctx.prisma.planningActivity.create({ data: input })
+    ),
+  updatePlanningActivity: protectedProcedure
+    .input(planningActivityObject.partial())
+    .mutation(({ ctx, input }) =>
+      ctx.prisma.planningActivity.update({
+        where: { id: input.id },
+        data: input,
+      })
+    ),
+  deletePlanningActivity: protectedProcedure
+    .input(z.string())
+    .mutation(({ ctx, input }) =>
+      ctx.prisma.planningActivity.delete({
+        where: { id: input },
+      })
     ),
 });

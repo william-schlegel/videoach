@@ -17,7 +17,12 @@ import { serverSideTranslations } from "next-i18next/serverSideTranslations";
 import nextI18nConfig from "@root/next-i18next.config.mjs";
 import { trpc } from "@trpcclient/trpc";
 import { useTranslation } from "next-i18next";
-import type { ReactNode } from "react";
+import {
+  useEffect,
+  useMemo,
+  type ReactNode,
+  // , useEffect
+} from "react";
 import { useRef, useState } from "react";
 import Spinner from "@ui/spinner";
 import Layout from "@root/src/components/layout";
@@ -28,7 +33,7 @@ import {
 } from "@modals/managePlanning";
 import dayjs from "dayjs";
 import { formatDateLocalized } from "@lib/formatDate";
-import { DAYS } from "@modals/manageCalendar";
+import { DAYS, useDayName } from "@modals/manageCalendar";
 import {
   type DragEndEvent,
   PointerSensor,
@@ -37,7 +42,9 @@ import {
 } from "@dnd-kit/core";
 import { DndContext, useDraggable, useDroppable } from "@dnd-kit/core";
 import { CSS } from "@dnd-kit/utilities";
-import { useForm } from "react-hook-form";
+import { type SubmitHandler, useForm } from "react-hook-form";
+import Confirmation from "@ui/confirmation";
+// import { useHover } from "@lib/useHover";
 
 const HHOUR = "h-12"; // 3rem 48px
 const HHOUR_PX = 48;
@@ -72,7 +79,10 @@ function ClubPlanning({
           <select
             className="w-48 min-w-fit"
             value={clubId}
-            onChange={(e) => setClubId(e.target.value)}
+            onChange={(e) => {
+              setPlanningId("");
+              setClubId(e.target.value);
+            }}
           >
             {queryClubs.data?.map((club) => (
               <option key={club.id} value={club.id}>
@@ -86,7 +96,7 @@ function ClubPlanning({
         <aside className="flex min-w-fit max-w-xs flex-grow flex-col gap-2">
           <h4>{t("plannings")}</h4>
           <CreatePlanning clubId={clubId} />
-          <ul className="menu overflow-hidden rounded border border-secondary bg-base-100">
+          <ul className="menu rounded border border-secondary bg-base-100">
             {queryPlannings.data?.map((planning) => (
               <li key={planning.id}>
                 <div
@@ -119,6 +129,11 @@ function ClubPlanning({
 
 export default ClubPlanning;
 
+/**
+ * compose a planning name from name and dates
+ * @param {Planning} planning data
+ * @returns planning name component
+ */
 function PlanningName({ planning }: { planning: Planning }) {
   const { t } = useTranslation("planning");
   return (
@@ -165,6 +180,11 @@ type DropFormData = {
   coachId: string;
 };
 
+type PopupData = {
+  activityId: string | null;
+  rect: DOMRectList;
+};
+
 const PlanningContent = ({
   planningId,
   clubId,
@@ -196,34 +216,29 @@ const PlanningContent = ({
     })
   );
   const utils = trpc.useContext();
-  const {
-    register,
-    handleSubmit,
-    formState: { errors },
-    reset,
-  } = useForm<DropFormData>();
-  const queryCoachs = trpc.coachs.getCoachsForClub.useQuery(clubId);
   const addActivity = trpc.plannings.addPlanningActivity.useMutation({
     onSuccess() {
       utils.plannings.getPlanningById.invalidate(planningId);
     },
   });
+  const { getName } = useDayName();
+  const [popupData, setPopupData] = useState<PopupData | null>(null);
 
   function handleDragEnd(event: DragEndEvent) {
     const { active, over } = event;
 
-    const overDay = DAYS.find((d) => d.value === over?.data.current?.day);
-    const dayName = overDay?.label ? t(`calendar:${overDay.label}`) : "?";
-    const siteId = over?.data.current?.site;
+    if (!over) return;
+    const dayName = getName(over.data.current?.day);
+    const siteId = over.data.current?.site;
     const site = queryClub.data?.sites.find((s) => s.id === siteId);
     const siteName = site?.name ?? "?";
     const activityName =
       queryActivities.data?.activities.find((a) => a.id === active.id)?.name ??
       "?";
     const rooms = site?.rooms ?? [];
-    reset();
+    // reset();
     setDropData({
-      day: overDay?.value ?? "MONDAY",
+      day: over.data.current?.day ?? "MONDAY",
       dayName,
       siteName,
       activityName,
@@ -240,14 +255,31 @@ const PlanningContent = ({
       siteId: dropData.siteId,
       activityId: dropData.activityId,
       day: dropData.day,
-      ...data,
+      coachId: data.coachId ? data.coachId : undefined,
+      roomId: data.roomId ? data.roomId : undefined,
+      startTime: data.startTime,
+      duration: data.duration,
     });
     if (refModalDrop.current) refModalDrop.current.checked = false;
+  }
+
+  function handleActivityIsActivated(
+    activityId: string | null,
+    rect: DOMRectList
+  ) {
+    setPopupData({ activityId, rect });
   }
 
   if (queryPlanning.isLoading) return <Spinner />;
   return (
     <DndContext onDragEnd={handleDragEnd} sensors={sensors}>
+      {popupData ? (
+        <PopupActivityDetails
+          popupData={popupData}
+          onClose={() => setPopupData(null)}
+          clubId={clubId}
+        />
+      ) : null}
       {/* add activity modal */}
       <input
         type="checkbox"
@@ -256,84 +288,19 @@ const PlanningContent = ({
         ref={refModalDrop}
       />
       <div className="modal">
-        <form
-          onSubmit={handleSubmit(handleSaveActivity)}
-          className="modal-box relative"
-        >
+        <div className="modal-box relative">
           <label
             htmlFor="modal-drop"
             className="btn btn-secondary btn-sm btn-circle absolute right-2 top-2"
           >
             <i className="bx bx-x bx-sm" />
           </label>
-          <h3 className="text-lg font-bold">{t("new-course")}</h3>
-          <h2 className="flex items-center gap-4">
-            {t("day")}
-            <span className="text-secondary">{dropData.dayName}</span>
-          </h2>
-          <div className="flex items-center gap-4">
-            <label>{t("site")}</label>
-            <span>{dropData.siteName}</span>
-            <label>{t("activity")}</label>
-            <span>{dropData.activityName}</span>
-          </div>
-          <div className="grid grid-cols-[auto_1fr] gap-2">
-            <label className="required">{t("start-hour")}</label>
-            <div className="flex flex-col gap-2">
-              <input
-                type="time"
-                {...register("startTime", {
-                  required: t("start-hour-mandatory"),
-                })}
-                className="input-bordered input w-fit self-start"
-              />
-              {errors.startTime && (
-                <p className="text-sm text-error">{errors.startTime.message}</p>
-              )}
-            </div>
-            <label className="required">{t("duration")}</label>
-            <div className="flex flex-col gap-2">
-              <div className="form-control">
-                <div className="input-group">
-                  <input
-                    type="number"
-                    {...register("duration", {
-                      valueAsNumber: true,
-                      validate: (v) => Number(v) > 1,
-                      required: t("duration-mandatory"),
-                    })}
-                    className="input-bordered input w-full"
-                  />
-                  <span>{t("minutes")}</span>
-                </div>
-              </div>
-              {errors.duration && (
-                <p className="text-sm text-error">{errors.duration.message}</p>
-              )}
-            </div>
-            <label>{t("coach")}</label>
-            <select className="w-full" {...register("coachId")}>
-              {queryCoachs.data?.map((coach) => (
-                <option key={coach.id} value={coach.id}>
-                  {coach.name}
-                </option>
-              ))}
-            </select>
-            <label>{t("room")}</label>
-            <select className="w-full" {...register("roomId")}>
-              {dropData.rooms?.map((room) => (
-                <option key={room.id} value={room.id}>
-                  {room.name}
-                </option>
-              ))}
-            </select>
-          </div>
-          <div className="modal-action">
-            <label htmlFor="modal-drop">
-              <button className="btn btn-primary">{t("validation")}</button>
-            </label>
-          </div>
-        </form>
+          <FormActivity
+            clubId={clubId}
+            handleSaveActivity={handleSaveActivity}
+            {...dropData}
+          />
+        </div>
       </div>
       {/* planning content */}
       <article className="flex flex-grow flex-col gap-4">
@@ -369,7 +336,7 @@ const PlanningContent = ({
             <div>
               <div className="h-12"></div>
               <div>
-                <div className="flex w-10 shrink-0 flex-col overflow-y-auto border-r border-base-200 bg-base-100 text-center">
+                <div className="flex w-10 shrink-0 flex-col border-r border-base-200 bg-base-100 text-center">
                   {Array.from(
                     { length: NB_HOUR },
                     (_, k) => k + START_HOUR
@@ -401,7 +368,7 @@ const PlanningContent = ({
                     >
                       {queryClub.data?.sites.map((site) => (
                         <div key={site.id}>
-                          <div className="h-6 max-w-[8em] shrink-0 overflow-hidden text-ellipsis whitespace-nowrap bg-secondary px-2 text-center leading-6 text-secondary-content">
+                          <div className="h-6 w-[12rem] shrink-0 overflow-hidden text-ellipsis whitespace-nowrap bg-secondary px-2 text-center leading-6 text-secondary-content">
                             {site.name}
                           </div>
                           <DropSite
@@ -409,17 +376,16 @@ const PlanningContent = ({
                             id={`${day.value} ${site.id}`}
                             data={{ day: day.value, site: site.id }}
                           >
-                            {queryPlanning.data?.planningActivities
-                              .filter(
-                                (pa) =>
-                                  pa.day === day.value && pa.siteId === site.id
-                              )
-                              .map((activity) => (
-                                <PlanningActivity
-                                  key={activity.id}
-                                  planningActivity={activity}
-                                />
-                              ))}
+                            <PlanningActivities
+                              activities={
+                                queryPlanning.data?.planningActivities.filter(
+                                  (pa) =>
+                                    pa.day === day.value &&
+                                    pa.siteId === site.id
+                                ) ?? []
+                              }
+                              onActivatePopup={handleActivityIsActivated}
+                            />
                           </DropSite>
                         </div>
                       ))}
@@ -435,29 +401,182 @@ const PlanningContent = ({
   );
 };
 
-type PlanningActivityProps = {
-  planningActivity: PlanningActivity & {
-    site: Site | null;
-    room: Room | null;
-    activity: Activity;
-    coach: User | null;
-  };
+type PlanningActivityCompleted = PlanningActivity & {
+  site: Site | null;
+  room: Room | null;
+  activity: Activity;
+  coach: User | null;
 };
 
-function PlanningActivity({ planningActivity }: PlanningActivityProps) {
+type PlanningActivitiesProps = {
+  activities: PlanningActivityCompleted[];
+  onActivatePopup: (id: string | null, rect: DOMRectList) => void;
+};
+
+function PlanningActivities({
+  activities,
+  onActivatePopup,
+}: PlanningActivitiesProps) {
+  const HSlots =
+    useMemo(() => {
+      if (!activities) return [];
+      const hs = activities.map((activity) => ({
+        activity,
+        position: 0,
+        nbPosition: 1,
+      }));
+
+      for (let a = 0; a < hs.length; a++) {
+        const hmA = hs[a]?.activity.startTime.split(":") ?? ["0", "0"];
+        const startA = Number(hmA[0]) + Number(hmA[1]) / 60;
+        const durationA = (hs[a]?.activity.duration ?? 0) / 60;
+        for (let b = a + 1; b < hs.length; b++) {
+          const hmB = hs[b]?.activity.startTime.split(":") ?? ["0", "0"];
+          const startB = Number(hmB[0]) + Number(hmB[1]) / 60;
+          const durationB = (hs[b]?.activity.duration ?? 0) / 60;
+          if (
+            (startB >= startA && startB < startA + durationA) ||
+            (startB <= startA && startA < startB + durationB)
+          ) {
+            const elemB = hs[b];
+            const elemA = hs[a];
+            if (elemB && elemA) {
+              elemB.position += 1;
+              elemB.nbPosition += 1;
+              elemA.nbPosition += 1;
+            }
+          }
+        }
+      }
+      return hs;
+    }, [activities]) ?? [];
+
+  return (
+    <>
+      {HSlots.map((slot) => (
+        <PlanningActivity
+          key={slot.activity.id}
+          planningActivity={slot.activity}
+          onActivatePopup={onActivatePopup}
+          position={slot.position}
+          nbPosition={slot.nbPosition}
+        />
+      ))}
+    </>
+  );
+}
+
+type PlanningActivityProps = {
+  planningActivity: PlanningActivityCompleted;
+  onActivatePopup: (id: string | null, rect: DOMRectList) => void;
+  position: number;
+  nbPosition: number;
+};
+
+function PlanningActivity({
+  planningActivity,
+  onActivatePopup,
+  position,
+  nbPosition,
+}: PlanningActivityProps) {
   const hm = planningActivity.startTime.split(":");
   const top = HHOUR_PX * (Number(hm[0]) - START_HOUR + Number(hm[1]) / 60);
   const height = HHOUR_PX * (planningActivity.duration / 60);
+  const ref = useRef<HTMLButtonElement | null>(null);
+  const w = 100 / nbPosition;
+  return (
+    <button
+      className="absolute flex cursor-pointer items-center justify-center rounded border border-secondary bg-base-200 text-base-content"
+      style={{ top, height, width: `${w}%`, left: `${position * w}%` }}
+      onClick={(e) =>
+        onActivatePopup(planningActivity.id, e.currentTarget.getClientRects())
+      }
+      ref={ref}
+    >
+      <div className="pointer-events-none text-xs">
+        {planningActivity.activity.name} ({planningActivity.duration}
+        {"'"})
+      </div>
+    </button>
+  );
+}
+
+type PopupActivityDetailsProps = {
+  popupData: PopupData;
+  onClose: () => void;
+  clubId: string;
+};
+
+function PopupActivityDetails({
+  popupData,
+  onClose,
+  clubId,
+}: PopupActivityDetailsProps) {
+  const queryPlanning = trpc.plannings.getPlanningActivityById.useQuery(
+    popupData.activityId
+  );
+  const utils = trpc.useContext();
+  const updatePlanning = trpc.plannings.updatePlanningActivity.useMutation({
+    onSuccess(data) {
+      utils.plannings.getPlanningById.invalidate(data.planningId);
+    },
+  });
+  const deletePlanning = trpc.plannings.deletePlanningActivity.useMutation({
+    onSuccess(data) {
+      utils.plannings.getPlanningById.invalidate(data.planningId);
+    },
+  });
+  const { getName } = useDayName();
+  function handleSaveActivity(data: DropFormData) {
+    if (popupData.activityId)
+      updatePlanning.mutate({
+        id: popupData.activityId,
+        coachId: data.coachId ? data.coachId : undefined,
+        roomId: data.roomId ? data.roomId : undefined,
+        startTime: data.startTime,
+        duration: data.duration,
+      });
+    onClose();
+  }
+  function handleDelete() {
+    if (popupData.activityId) deletePlanning.mutate(popupData.activityId);
+    onClose();
+  }
 
   return (
     <div
-      className="absolute left-0 flex w-full items-center justify-center bg-secondary"
-      style={{ top, height }}
+      className="absolute z-20 mb-4 w-max min-w-fit rounded bg-base-200 p-2 shadow"
+      style={{
+        left: popupData.rect[0]?.left ?? 0,
+        top: (popupData.rect[0]?.bottom ?? 0) + 5,
+      }}
     >
-      <span className="text-sm">
-        {planningActivity.activity.name} ({planningActivity.duration}
-        {"'"})
-      </span>
+      <button
+        className="btn btn-secondary btn-sm btn-circle absolute right-1 top-1"
+        onClick={onClose}
+      >
+        <i className="bx bx-x bx-sm" />
+      </button>
+      {queryPlanning.isLoading ? (
+        <Spinner />
+      ) : (
+        <FormActivity
+          clubId={clubId}
+          activityName={queryPlanning.data?.activity.name ?? ""}
+          dayName={getName(queryPlanning.data?.day)}
+          handleSaveActivity={handleSaveActivity}
+          rooms={queryPlanning.data?.site?.rooms ?? []}
+          siteName={queryPlanning.data?.site?.name ?? ""}
+          handleDelete={handleDelete}
+          update
+          initialData={{
+            coachId: queryPlanning.data?.coachId ?? "",
+            roomId: queryPlanning.data?.roomId ?? "",
+            duration: queryPlanning.data?.duration ?? 0,
+            startTime: queryPlanning.data?.startTime ?? "",
+          }}
+        />
+      )}{" "}
     </div>
   );
 }
@@ -499,6 +618,131 @@ function DropSite({ id, data, children }: DropSiteProps) {
     >
       {children}
     </div>
+  );
+}
+
+type FormActivityProps = {
+  handleSaveActivity: SubmitHandler<DropFormData>;
+  handleDelete?: () => void;
+  clubId: string;
+  dayName: string;
+  siteName: string;
+  activityName: string;
+  rooms: Room[];
+  update?: boolean;
+  initialData?: DropFormData;
+};
+
+function FormActivity({
+  handleSaveActivity,
+  clubId,
+  dayName,
+  siteName,
+  activityName,
+  rooms,
+  update = false,
+  handleDelete,
+  initialData,
+}: FormActivityProps) {
+  const { t } = useTranslation("planning");
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+    reset,
+  } = useForm<DropFormData>();
+  const queryCoachs = trpc.coachs.getCoachsForClub.useQuery(clubId);
+
+  useEffect(() => {
+    reset(initialData);
+  }, [initialData, reset]);
+
+  return (
+    <form onSubmit={handleSubmit(handleSaveActivity)}>
+      <h3 className="text-lg font-bold">
+        {t(update ? "update-course" : "new-course")}
+      </h3>
+      <h2 className="flex items-center gap-4">
+        {t("day")}
+        <span className="text-secondary">{dayName}</span>
+      </h2>
+      <div className="flex items-center gap-4">
+        <label>{t("site")}</label>
+        <span>{siteName}</span>
+        <label>{t("activity")}</label>
+        <span>{activityName}</span>
+      </div>
+      <div className="grid grid-cols-[auto_1fr] gap-2">
+        <label className="required">{t("start-hour")}</label>
+        <div className="flex flex-col gap-2">
+          <input
+            type="time"
+            {...register("startTime", {
+              required: t("start-hour-mandatory"),
+            })}
+            className="input-bordered input w-fit self-start"
+          />
+          {errors.startTime && (
+            <p className="text-sm text-error">{errors.startTime.message}</p>
+          )}
+        </div>
+        <label className="required">{t("duration")}</label>
+        <div className="flex flex-col gap-2">
+          <div className="form-control">
+            <div className="input-group">
+              <input
+                type="number"
+                {...register("duration", {
+                  valueAsNumber: true,
+                  validate: (v) => Number(v) > 1,
+                  required: t("duration-mandatory"),
+                })}
+                className="input-bordered input w-full"
+              />
+              <span>{t("minutes")}</span>
+            </div>
+          </div>
+          {errors.duration && (
+            <p className="text-sm text-error">{errors.duration.message}</p>
+          )}
+        </div>
+        <label>{t("coach")}</label>
+        <select className="w-full" {...register("coachId")}>
+          {queryCoachs.data?.map((coach) => (
+            <option key={coach.id} value={coach.id}>
+              {coach.name}
+            </option>
+          ))}
+        </select>
+        <label>{t("room")}</label>
+        <select className="w-full" {...register("roomId")}>
+          {rooms?.map((room) => (
+            <option key={room.id} value={room.id}>
+              {room.name}
+            </option>
+          ))}
+        </select>
+      </div>
+      <div className="modal-action">
+        <label htmlFor="modal-drop">
+          {update ? (
+            <Confirmation
+              title={t("activity-deletion")}
+              message={t("activity-deletion-message")}
+              textConfirmation={t("activity-deletion-confirmation")}
+              onConfirm={() => {
+                if (typeof handleDelete === "function") handleDelete();
+              }}
+              variant="Icon-Outlined-Secondary"
+              buttonIcon={<i className="bx bx-trash bx-sm" />}
+            />
+          ) : null}
+          <button className="btn btn-primary ml-2">
+            {t(update ? "update" : "validation")}
+          </button>
+        </label>
+      </div>
+    </form>
   );
 }
 

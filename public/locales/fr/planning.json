@@ -31,5 +31,10 @@
   "start-hour-mandatory": "L'heure de début est obligatoire",
   "duration": "Durée",
   "duration-mandatory": "La durée est obligtoire",
-  "minutes": "Minutes"
+  "minutes": "Minutes",
+  "activity-deletion": "Suppression de l'activité",
+  "activity-deletion-message": "Supprimer cette activité ?",
+  "activity-deletion-confirmation": "Supprimer",
+  "update-course": "Mettre l'activité à jour",
+  "update": "Modifier"
 }
