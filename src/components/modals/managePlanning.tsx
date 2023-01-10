@@ -122,7 +122,7 @@ export const CreatePlanning = ({
           <>
             <label>{t("site")}</label>
             <select {...register("siteId")}>
-              {queryClub.data?.sites.map((site) => (
+              {queryClub.data?.sites?.map((site) => (
                 <option key={site.id} value={site.id}>
                   {site.name}
                 </option>
@@ -144,7 +144,7 @@ export const CreatePlanning = ({
                 <label>{t("room")}</label>
                 <select {...register("roomId")}>
                   {queryClub.data?.sites
-                    .find((s) => s.id === fields.siteId)
+                    ?.find((s) => s.id === fields.siteId)
                     ?.rooms.map((room) => (
                       <option key={room.id} value={room.id}>
                         {room.name}
