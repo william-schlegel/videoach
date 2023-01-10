@@ -15,6 +15,12 @@ import { serverSideTranslations } from "next-i18next/serverSideTranslations";
 import Link from "next/link";
 import superjson from "superjson";
 
+/**
+ *
+ *  Manager presentation on Videoach page
+ *
+ */
+
 function ManagerPage(
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   props: InferGetServerSidePropsType<typeof getServerSideProps>

@@ -134,7 +134,7 @@ export default ClubPlanning;
  * @param {Planning} planning data
  * @returns planning name component
  */
-function PlanningName({ planning }: { planning: Planning }) {
+export function PlanningName({ planning }: { planning: Planning }) {
   const { t } = useTranslation("planning");
   return (
     <div className="flex w-full items-center justify-between gap-2">
@@ -230,7 +230,7 @@ const PlanningContent = ({
     if (!over) return;
     const dayName = getName(over.data.current?.day);
     const siteId = over.data.current?.site;
-    const site = queryClub.data?.sites.find((s) => s.id === siteId);
+    const site = queryClub.data?.sites?.find((s) => s.id === siteId);
     const siteName = site?.name ?? "?";
     const activityName =
       queryActivities.data?.activities.find((a) => a.id === active.id)?.name ??
@@ -291,7 +291,7 @@ const PlanningContent = ({
         <div className="modal-box relative">
           <label
             htmlFor="modal-drop"
-            className="btn btn-secondary btn-sm btn-circle absolute right-2 top-2"
+            className="btn-secondary btn-sm btn-circle btn absolute right-2 top-2"
           >
             <i className="bx bx-x bx-sm" />
           </label>
@@ -362,11 +362,11 @@ const PlanningContent = ({
                       className={`grid gap-[1px]`}
                       style={{
                         gridTemplateColumns: `repeat(${
-                          queryClub.data?.sites.length ?? 1
+                          queryClub.data?.sites?.length ?? 1
                         }, minmax(0, 1fr)`,
                       }}
                     >
-                      {queryClub.data?.sites.map((site) => (
+                      {queryClub.data?.sites?.map((site) => (
                         <div key={site.id}>
                           <div className="h-6 w-[12rem] shrink-0 overflow-hidden text-ellipsis whitespace-nowrap bg-secondary px-2 text-center leading-6 text-secondary-content">
                             {site.name}
@@ -552,7 +552,7 @@ function PopupActivityDetails({
       }}
     >
       <button
-        className="btn btn-secondary btn-sm btn-circle absolute right-1 top-1"
+        className="btn-secondary btn-sm btn-circle btn absolute right-1 top-1"
         onClick={onClose}
       >
         <i className="bx bx-x bx-sm" />
@@ -737,7 +737,7 @@ function FormActivity({
               buttonIcon={<i className="bx bx-trash bx-sm" />}
             />
           ) : null}
-          <button className="btn btn-primary ml-2">
+          <button className="btn-primary btn ml-2">
             {t(update ? "update" : "validation")}
           </button>
         </label>

@@ -24,5 +24,6 @@
   "subscriptions": "Abonnements",
   "kpi": "KPI",
   "rating": "Note",
-  "schedule": "Rendez-vous"
+  "schedule": "Rendez-vous",
+  "no-planning": "Pas d'activités aujourd'hui"
 }

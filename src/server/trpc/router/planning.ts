@@ -1,6 +1,6 @@
 import { DayName } from "@prisma/client";
 import { z } from "zod";
-import { router, protectedProcedure } from "../trpc";
+import { router, protectedProcedure, publicProcedure } from "../trpc";
 
 const planningObject = z.object({
   id: z.string().cuid(),
@@ -147,4 +147,39 @@ export const planningRouter = router({
         where: { id: input },
       })
     ),
+  getClubDailyPlanning: publicProcedure
+    .input(
+      z.object({
+        clubId: z.string().cuid(),
+        day: z.nativeEnum(DayName),
+      })
+    )
+    .query(async ({ ctx, input }) => {
+      const planning = await ctx.prisma.planning.findFirst({
+        where: {
+          clubId: input.clubId,
+          startDate: {
+            lte: new Date(Date.now()),
+          },
+          planningActivities: {
+            some: {
+              day: input.day,
+            },
+          },
+        },
+        include: {
+          club: true,
+          planningActivities: {
+            include: {
+              activity: true,
+              coach: true,
+              room: true,
+              site: true,
+            },
+          },
+        },
+      });
+      // TODO: manage exception days
+      return planning;
+    }),
 });
