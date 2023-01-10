@@ -24,9 +24,12 @@ function CoachManagementForClub({
       if (clubId === "") setClubId(data[0]?.id ?? "");
     },
   });
-  const queryCoachs = trpc.coachs.getCoachsForClub.useQuery(clubId);
+  const queryCoachs = trpc.coachs.getCoachsForClub.useQuery(clubId, {
+    onSuccess(data) {
+      if (coachId === "") setCoachId(data[0]?.id ?? "");
+    },
+  });
   const queryCoach = trpc.coachs.getCoachById.useQuery(coachId);
-  const photo = queryCoach.data?.imageUrl ?? null;
 
   return (
     <Layout className="container mx-auto my-2 flex flex-col gap-2">
@@ -68,8 +71,7 @@ function CoachManagementForClub({
         </aside>
         {queryCoach.data ? (
           <CoachDataPresentation
-            url={photo}
-            image={queryCoach.data.image ?? "/images/dummy.jpg"}
+            url={queryCoach.data.imageUrl}
             activityGroups={
               queryCoach.data.activityGroups?.map((ag) => ({
                 id: ag.id,

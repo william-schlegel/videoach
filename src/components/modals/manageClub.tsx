@@ -343,7 +343,7 @@ function ClubForm({ onSubmit, onCancel, update, initialData }: ClubFormProps) {
       </div>
       <div className="col-span-2 flex items-center justify-end gap-2">
         <button
-          className="btn-outline btn btn-secondary"
+          className="btn-outline btn-secondary btn"
           onClick={(e) => {
             e.preventDefault();
             onCancel();
@@ -351,7 +351,7 @@ function ClubForm({ onSubmit, onCancel, update, initialData }: ClubFormProps) {
         >
           {t("common:cancel")}
         </button>
-        <button className="btn btn-primary" type="submit">
+        <button className="btn-primary btn" type="submit">
           {t("common:save")}
         </button>
       </div>
@@ -400,7 +400,6 @@ export const AddCoachToClub = ({ clubId }: { clubId: string }) => {
   const [coachId, setCoachId] = useState("");
   const { t } = useTranslation("club");
   const queryCoach = trpc.coachs.getCoachById.useQuery(coachId);
-  const photo = queryCoach.data?.imageUrl ?? null;
 
   const onSubmit = () => {
     if (!coachId) return;
@@ -433,8 +432,7 @@ export const AddCoachToClub = ({ clubId }: { clubId: string }) => {
       {queryCoach.data ? (
         <div className="mt-4 grid grid-cols-[auto_1fr] gap-2">
           <CoachDataPresentation
-            url={photo}
-            image={queryCoach.data.image ?? "/images/dummy.jpg"}
+            url={queryCoach.data.imageUrl}
             activityGroups={
               queryCoach.data.activityGroups?.map((ag) => ({
                 id: ag.id,
@@ -467,8 +465,7 @@ type IdName = {
 };
 
 type CoachDataPresentationProps = {
-  url: string | null;
-  image: string;
+  url: string;
   activityGroups: IdName[];
   certifications: { id: string; name: string; modules: IdName[] }[];
   rating: number;
@@ -478,7 +475,6 @@ type CoachDataPresentationProps = {
 
 export function CoachDataPresentation({
   url,
-  image,
   activityGroups,
   certifications,
   rating,
@@ -488,25 +484,14 @@ export function CoachDataPresentation({
   const { t } = useTranslation("club");
   return (
     <>
-      {url ? (
-        <Image
-          src={url}
-          width={300}
-          height={300}
-          alt=""
-          style={{ objectFit: "contain" }}
-          className="rounded-md shadow"
-        />
-      ) : (
-        <img
-          src={image}
-          width={300}
-          height={300}
-          alt=""
-          style={{ objectFit: "contain" }}
-          className="rounded-md shadow"
-        />
-      )}
+      <Image
+        src={url}
+        width={300}
+        height={300}
+        alt=""
+        style={{ objectFit: "contain" }}
+        className="rounded-md shadow"
+      />
 
       <div className="flex flex-col gap-2">
         <label>{t("activities")}</label>
@@ -543,7 +528,7 @@ export function CoachDataPresentation({
             target="_blank"
             rel="noreferrer"
           >
-            <button className="btn btn-primary flex items-center gap-4">
+            <button className="btn-primary btn flex items-center gap-4">
               <span>{t("view-page")}</span>
               <i className="bx bx-link-external bx-xs" />
             </button>

@@ -51,12 +51,12 @@ export const coachRouter = router({
         },
       });
       const imgData = imageData?.sections[0]?.elements[0]?.images[0];
-      let imageUrl = coach?.image ?? "/images/dummy.jpg";
+      let imageUrl = coach?.image;
       if (imgData) {
         console.log("imgData :>> ", imgData);
         imageUrl = await getDocUrl(imgData.userId, imgData.id);
       }
-      return { ...coach, imageUrl };
+      return { ...coach, imageUrl: imageUrl ?? "/images/dummy.jpg" };
     }),
   createCertification: protectedProcedure
     .input(CertificationData.omit({ id: true }))
