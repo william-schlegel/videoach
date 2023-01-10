@@ -25,11 +25,14 @@ function CoachManagementForClub({
     },
   });
   const queryCoachs = trpc.coachs.getCoachsForClub.useQuery(clubId, {
+    enabled: clubId !== "",
     onSuccess(data) {
       if (coachId === "") setCoachId(data[0]?.id ?? "");
     },
   });
-  const queryCoach = trpc.coachs.getCoachById.useQuery(coachId);
+  const queryCoach = trpc.coachs.getCoachById.useQuery(coachId, {
+    enabled: coachId !== "",
+  });
 
   return (
     <Layout className="container mx-auto my-2 flex flex-col gap-2">

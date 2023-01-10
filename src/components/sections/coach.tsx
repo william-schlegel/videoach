@@ -379,7 +379,8 @@ export const CoachDisplay = ({ pageId }: CoachDisplayProps) => {
     .find((s) => s.model === "HERO")
     ?.elements.find((e) => e.elementType === "HERO_CONTENT");
   const queryImage = trpc.files.getDocumentUrlById.useQuery(
-    hero?.images?.[0]?.id ?? ""
+    hero?.images?.[0]?.id ?? "",
+    { enabled: hero?.images?.[0]?.id !== undefined }
   );
 
   if (queryPage.isLoading) return <Spinner />;

@@ -129,7 +129,7 @@ export const UpdatePricing = ({
   const { t } = useTranslation("admin");
   const utils = trpc.useContext();
   const [options, setOptions] = useState<string[]>([]);
-  const queryPricing = trpc.pricings.getPricingById.useQuery(pricingId ?? "", {
+  const queryPricing = trpc.pricings.getPricingById.useQuery(pricingId, {
     onSuccess: (data) => {
       reset({
         title: data?.title,

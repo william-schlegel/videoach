@@ -16,7 +16,7 @@ const CertificationData = z.object({
 
 export const coachRouter = router({
   getCoachById: protectedProcedure
-    .input(z.string())
+    .input(z.string().cuid())
     .query(async ({ ctx, input }) => {
       const coach = await ctx.prisma.user.findUnique({
         where: { id: input },
@@ -124,14 +124,16 @@ export const coachRouter = router({
       },
     })
   ),
-  getCoachsForClub: publicProcedure.input(z.string()).query(({ input, ctx }) =>
-    ctx.prisma.user.findMany({
-      where: {
-        role: { in: ["COACH", "MANAGER_COACH"] },
-        clubs: { some: { id: input } },
-      },
-    })
-  ),
+  getCoachsForClub: publicProcedure
+    .input(z.string().cuid())
+    .query(({ input, ctx }) =>
+      ctx.prisma.user.findMany({
+        where: {
+          role: { in: ["COACH", "MANAGER_COACH"] },
+          clubs: { some: { id: input } },
+        },
+      })
+    ),
 
   getCertificationsForCoach: protectedProcedure
     .input(z.string())

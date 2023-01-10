@@ -414,7 +414,8 @@ export const HeroDisplay = ({ clubId, pageId }: HeroDisplayProps) => {
     (e) => e.elementType === "HERO_CONTENT"
   );
   const queryImage = trpc.files.getDocumentUrlById.useQuery(
-    heroContent?.images?.[0]?.id ?? ""
+    heroContent?.images?.[0]?.id ?? "",
+    { enabled: heroContent?.images?.[0]?.id !== undefined }
   );
   const cta = querySection.data?.elements.find((e) => e.elementType === "CTA");
 

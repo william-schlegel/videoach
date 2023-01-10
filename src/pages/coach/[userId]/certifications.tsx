@@ -39,6 +39,7 @@ const ManageCertifications = ({
 
   const { t } = useTranslation("coach");
   trpc.files.getDocumentUrlById.useQuery(docId, {
+    enabled: docId !== "",
     onSuccess(data) {
       if (data.url)
         if (data.fileType === "application/pdf") {

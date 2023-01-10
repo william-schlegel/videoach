@@ -15,12 +15,14 @@ const PricingObject = z.object({
 });
 
 export const pricingRouter = router({
-  getPricingById: publicProcedure.input(z.string()).query(({ ctx, input }) => {
-    return ctx.prisma.pricing.findUnique({
-      where: { id: input },
-      include: { options: true },
-    });
-  }),
+  getPricingById: publicProcedure
+    .input(z.string().cuid())
+    .query(({ ctx, input }) => {
+      return ctx.prisma.pricing.findUnique({
+        where: { id: input },
+        include: { options: true },
+      });
+    }),
   getPricingForRole: publicProcedure
     .input(z.nativeEnum(Role))
     .query(({ ctx, input }) => {

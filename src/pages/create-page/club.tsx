@@ -35,6 +35,7 @@ function ClubPage({
     },
   });
   const queryPages = trpc.pages.getPagesForClub.useQuery(clubId, {
+    enabled: clubId !== "",
     onSuccess(data) {
       if (pageId === "") setPageId(data?.[0]?.id ?? "");
     },

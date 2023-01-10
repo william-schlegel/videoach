@@ -65,6 +65,7 @@ function ClubPlanning({
     },
   });
   const queryPlannings = trpc.plannings.getPlanningsForClub.useQuery(clubId, {
+    enabled: clubId !== "",
     onSuccess(data) {
       if (planningId === "") setPlanningId(data[0]?.id ?? "");
     },
@@ -513,7 +514,8 @@ function PopupActivityDetails({
   clubId,
 }: PopupActivityDetailsProps) {
   const queryPlanning = trpc.plannings.getPlanningActivityById.useQuery(
-    popupData.activityId
+    popupData.activityId,
+    { enabled: popupData.activityId !== "" && popupData.activityId !== null }
   );
   const utils = trpc.useContext();
   const updatePlanning = trpc.plannings.updatePlanningActivity.useMutation({

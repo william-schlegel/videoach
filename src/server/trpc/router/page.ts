@@ -54,7 +54,7 @@ export const pageRouter = router({
       });
     }),
   getPagesForClub: protectedProcedure
-    .input(z.string())
+    .input(z.string().cuid())
     .query(({ ctx, input }) =>
       ctx.prisma.page.findMany({
         where: { clubId: input },
@@ -92,20 +92,22 @@ export const pageRouter = router({
         },
       });
     }),
-  getPageById: protectedProcedure.input(z.string()).query(({ ctx, input }) =>
-    ctx.prisma.page.findUnique({
-      where: { id: input },
-      include: {
-        sections: {
-          include: {
-            elements: {
-              include: { images: true },
+  getPageById: protectedProcedure
+    .input(z.string().cuid())
+    .query(({ ctx, input }) =>
+      ctx.prisma.page.findUnique({
+        where: { id: input },
+        include: {
+          sections: {
+            include: {
+              elements: {
+                include: { images: true },
+              },
             },
           },
         },
-      },
-    })
-  ),
+      })
+    ),
   getPageSection: publicProcedure
     .input(
       z.object({

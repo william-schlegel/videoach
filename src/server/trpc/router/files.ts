@@ -94,7 +94,7 @@ export const fileRouter = router({
       return { ...presigned, documentId: document.id };
     }),
   getDocumentUrlById: publicProcedure
-    .input(z.string())
+    .input(z.string().cuid())
     .query(async ({ ctx, input }) => {
       if (!input) return { url: "", fileype: "" };
       const document = await ctx.prisma.userDocument.findUnique({

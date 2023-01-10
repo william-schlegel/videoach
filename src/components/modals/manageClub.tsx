@@ -343,7 +343,7 @@ function ClubForm({ onSubmit, onCancel, update, initialData }: ClubFormProps) {
       </div>
       <div className="col-span-2 flex items-center justify-end gap-2">
         <button
-          className="btn-outline btn-secondary btn"
+          className="btn-outline btn btn-secondary"
           onClick={(e) => {
             e.preventDefault();
             onCancel();
@@ -351,7 +351,7 @@ function ClubForm({ onSubmit, onCancel, update, initialData }: ClubFormProps) {
         >
           {t("common:cancel")}
         </button>
-        <button className="btn-primary btn" type="submit">
+        <button className="btn btn-primary" type="submit">
           {t("common:save")}
         </button>
       </div>
@@ -399,7 +399,9 @@ export const AddCoachToClub = ({ clubId }: { clubId: string }) => {
   const addCoachToClub = trpc.clubs.updateClubCoach.useMutation();
   const [coachId, setCoachId] = useState("");
   const { t } = useTranslation("club");
-  const queryCoach = trpc.coachs.getCoachById.useQuery(coachId);
+  const queryCoach = trpc.coachs.getCoachById.useQuery(coachId, {
+    enabled: coachId !== "",
+  });
 
   const onSubmit = () => {
     if (!coachId) return;
@@ -528,7 +530,7 @@ export function CoachDataPresentation({
             target="_blank"
             rel="noreferrer"
           >
-            <button className="btn-primary btn flex items-center gap-4">
+            <button className="btn btn-primary flex items-center gap-4">
               <span>{t("view-page")}</span>
               <i className="bx bx-link-external bx-xs" />
             </button>

@@ -51,6 +51,7 @@ export default function Profile() {
   const [theme] = useLocalStorage<TThemes>("theme", "cupcake");
   const myUserId = (Array.isArray(userId) ? userId[0] : userId) || "";
   const userQuery = trpc.users.getUserById.useQuery(myUserId, {
+    enabled: myUserId !== "",
     onSuccess: (data) => {
       reset({
         name: data?.name || "",
@@ -263,7 +264,7 @@ export default function Profile() {
           <div>&nbsp;</div>
         )}
         <button
-          className="btn btn-primary col-span-2 w-fit"
+          className="btn-primary btn col-span-2 w-fit"
           disabled={updateUser.isLoading}
         >
           {t("save-profile")}
