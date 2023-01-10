@@ -1,5 +1,8 @@
 {
   "club": "Club",
+  "cancel": "Annuler",
+  "save": "Enregistrer",
+  "continue": "Continuer",
   "navigation": {
     "dashboard": "Mon tableau de bord",
     "find-club": "Trouver un club",

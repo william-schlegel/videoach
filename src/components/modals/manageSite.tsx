@@ -56,7 +56,6 @@ export const CreateSite = ({ clubId }: CreateSiteProps) => {
     <Modal
       title={t("create-site")}
       handleSubmit={handleSubmit(onSubmit, onError)}
-      submitButtonText="Enregistrer"
       errors={errors}
       buttonIcon={<i className="bx bx-plus bx-xs" />}
       onOpenModal={() => reset()}

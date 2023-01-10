@@ -22,6 +22,33 @@ const s3 = new S3Client({
 const Bucket = "videoach-dev";
 //process.env.NODE_ENV === "production" ? "videoach-prod" : "videoach-dev";
 
+export async function createPost(
+  key: string,
+  fileType: string,
+  maxSize: number = 1024 * 1024
+) {
+  return await createPresignedPost(s3, {
+    Bucket,
+    Key: key,
+    Conditions: [
+      // ["starts-with", "$Content-Type", "image/"],
+      ["eq", "$Content-Type", fileType],
+      ["content-length-range", 0, maxSize],
+    ],
+    Expires: 600,
+  });
+}
+
+export async function getDocUrl(userId: string, documentId: string) {
+  return await getSignedUrl(
+    s3,
+    new GetObjectCommand({
+      Bucket,
+      Key: `${userId}/${documentId}`,
+    })
+  );
+}
+
 interface DocMetadata extends UserDocument {
   url: string;
 }
@@ -59,16 +86,11 @@ export const fileRouter = router({
           fileName: input.fileName,
         },
       });
-      const presigned = await createPresignedPost(s3, {
-        Bucket,
-        Key: `${userId}/${document.id}`,
-        Conditions: [
-          // ["starts-with", "$Content-Type", "image/"],
-          ["eq", "$Content-Type", input.fileType],
-          ["content-length-range", 0, input.maxSize],
-        ],
-        Expires: 600,
-      });
+      const presigned = await createPost(
+        `${userId}/${document.id}`,
+        input.fileType,
+        input.maxSize
+      );
       return { ...presigned, documentId: document.id };
     }),
   getDocumentUrlById: publicProcedure
@@ -85,13 +107,7 @@ export const fileRouter = router({
           code: "NOT_FOUND",
           message: "This document does not exist",
         });
-      const url = await getSignedUrl(
-        s3,
-        new GetObjectCommand({
-          Bucket,
-          Key: `${document.userId}/${document.id}`,
-        })
-      );
+      const url = await getDocUrl(document.userId, document.id);
       return { url, fileType: document.fileType };
     }),
   getDocumentsForUser: protectedProcedure
@@ -120,13 +136,7 @@ export const fileRouter = router({
       const extendedDocuments: DocMetadata[] = await Promise.all(
         documents.map(async (doc) => ({
           ...doc,
-          url: await getSignedUrl(
-            s3,
-            new GetObjectCommand({
-              Bucket,
-              Key: `${input.userId}/${doc.id}`,
-            })
-          ),
+          url: await getDocUrl(input.userId, doc.id),
         }))
       );
       return extendedDocuments;

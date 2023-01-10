@@ -30,6 +30,7 @@ import {
 } from "@dnd-kit/core";
 import CollapsableGroup from "@ui/collapsableGroup";
 import Layout from "@root/src/components/layout";
+import Image from "next/image";
 
 const ManageClubs = ({
   userId,
@@ -137,10 +138,6 @@ export function ClubContent({ userId, clubId }: ClubContentProps) {
   }
 
   function handledeleteActivity(roomId: string, activityId: string) {
-    console.log("remove activity { activityId, roomId }", {
-      activityId,
-      roomId,
-    });
     removeActivity.mutate({ activityId, roomId });
   }
 
@@ -149,6 +146,17 @@ export function ClubContent({ userId, clubId }: ClubContentProps) {
     <div className="flex w-full flex-col gap-4">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
+          {clubQuery.data?.logoUrl ? (
+            <div className="h-12">
+              <Image
+                src={clubQuery.data.logoUrl}
+                alt="club logo"
+                width={200}
+                height={200}
+                className="h-full w-fit object-contain"
+              />
+            </div>
+          ) : null}
           <h2>{clubQuery.data?.name}</h2>
           <p>({clubQuery.data?.address})</p>
         </div>
@@ -194,7 +202,7 @@ export function ClubContent({ userId, clubId }: ClubContentProps) {
             <div className="mb-4 flex flex-row items-center justify-between gap-4">
               <h3>
                 {t("activity", {
-                  count: clubQuery?.data?.activities.length ?? 0,
+                  count: clubQuery?.data?.activities?.length ?? 0,
                 })}
               </h3>
               <AddActivity
@@ -227,7 +235,10 @@ export function ClubContent({ userId, clubId }: ClubContentProps) {
           </div>
         </div>
         <div className="flex flex-col gap-2 rounded border border-primary p-4">
-          <h3>{t("manage-club-activities")}</h3>
+          <div className="flex items-center gap-4">
+            <h3>{t("manage-club-activities")}</h3>
+            <p>{t("manage-club-activities-help")}</p>
+          </div>
           <div className="flex flex-col gap-2">
             {clubQuery.data?.sites?.map((site) => (
               <div

@@ -1,3 +1,4 @@
+import { useTranslation } from "next-i18next";
 import { type ReactNode } from "react";
 import { type ButtonSize } from "./buttonIcon";
 import Modal, { type TModalVariant } from "./modal";
@@ -17,7 +18,7 @@ type Props = {
 function Confirmation({
   title,
   message,
-  textConfirmation = "Continuer",
+  textConfirmation,
   textCancel,
   onConfirm,
   onCancel,
@@ -25,12 +26,13 @@ function Confirmation({
   variant = "Secondary",
   buttonSize = "md",
 }: Props) {
+  const { t } = useTranslation("common");
   return (
     <Modal
       title={title}
       handleSubmit={onConfirm}
       handleCancel={onCancel}
-      submitButtonText={textConfirmation}
+      submitButtonText={textConfirmation ?? t("continue")}
       cancelButtonText={textCancel}
       buttonIcon={buttonIcon}
       variant={variant}

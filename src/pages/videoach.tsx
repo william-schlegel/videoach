@@ -17,6 +17,7 @@ import hslToHex from "@lib/hslToHex";
 import turfCircle from "@turf/circle";
 import useLocalStorage from "@lib/useLocalstorage";
 import { type TThemes } from "@root/src/components/themeSelector";
+import { LATITUDE, LONGITUDE } from "@lib/defaultValues.js";
 
 // type ClubSearchResult = {
 //   name: string;
@@ -41,8 +42,8 @@ const Home = () => {
   const coachSearch = trpc.coachs.getAllCoachs.useQuery();
   const [myAddress, setMyAddress] = useState<AddressData>({
     address: "",
-    lat: 48.8583701,
-    lng: 2.2944813,
+    lat: LATITUDE,
+    lng: LONGITUDE,
   });
   const [range, setRange] = useState(10);
   const [theme] = useLocalStorage<TThemes>("theme", "cupcake");
@@ -57,7 +58,7 @@ const Home = () => {
     return Array.from(set).sort((a, b) => a.localeCompare(b));
   }
   const circle = useMemo(() => {
-    const center = [myAddress.lng ?? 2.2944813, myAddress.lat ?? 48.8583701];
+    const center = [myAddress.lng ?? LONGITUDE, myAddress.lat ?? LATITUDE];
     const c = turfCircle(center, range ?? 10, {
       steps: 64,
       units: "kilometers",
@@ -83,19 +84,19 @@ const Home = () => {
             <p className="py-6">{t("hero-text")}</p>
             <div className="flex flex-wrap gap-2">
               <button
-                className="btn-accent btn"
+                className="btn btn-accent"
                 onClick={() => router.push("#find-club")}
               >
                 {t("btn-visitor")}
               </button>
               <button
-                className="btn-primary btn"
+                className="btn btn-primary"
                 onClick={() => router.push("/manager")}
               >
                 {t("btn-manager")}
               </button>
               <button
-                className="btn-secondary btn"
+                className="btn btn-secondary"
                 onClick={() => router.push("/coach")}
               >
                 {t("btn-coach")}
@@ -129,7 +130,7 @@ const Home = () => {
                   <span>Km</span>
                 </div>
               </div>
-              <button className="btn-primary btn flex items-center gap-4">
+              <button className="btn btn-primary flex items-center gap-4">
                 {t("search-club")}
                 <i className="bx bx-search bx-xs" />
               </button>
@@ -245,7 +246,7 @@ const Home = () => {
                   <span>Km</span>
                 </div>
               </div>
-              <button className="btn-primary btn flex items-center gap-4">
+              <button className="btn btn-primary flex items-center gap-4">
                 {t("search-coach")}
                 <i className="bx bx-search bx-xs" />
               </button>

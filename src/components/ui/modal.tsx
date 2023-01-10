@@ -1,4 +1,5 @@
-import { type ReactNode, useRef, useId } from "react";
+import { useTranslation } from "next-i18next";
+import { type ReactNode, useRef, useId, useEffect } from "react";
 import { type FieldErrors } from "react-hook-form";
 import { type ButtonSize, type TIconButtonVariant } from "./buttonIcon";
 
@@ -22,14 +23,15 @@ type Props = {
   variant?: TModalVariant;
   className?: string;
   buttonSize?: ButtonSize;
+  closeModal?: boolean;
 };
 
 export default function Modal({
   title,
   handleSubmit,
   children,
-  submitButtonText = "Enregistrer",
-  cancelButtonText = "Annuler",
+  submitButtonText,
+  cancelButtonText,
   handleCancel,
   errors,
   buttonIcon,
@@ -37,14 +39,19 @@ export default function Modal({
   variant = "Primary",
   className = "",
   buttonSize = "md",
+  closeModal,
 }: Props) {
   const closeRef = useRef<HTMLInputElement>(null);
   const modalId = useId();
-
+  const { t } = useTranslation("common");
   const close = () => {
     if (!closeRef.current) return;
     closeRef.current.checked = false;
   };
+
+  useEffect(() => {
+    if (closeModal) close();
+  }, [closeModal]);
 
   const handleClickSubmit = () => {
     if (typeof errors === "object" && Object.keys(errors).length > 0) return;
@@ -102,7 +109,7 @@ export default function Modal({
           </label>
           {children}
           <div className="modal-action">
-            {cancelButtonText ? (
+            {cancelButtonText !== "" ? (
               <button
                 className="btn-outline btn btn-secondary"
                 onClick={(e) => {
@@ -111,7 +118,7 @@ export default function Modal({
                   close();
                 }}
               >
-                {cancelButtonText}
+                {cancelButtonText ?? t("cancel")}
               </button>
             ) : null}
             {typeof handleSubmit === "function" ? (
@@ -122,7 +129,7 @@ export default function Modal({
                   handleClickSubmit();
                 }}
               >
-                {submitButtonText}
+                {submitButtonText ?? t("save")}
               </button>
             ) : null}
           </div>

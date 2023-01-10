@@ -26,9 +26,7 @@ function CoachManagementForClub({
   });
   const queryCoachs = trpc.coachs.getCoachsForClub.useQuery(clubId);
   const queryCoach = trpc.coachs.getCoachById.useQuery(coachId);
-  const photo = trpc.files.getDocumentUrlById.useQuery(
-    queryCoach.data?.page?.sections?.[0]?.elements?.[0]?.images?.[0]?.id ?? ""
-  );
+  const photo = queryCoach.data?.imageUrl ?? null;
 
   return (
     <Layout className="container mx-auto my-2 flex flex-col gap-2">
@@ -70,22 +68,26 @@ function CoachManagementForClub({
         </aside>
         {queryCoach.data ? (
           <CoachDataPresentation
-            url={photo.data?.url ?? null}
+            url={photo}
             image={queryCoach.data.image ?? "/images/dummy.jpg"}
-            activityGroups={queryCoach.data.activityGroups.map((ag) => ({
-              id: ag.id,
-              name: ag.name,
-            }))}
-            certifications={queryCoach.data.certifications.map((cert) => ({
-              id: cert.id,
-              name: cert.name,
-              modules: cert.modules.map((mod) => ({
-                id: mod.id,
-                name: mod.name,
-              })),
-            }))}
-            rating={queryCoach.data.rating}
-            id={queryCoach.data.id}
+            activityGroups={
+              queryCoach.data.activityGroups?.map((ag) => ({
+                id: ag.id,
+                name: ag.name,
+              })) ?? []
+            }
+            certifications={
+              queryCoach.data.certifications?.map((cert) => ({
+                id: cert.id,
+                name: cert.name,
+                modules: cert.modules.map((mod) => ({
+                  id: mod.id,
+                  name: mod.name,
+                })),
+              })) ?? []
+            }
+            rating={queryCoach.data.rating ?? 0}
+            id={queryCoach.data.id ?? ""}
             pageId={queryCoach.data.page?.id}
           />
         ) : null}

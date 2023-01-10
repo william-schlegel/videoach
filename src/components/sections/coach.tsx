@@ -20,6 +20,7 @@ import { env } from "@root/src/env/client.mjs";
 import turfCircle from "@turf/circle";
 import hslToHex from "@lib/hslToHex";
 import Head from "next/head";
+import { LATITUDE, LONGITUDE } from "@lib/defaultValues";
 
 type CoachCreationProps = {
   userId: string;
@@ -648,8 +649,8 @@ function MapSection({
         <div className="col-span-2 w-full border border-primary">
           <MapComponent
             initialViewState={{
-              longitude: 2.2944813,
-              latitude: 48.8583701,
+              longitude: LONGITUDE,
+              latitude: LATITUDE,
               zoom: 7,
             }}
             style={{ width: "100%", height: preview ? "20rem" : "50vh" }}

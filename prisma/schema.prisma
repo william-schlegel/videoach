@@ -133,6 +133,7 @@ model UserDocument {
   fileName           String?
   certification      Certification?
   pageSectionElement PageSectionElement[]
+  club               Club?
 
   @@index([userId])
 }
@@ -159,8 +160,11 @@ model Club {
   latitude      Float             @default(48.8583701)
   longitude     Float             @default(2.2944813)
   plannings     Planning[]
+  logoId        String?           @unique
+  logo          UserDocument?     @relation(fields: [logoId], references: [id])
 
   @@index([managerId])
+  @@index([logoId])
 }
 
 model Site {

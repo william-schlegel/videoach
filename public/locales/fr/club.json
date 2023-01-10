@@ -60,6 +60,7 @@
   "back-to-sites": "Retour à mes sites",
   "room-closed": "Salle fermée",
   "manage-club-activities": "Affecter les activités aux salles",
+  "manage-club-activities-help": "(faites glisser les activités dans les salles)",
   "remove-activity": "Retirer l'activité de cette salle",
   "room-deletion": "Supprimer cette salle",
   "room-deletion-message": "Voulez-vous réellement supprimer cette salle ?|Cette action est irréversible",
@@ -103,5 +104,9 @@
   "coachs": "Liste des coachs",
   "certifications": "Certifications",
   "view-page": "Voir sa page de présentation",
-  "rating": "Note"
+  "rating": "Note",
+  "logo": "Logo",
+  "logo-size": "Taille maximum du logo {{size}}",
+  "delete-logo": "Supprimer le logo",
+  "club-search-address": "Géolocalisation du club"
 }

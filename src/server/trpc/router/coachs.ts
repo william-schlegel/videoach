@@ -2,6 +2,7 @@ import { Role } from "@prisma/client";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 import { router, protectedProcedure, publicProcedure } from "../trpc";
+import { getDocUrl } from "./files";
 
 const CertificationData = z.object({
   id: z.string().cuid(),
@@ -14,44 +15,49 @@ const CertificationData = z.object({
 });
 
 export const coachRouter = router({
-  getCoachById: protectedProcedure.input(z.string()).query(({ ctx, input }) => {
-    return ctx.prisma.user.findUnique({
-      where: { id: input },
-      include: {
-        activityGroups: {
-          include: {
-            activities: true,
+  getCoachById: protectedProcedure
+    .input(z.string())
+    .query(async ({ ctx, input }) => {
+      const coach = await ctx.prisma.user.findUnique({
+        where: { id: input },
+        include: {
+          activityGroups: {
+            include: {
+              activities: true,
+            },
           },
-        },
-        certifications: {
-          include: {
-            modules: true,
-            document: true,
+          certifications: {
+            include: {
+              modules: true,
+              document: true,
+            },
           },
+          clubs: true,
+          page: { select: { id: true } },
         },
-        clubs: true,
-        page: {
-          include: {
-            sections: {
-              where: {
-                model: "HERO",
-              },
-              include: {
-                elements: {
-                  where: {
-                    elementType: "HERO_CONTENT",
-                  },
-                  select: {
-                    images: true,
-                  },
-                },
-              },
+      });
+      const imageData = await ctx.prisma.page.findFirst({
+        where: {
+          target: "HOME",
+          sections: {
+            some: {
+              model: "HERO",
+              elements: { some: { elementType: "HERO_CONTENT" } },
             },
           },
         },
-      },
-    });
-  }),
+        select: {
+          sections: { select: { elements: { select: { images: true } } } },
+        },
+      });
+      const imgData = imageData?.sections[0]?.elements[0]?.images[0];
+      let imageUrl = coach?.image ?? "/images/dummy.jpg";
+      if (imgData) {
+        console.log("imgData :>> ", imgData);
+        imageUrl = await getDocUrl(imgData.userId, imgData.id);
+      }
+      return { ...coach, imageUrl };
+    }),
   createCertification: protectedProcedure
     .input(CertificationData.omit({ id: true }))
     .mutation(async ({ ctx, input }) => {

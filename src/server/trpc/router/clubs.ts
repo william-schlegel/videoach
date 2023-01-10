@@ -2,25 +2,34 @@ import { Role } from "@prisma/client";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 import { router, protectedProcedure, publicProcedure } from "../trpc";
+import { getDocUrl } from "./files";
 
 export const clubRouter = router({
-  getClubById: protectedProcedure.input(z.string()).query(({ ctx, input }) => {
-    return ctx.prisma.club.findUnique({
-      where: { id: input },
-      include: {
-        sites: {
-          include: {
-            rooms: {
-              include: {
-                activities: true,
+  getClubById: protectedProcedure
+    .input(z.string())
+    .query(async ({ ctx, input }) => {
+      const myClub = await ctx.prisma.club.findUnique({
+        where: { id: input },
+        include: {
+          sites: {
+            include: {
+              rooms: {
+                include: {
+                  activities: true,
+                },
               },
             },
           },
+          activities: { include: { group: true } },
+          logo: true,
         },
-        activities: { include: { group: true } },
-      },
-    });
-  }),
+      });
+      let logoUrl = "";
+      if (myClub?.logoId) {
+        logoUrl = await getDocUrl(myClub.managerId, myClub.logoId);
+      }
+      return { ...myClub, logoUrl };
+    }),
   getClubsForManager: protectedProcedure
     .input(z.string())
     .query(({ ctx, input }) => {
@@ -41,6 +50,10 @@ export const clubRouter = router({
         name: z.string(),
         address: z.string(),
         userId: z.string().cuid(),
+        searchAddress: z.string(),
+        longitude: z.number(),
+        latitude: z.number(),
+        logoId: z.string().cuid().optional(),
         isSite: z.boolean(),
       })
     )
@@ -66,6 +79,10 @@ export const clubRouter = router({
                 },
               }
             : undefined,
+          logoId: input.logoId ? input.logoId : undefined,
+          searchAddress: input.searchAddress,
+          longitude: input.longitude,
+          latitude: input.latitude,
         },
       });
       return club;
@@ -76,6 +93,10 @@ export const clubRouter = router({
         id: z.string().cuid(),
         name: z.string(),
         address: z.string(),
+        searchAddress: z.string(),
+        longitude: z.number(),
+        latitude: z.number(),
+        logoId: z.string().cuid().nullable(),
       })
     )
     .mutation(async ({ ctx, input }) => {
@@ -90,14 +111,32 @@ export const clubRouter = router({
           code: "UNAUTHORIZED",
           message: "You are not authorized to modify this club",
         });
+      const initialLogoId = club?.logoId;
+      const data: {
+        name: string;
+        address: string;
+        latitude: number;
+        longitude: number;
+        searchAddress?: string;
+        logoId: string | null;
+      } = {
+        name: input.name,
+        address: input.address,
+        latitude: input.latitude,
+        longitude: input.longitude,
+        logoId: input.logoId,
+      };
+      if (input.searchAddress) data.searchAddress = input.searchAddress;
+      // if (input.logoId) data.logoId = input.logoId;
 
-      return ctx.prisma.club.update({
+      const updated = await ctx.prisma.club.update({
         where: { id: input.id },
-        data: {
-          name: input.name,
-          address: input.address,
-        },
+        data,
       });
+      if (initialLogoId && !input.logoId) {
+        ctx.prisma.userDocument.delete({ where: { id: initialLogoId } });
+      }
+      return updated;
     }),
   updateClubCalendar: protectedProcedure
     .input(

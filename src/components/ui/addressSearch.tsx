@@ -7,6 +7,7 @@ type Props = {
   defaultAddress?: string;
   className?: string;
   onSearch: (adr: AddressData) => void;
+  required?: boolean;
 };
 
 export type AddressData = {
@@ -20,10 +21,15 @@ const AddressSearch = ({
   label,
   onSearch,
   className,
+  required,
 }: Props) => {
-  const [address, setAddress] = useState(defaultAddress ?? "");
+  const [address, setAddress] = useState("");
   const debouncedAddress = useDebounce<string>(address, 500);
   const [addresses, setAddresses] = useState<AddressData[]>([]);
+
+  useEffect(() => {
+    if (defaultAddress) setAddress(defaultAddress);
+  }, [defaultAddress]);
 
   useEffect(() => {
     if (debouncedAddress) {
@@ -37,8 +43,8 @@ const AddressSearch = ({
 
   return (
     <>
-      <label className="label"> {label} </label>
-      <div className={`dropdown-bottom dropdown ${className}`}>
+      <label className={`label ${required ? "required" : ""}`}> {label} </label>
+      <div className={`dropdown dropdown-bottom ${className}`}>
         <input
           className="input-bordered input w-full"
           value={address}
@@ -52,6 +58,7 @@ const AddressSearch = ({
                 <button
                   type="button"
                   onClick={() => {
+                    setAddress(adr.address);
                     onSearch(adr);
                     setAddresses([]);
                   }}

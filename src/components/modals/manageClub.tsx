@@ -1,14 +1,14 @@
 /* eslint-disable @next/next/no-img-element */
-import { useState, type PropsWithoutRef } from "react";
+import { useState, type PropsWithoutRef, useEffect } from "react";
 import { useSession } from "next-auth/react";
 import { trpc } from "../../utils/trpc";
 import {
   useForm,
   type SubmitHandler,
   type SubmitErrorHandler,
+  useWatch,
 } from "react-hook-form";
 import Modal from "@ui/modal";
-import SimpleForm from "@ui/simpleform";
 import Confirmation from "@ui/confirmation";
 import { useTranslation } from "next-i18next";
 import { toast } from "react-toastify";
@@ -16,26 +16,22 @@ import Image from "next/image";
 import CollapsableGroup from "@ui/collapsableGroup";
 import Link from "next/link";
 import Rating from "@ui/rating";
+import AddressSearch from "@ui/addressSearch";
+import { Map as MapComponent, Marker } from "react-map-gl";
+import { env } from "@root/src/env/client.mjs";
+import { formatSize } from "@lib/formatNumber";
+import ButtonIcon from "@ui/buttonIcon";
+import { useWriteFile } from "@lib/useManageFile";
+import { LATITUDE, LONGITUDE } from "@lib/defaultValues";
+import Spinner from "@ui/spinner";
 
-type ClubFormValues = {
-  name: string;
-  address: string;
-};
-
-type ClubCreateFormValues = {
-  isSite: boolean;
-} & ClubFormValues;
+const MAX_SIZE_LOGO = 1024 * 1024;
 
 export const CreateClub = () => {
   const { data: sessionData } = useSession();
   const utils = trpc.useContext();
-  const {
-    register,
-    handleSubmit,
-    formState: { errors },
-    reset,
-  } = useForm<ClubCreateFormValues>();
   const { t } = useTranslation("club");
+  const [closeModal, setCloseModal] = useState(false);
 
   const createClub = trpc.clubs.createClub.useMutation({
     onSuccess: () => {
@@ -46,59 +42,40 @@ export const CreateClub = () => {
       toast.error(error.message);
     },
   });
+  const saveLogo = useWriteFile(
+    sessionData?.user?.id ?? "",
+    "IMAGE",
+    MAX_SIZE_LOGO
+  );
 
-  const onSubmit: SubmitHandler<ClubCreateFormValues> = (data) => {
-    console.log("data", data);
-    createClub.mutate({ userId: sessionData?.user?.id ?? "", ...data });
-  };
-
-  const onError: SubmitErrorHandler<ClubCreateFormValues> = (errors) => {
-    console.log("errors", errors);
+  const onSubmit = async (data: ClubFormValues) => {
+    let logoId: string | undefined = "";
+    if (data.logo?.[0]) logoId = await saveLogo(data.logo[0]);
+    console.log("logoId :>> ", logoId);
+    createClub.mutate({
+      userId: sessionData?.user?.id ?? "",
+      name: data.name,
+      address: data.address,
+      isSite: data.isSite ?? true,
+      latitude: data.latitude,
+      longitude: data.longitude,
+      searchAddress: data.searchAddress,
+      logoId,
+    });
+    setCloseModal(true);
   };
 
   return (
     <Modal
       title={t("create-new-club")}
-      handleSubmit={handleSubmit(onSubmit, onError)}
-      submitButtonText="Enregistrer"
-      errors={errors}
       buttonIcon={<i className="bx bx-plus bx-sm" />}
-      onOpenModal={() => reset()}
+      className="w-11/12 max-w-4xl"
+      cancelButtonText=""
+      closeModal={closeModal}
     >
       <h3>{t("create-new-club")}</h3>
       <p className="py-4">{t("enter-new-club-info")}</p>
-      <SimpleForm
-        errors={errors}
-        register={register}
-        fields={[
-          {
-            label: t("club-name"),
-            name: "name",
-            required: t("name-mandatory"),
-          },
-          {
-            label: t("club-address"),
-            name: "address",
-            required: t("address-mandatory"),
-          },
-          {
-            name: "isSite",
-            component: (
-              <div className="form-control">
-                <label className="label cursor-pointer justify-start gap-4">
-                  <input
-                    type="checkbox"
-                    className="checkbox-primary checkbox"
-                    {...register("isSite")}
-                    defaultChecked={true}
-                  />
-                  <span className="label-text">{t("is-site")}</span>
-                </label>
-              </div>
-            ),
-          },
-        ]}
-      />
+      <ClubForm onSubmit={onSubmit} onCancel={() => setCloseModal(true)} />
     </Modal>
   );
 };
@@ -110,21 +87,28 @@ type PropsUpdateDelete = {
 export const UpdateClub = ({ clubId }: PropsWithoutRef<PropsUpdateDelete>) => {
   const { data: sessionData } = useSession();
   const utils = trpc.useContext();
-  const {
-    register,
-    handleSubmit,
-    formState: { errors },
-    reset,
-  } = useForm<ClubFormValues>();
   const { t } = useTranslation("club");
+  const [initialData, setInitialData] = useState<ClubFormValues | undefined>();
+  const [closeModal, setCloseModal] = useState(false);
   const queryClub = trpc.clubs.getClubById.useQuery(clubId, {
     onSuccess(data) {
-      reset({
-        address: data?.address,
-        name: data?.name,
-      });
+      if (data)
+        setInitialData({
+          address: data?.address ?? "",
+          latitude: data?.latitude ?? LATITUDE,
+          longitude: data?.longitude ?? LONGITUDE,
+          name: data?.name ?? "",
+          searchAddress: data?.searchAddress ?? "",
+          logoUrl: data.logoUrl,
+          deleteLogo: false,
+        });
     },
   });
+  const saveLogo = useWriteFile(
+    queryClub.data?.managerId ?? "",
+    "IMAGE",
+    MAX_SIZE_LOGO
+  );
   const updateClub = trpc.clubs.updateClub.useMutation({
     onSuccess: () => {
       utils.clubs.getClubsForManager.invalidate(sessionData?.user?.id ?? "");
@@ -136,8 +120,112 @@ export const UpdateClub = ({ clubId }: PropsWithoutRef<PropsUpdateDelete>) => {
     },
   });
 
-  const onSubmit: SubmitHandler<ClubFormValues> = (data) => {
-    updateClub.mutate({ id: clubId, ...data });
+  const onSubmit = async (data: ClubFormValues) => {
+    let logoId: string | null = null;
+    if (data.logo?.[0]) logoId = (await saveLogo(data.logo[0])) ?? null;
+    updateClub.mutate({
+      id: clubId,
+      name: data.name,
+      address: data.address,
+      latitude: data.latitude,
+      longitude: data.longitude,
+      searchAddress: data.searchAddress,
+      logoId,
+    });
+    setInitialData(undefined);
+    setCloseModal(true);
+  };
+
+  return (
+    <Modal
+      title={t("update-club")}
+      buttonIcon={<i className="bx bx-edit bx-sm" />}
+      variant={"Icon-Outlined-Primary"}
+      className="w-11/12 max-w-4xl"
+      cancelButtonText=""
+      closeModal={closeModal}
+    >
+      <h3>
+        {t("update-the-club")} {queryClub.data?.name}
+      </h3>
+      {initialData ? (
+        <ClubForm
+          update={true}
+          initialData={initialData}
+          onSubmit={onSubmit}
+          onCancel={() => setCloseModal(true)}
+        />
+      ) : (
+        <Spinner />
+      )}
+    </Modal>
+  );
+};
+
+type ClubFormValues = {
+  name: string;
+  address: string;
+  isSite?: boolean;
+  searchAddress: string;
+  longitude: number;
+  latitude: number;
+  logo?: FileList;
+  logoUrl?: string;
+  deleteLogo: boolean;
+};
+
+type ClubFormProps = {
+  onSubmit: (data: ClubFormValues) => void;
+  onCancel: () => void;
+  update?: boolean;
+  initialData?: ClubFormValues;
+};
+
+function ClubForm({ onSubmit, onCancel, update, initialData }: ClubFormProps) {
+  const { t } = useTranslation("club");
+
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+    reset,
+    control,
+    setValue,
+  } = useForm<ClubFormValues>();
+  const [imagePreview, setImagePreview] = useState("");
+  const fields = useWatch({ control });
+
+  useEffect(() => {
+    reset(initialData);
+    setImagePreview(initialData?.logoUrl ?? "");
+  }, [initialData, reset]);
+
+  useEffect(() => {
+    if (fields.logo?.[0]) {
+      if (fields.logo[0].size > MAX_SIZE_LOGO) {
+        toast.error(
+          t("image-size-error", { size: formatSize(MAX_SIZE_LOGO) }) as string
+        );
+        setValue("logo", undefined);
+        return;
+      }
+
+      const src = URL.createObjectURL(fields.logo[0]);
+      setImagePreview(src);
+    }
+  }, [fields.logo, t, setValue]);
+
+  const handleDeleteImage = () => {
+    setImagePreview("");
+    setValue("deleteLogo", true);
+    setValue("logo", undefined);
+  };
+
+  const onSubmitForm: SubmitHandler<ClubFormValues> = (data) => {
+    console.log("data :>> ", data);
+    onSubmit(data);
+    reset();
+    setImagePreview("");
   };
 
   const onError: SubmitErrorHandler<ClubFormValues> = (errors) => {
@@ -145,37 +233,131 @@ export const UpdateClub = ({ clubId }: PropsWithoutRef<PropsUpdateDelete>) => {
   };
 
   return (
-    <Modal
-      title={t("update-club")}
-      handleSubmit={handleSubmit(onSubmit, onError)}
-      submitButtonText="Enregistrer"
-      errors={errors}
-      buttonIcon={<i className="bx bx-edit bx-sm" />}
-      variant={"Icon-Outlined-Primary"}
+    <form
+      onSubmit={handleSubmit(onSubmitForm, onError)}
+      className="grid grid-cols-2 items-start gap-4"
     >
-      <h3>
-        {t("update-the-club")} {queryClub.data?.name}
-      </h3>
-      <SimpleForm
-        errors={errors}
-        register={register}
-        isLoading={queryClub.isLoading}
-        fields={[
-          {
-            label: t("club-name"),
-            name: "name",
-            required: t("name-mandatory"),
-          },
-          {
-            label: t("club-address"),
-            name: "address",
-            required: t("address-mandatory"),
-          },
-        ]}
-      />
-    </Modal>
+      <div className="grid grid-cols-[auto_1fr] items-center gap-2">
+        <label className="required">{t("club-name")}</label>
+        <div>
+          <input
+            {...register("name", {
+              required: t("name-mandatory"),
+            })}
+            type={"text"}
+            className="input-bordered input w-full"
+          />
+          {errors.name ? (
+            <p className="text-sm text-error">{errors.name.message}</p>
+          ) : null}
+        </div>
+        {update ? null : (
+          <div className="form-control col-span-2">
+            <label className="label cursor-pointer justify-start gap-4">
+              <input
+                type="checkbox"
+                className="checkbox-primary checkbox"
+                {...register("isSite")}
+                defaultChecked={true}
+              />
+              <span className="label-text">{t("is-site")}</span>
+            </label>
+          </div>
+        )}
+
+        <label className="required">{t("club-address")}</label>
+        <div>
+          <input
+            {...register("address", {
+              required: t("address-mandatory"),
+            })}
+            type={"text"}
+            className="input-bordered input w-full"
+          />
+          {errors.address ? (
+            <p className="text-sm text-error">{errors.address.message}</p>
+          ) : null}
+        </div>
+        <div className="col-span-2 flex flex-col items-center justify-start gap-4">
+          <div className="w-full ">
+            <label>{t("logo")}</label>
+            <input
+              type="file"
+              className="file-input-bordered file-input-primary file-input w-full"
+              {...register("logo")}
+              accept="image/*"
+            />
+            <p className="col-span-2 text-sm text-gray-500">
+              {t("logo-size", { size: formatSize(MAX_SIZE_LOGO) })}
+            </p>
+          </div>
+          {imagePreview ? (
+            <div className="relative w-40 max-w-full">
+              <img src={imagePreview} alt="" />
+              <button
+                onClick={handleDeleteImage}
+                className="absolute right-2 bottom-2 z-10"
+              >
+                <ButtonIcon
+                  iconComponent={<i className="bx bx-trash" />}
+                  title={t("delete-logo")}
+                  buttonVariant="Icon-Secondary"
+                  buttonSize="sm"
+                />
+              </button>
+            </div>
+          ) : null}
+        </div>
+      </div>
+      <div className="flex flex-col gap-2">
+        <div className="grid grid-cols-[auto_1fr] items-center gap-2">
+          <AddressSearch
+            label={t("club-search-address")}
+            defaultAddress={fields.searchAddress}
+            onSearch={(adr) => {
+              setValue("searchAddress", adr.address);
+              setValue("latitude", adr.lat);
+              setValue("longitude", adr.lng);
+            }}
+            className="col-span-2"
+            required
+          />
+        </div>
+        <MapComponent
+          initialViewState={{ zoom: 8 }}
+          style={{ width: "100%", height: "20rem" }}
+          mapStyle="mapbox://styles/mapbox/streets-v9"
+          mapboxAccessToken={env.NEXT_PUBLIC_MAPBOX_TOKEN}
+          attributionControl={false}
+          longitude={fields.longitude ?? LONGITUDE}
+          latitude={fields.latitude ?? LATITUDE}
+        >
+          <Marker
+            longitude={fields.longitude ?? LONGITUDE}
+            latitude={fields.latitude ?? LATITUDE}
+            anchor="bottom"
+          >
+            <i className="bx bx-pin bx-sm text-secondary" />
+          </Marker>
+        </MapComponent>
+      </div>
+      <div className="col-span-2 flex items-center justify-end gap-2">
+        <button
+          className="btn-outline btn btn-secondary"
+          onClick={(e) => {
+            e.preventDefault();
+            onCancel();
+          }}
+        >
+          {t("common:cancel")}
+        </button>
+        <button className="btn btn-primary" type="submit">
+          {t("common:save")}
+        </button>
+      </div>
+    </form>
   );
-};
+}
 
 export const DeleteClub = ({ clubId }: PropsWithoutRef<PropsUpdateDelete>) => {
   const utils = trpc.useContext();
@@ -218,9 +400,7 @@ export const AddCoachToClub = ({ clubId }: { clubId: string }) => {
   const [coachId, setCoachId] = useState("");
   const { t } = useTranslation("club");
   const queryCoach = trpc.coachs.getCoachById.useQuery(coachId);
-  const photo = trpc.files.getDocumentUrlById.useQuery(
-    queryCoach.data?.page?.sections?.[0]?.elements?.[0]?.images?.[0]?.id ?? ""
-  );
+  const photo = queryCoach.data?.imageUrl ?? null;
 
   const onSubmit = () => {
     if (!coachId) return;
@@ -231,7 +411,6 @@ export const AddCoachToClub = ({ clubId }: { clubId: string }) => {
     <Modal
       title={t("add-coach")}
       handleSubmit={onSubmit}
-      submitButtonText="Enregistrer"
       buttonIcon={<i className="bx bx-plus bx-sm" />}
       variant={"Primary"}
       className="w-11/12 max-w-3xl"
@@ -254,22 +433,26 @@ export const AddCoachToClub = ({ clubId }: { clubId: string }) => {
       {queryCoach.data ? (
         <div className="mt-4 grid grid-cols-[auto_1fr] gap-2">
           <CoachDataPresentation
-            url={photo.data?.url ?? null}
+            url={photo}
             image={queryCoach.data.image ?? "/images/dummy.jpg"}
-            activityGroups={queryCoach.data.activityGroups.map((ag) => ({
-              id: ag.id,
-              name: ag.name,
-            }))}
-            certifications={queryCoach.data.certifications.map((cert) => ({
-              id: cert.id,
-              name: cert.name,
-              modules: cert.modules.map((mod) => ({
-                id: mod.id,
-                name: mod.name,
-              })),
-            }))}
-            rating={queryCoach.data.rating}
-            id={queryCoach.data.id}
+            activityGroups={
+              queryCoach.data.activityGroups?.map((ag) => ({
+                id: ag.id,
+                name: ag.name,
+              })) ?? []
+            }
+            certifications={
+              queryCoach.data.certifications?.map((cert) => ({
+                id: cert.id,
+                name: cert.name,
+                modules: cert.modules.map((mod) => ({
+                  id: mod.id,
+                  name: mod.name,
+                })),
+              })) ?? []
+            }
+            rating={queryCoach.data.rating ?? 0}
+            id={queryCoach.data.id ?? ""}
             pageId={queryCoach.data.page?.id}
           />
         </div>

@@ -19,6 +19,7 @@ import { useMemo } from "react";
 import useLocalStorage from "@lib/useLocalstorage";
 import { type TThemes } from "@root/src/components/themeSelector";
 import hslToHex from "@lib/hslToHex";
+import { LATITUDE, LONGITUDE } from "@lib/defaultValues";
 
 export const ROLE_LIST = [
   { label: "user", value: Role.MEMBER },
@@ -57,8 +58,8 @@ export default function Profile() {
         phone: data?.phone || "",
         address: data?.address || "",
         searchAddress: data?.searchAddress || "",
-        longitude: data?.longitude || 2.2944813,
-        latitude: data?.latitude || 48.8583701,
+        longitude: data?.longitude || LONGITUDE,
+        latitude: data?.latitude || LATITUDE,
         role: data?.role || Role.MEMBER,
         range: data?.range || 10,
       });
@@ -112,10 +113,7 @@ export default function Profile() {
     });
 
   const circle = useMemo(() => {
-    const center = [
-      fields.longitude ?? 2.2944813,
-      fields.latitude ?? 48.8583701,
-    ];
+    const center = [fields.longitude ?? LONGITUDE, fields.latitude ?? LATITUDE];
     return turfCircle(center, fields.range ?? 10, {
       steps: 64,
       units: "kilometers",
@@ -230,8 +228,8 @@ export default function Profile() {
             <div className="col-span-2 border-2 border-primary">
               <MapComponent
                 initialViewState={{
-                  longitude: 2.2944813,
-                  latitude: 48.8583701,
+                  longitude: LONGITUDE,
+                  latitude: LATITUDE,
                   zoom: 8,
                 }}
                 style={{ width: "100%", height: "20rem" }}
@@ -265,7 +263,7 @@ export default function Profile() {
           <div>&nbsp;</div>
         )}
         <button
-          className="btn-primary btn col-span-2 w-fit"
+          className="btn btn-primary col-span-2 w-fit"
           disabled={updateUser.isLoading}
         >
           {t("save-profile")}
