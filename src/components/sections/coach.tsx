@@ -313,7 +313,7 @@ export const CoachCreation = ({ userId, pageId }: CoachCreationProps) => {
             </label>
           </div>
           <div className="col-span-2 flex justify-between">
-            <button className="btn btn-primary" type="submit">
+            <button className="btn-primary btn" type="submit">
               {t("save-section")}
             </button>
           </div>
@@ -424,8 +424,8 @@ export const CoachDisplay = ({ pageId }: CoachDisplayProps) => {
         ctaSection={cta?.pageSection}
       />
       <CertificationsAndActivities
-        withActivities={!!options.get("activities")}
-        withCertifications={!!options.get("certifications")}
+        withActivities={options.get("activities") === "yes"}
+        withCertifications={options.get("certifications") === "yes"}
         certifications={ca.certifications}
         activities={ca.activities}
       />
@@ -507,7 +507,7 @@ function PhotoSection({
             href={`mailto:${email}`}
             target="_blank"
             rel="noreferrer"
-            className={`btn btn-primary btn-block my-4 ${
+            className={`btn-primary btn-block btn my-4 ${
               preview ? "btn-sm" : "btn-lg"
             } gap-4`}
           >
@@ -520,7 +520,7 @@ function PhotoSection({
             href={`tel:${phone}`}
             target="_blank"
             rel="noreferrer"
-            className={`btn-outline btn btn-secondary btn-block my-4 ${
+            className={`btn-outline btn-secondary btn-block btn my-4 ${
               preview ? "btn-sm" : "btn-lg"
             } gap-4`}
           >
@@ -530,7 +530,7 @@ function PhotoSection({
         ) : null}
         {cta && (
           <button
-            className="btn btn-primary btn-sm w-fit normal-case"
+            className="btn-primary btn-sm btn w-fit normal-case"
             onClick={() => {
               if (ctaSection) router.push(`/#${ctaSection}`);
             }}

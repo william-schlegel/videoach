@@ -113,18 +113,17 @@ const ManagerClubs = ({
       <section className="grid grid-cols-2 gap-2">
         <article className="rounded-md border border-primary p-2">
           <h2>{t("planning")}</h2>
-          {managerQuery.data?.map((club) => (
-            <DailyPlanning key={club.id} clubId={club.id} />
-          ))}
+          <div className="flex flex-col gap-2">
+            {managerQuery.data?.map((club) => (
+              <DailyPlanning key={club.id} clubId={club.id} />
+            ))}
+          </div>
         </article>
         <article className="rounded-md border border-primary p-2">
           <h2>{t("event")}</h2>
         </article>
-        <article className="rounded-md border border-primary p-2">
+        <article className="col-span-2 rounded-md border border-primary p-2">
           <h2>{t("chat-members-coachs")}</h2>
-        </article>
-        <article className="rounded-md border border-primary p-2">
-          <h2>{t("note")}</h2>
         </article>
       </section>
     </Layout>
@@ -143,8 +142,8 @@ function DailyPlanning({ clubId }: { clubId: string }) {
   if (planning.isInitialLoading) return <Spinner />;
   if (!planning.data) return <div>{t("no-planning")}</div>;
   return (
-    <div className="flex flex-col items-center border border-secondary bg-base-100">
-      <div className="w-full bg-secondary text-center text-secondary-content">
+    <div className="flex flex-col items-center rounded border border-secondary bg-base-100">
+      <div className="w-full  bg-secondary text-center text-secondary-content">
         {planning.data?.club?.name}
       </div>
       <div className="flex shrink-0 flex-wrap items-start gap-2 p-2">

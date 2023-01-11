@@ -39,6 +39,7 @@ import {
   PointerSensor,
   useSensor,
   useSensors,
+  DragOverlay,
 } from "@dnd-kit/core";
 import { DndContext, useDraggable, useDroppable } from "@dnd-kit/core";
 import { CSS } from "@dnd-kit/utilities";
@@ -398,6 +399,7 @@ const PlanningContent = ({
           </div>
         </section>
       </article>
+      <DragOverlay></DragOverlay>
     </DndContext>
   );
 };

@@ -1,9 +1,11 @@
 import { authOptions } from "@auth/[...nextauth]";
+import { DAYS } from "@modals/manageCalendar";
 import { Role } from "@prisma/client";
 import nextI18nConfig from "@root/next-i18next.config.mjs";
 import Layout from "@root/src/components/layout";
 import { trpc } from "@trpcclient/trpc";
 import Spinner from "@ui/spinner";
+import dayjs from "dayjs";
 import {
   type GetServerSidePropsContext,
   type InferGetServerSidePropsType,
@@ -85,15 +87,13 @@ const CoachDashboard = ({
       <section className="grid grid-cols-2 gap-2">
         <article className="rounded-md border border-primary p-2">
           <h2>{t("planning")}</h2>
+          <DailyPlanning coachId={userId} />
         </article>
         <article className="rounded-md border border-primary p-2">
           <h2>{t("schedule")}</h2>
         </article>
-        <article className="rounded-md border border-primary p-2">
+        <article className="col-span-2 rounded-md border border-primary p-2">
           <h2>{t("chat-members")}</h2>
-        </article>
-        <article className="rounded-md border border-primary p-2">
-          <h2>{t("note")}</h2>
         </article>
       </section>
     </Layout>
@@ -101,6 +101,49 @@ const CoachDashboard = ({
 };
 
 export default CoachDashboard;
+
+function DailyPlanning({ coachId }: { coachId: string }) {
+  const { t } = useTranslation("dashboard");
+  const day = DAYS[dayjs().day() - 1]?.value ?? "MONDAY";
+  const planning = trpc.plannings.getCoachDailyPlanning.useQuery({
+    coachId,
+    day,
+  });
+  if (planning.isInitialLoading) return <Spinner />;
+  if (!planning.data) return <div>{t("no-planning")}</div>;
+  return (
+    <div className="flex flex-col gap-2">
+      {planning.data.map((plan) => (
+        <div
+          key={plan.id}
+          className="flex flex-col items-center rounded border border-secondary bg-base-100"
+        >
+          <div className="w-full  bg-secondary text-center text-secondary-content">
+            {plan.club.name}
+          </div>
+          <div className="flex shrink-0 flex-wrap items-start gap-2 p-2">
+            {plan.planningActivities.map((activity) => (
+              <div key={activity.id} className="border border-base-300 p-2">
+                <p>
+                  <span className="text-xs">{activity.startTime}</span>
+                  {" ("}
+                  <span className="text-xs">{activity.duration}</span>
+                  {"') "}
+                  <span>{activity.activity.name}</span>
+                </p>
+                <p className="text-xs">
+                  <span>{activity.site?.name}</span>
+                  {" - "}
+                  <span>{activity.room?.name}</span>
+                </p>
+              </div>
+            ))}
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
 
 export const getServerSideProps = async ({
   locale,

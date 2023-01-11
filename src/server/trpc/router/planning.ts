@@ -161,15 +161,46 @@ export const planningRouter = router({
           startDate: {
             lte: new Date(Date.now()),
           },
+        },
+        include: {
+          club: true,
           planningActivities: {
-            some: {
+            where: {
               day: input.day,
             },
+            include: {
+              activity: true,
+              coach: true,
+              room: true,
+              site: true,
+            },
+          },
+        },
+      });
+      // TODO: manage exception days
+      return planning;
+    }),
+  getCoachDailyPlanning: protectedProcedure
+    .input(
+      z.object({
+        coachId: z.string().cuid(),
+        day: z.nativeEnum(DayName),
+      })
+    )
+    .query(async ({ ctx, input }) => {
+      const planning = await ctx.prisma.planning.findMany({
+        where: {
+          startDate: {
+            lte: new Date(Date.now()),
           },
         },
         include: {
           club: true,
           planningActivities: {
+            where: {
+              day: input.day,
+              coachId: input.coachId,
+            },
             include: {
               activity: true,
               coach: true,
