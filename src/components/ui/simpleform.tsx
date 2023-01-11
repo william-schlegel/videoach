@@ -21,6 +21,7 @@ type SimpleFormField<T> = {
   type?: HTMLInputTypeAttribute;
   disabled?: boolean;
   unit?: string;
+  rows?: number;
 };
 
 type SimpleFormProps<T extends FieldValues> = {
@@ -54,6 +55,7 @@ export default function SimpleForm<T extends FieldValues>({
       ) : (
         fields.map((field) => {
           const fn = field.name as string;
+          const isTextArea = field.rows && !isNaN(field.rows) && field.rows > 1;
           return (
             <Fragment key={fn}>
               {field.type === "checkbox" ? (
@@ -75,7 +77,11 @@ export default function SimpleForm<T extends FieldValues>({
               ) : (
                 <>
                   {field.label !== undefined ? (
-                    <label className={field.required ? "required" : ""}>
+                    <label
+                      className={`${field.required ? "required" : ""} ${
+                        isTextArea ? "self-start" : ""
+                      }`}
+                    >
                       {field.label}
                     </label>
                   ) : null}
@@ -89,16 +95,29 @@ export default function SimpleForm<T extends FieldValues>({
                         <input
                           {...register(fn as Path<T>, {
                             required: field.required ?? false,
+                            valueAsDate: field.type === "date",
+                            valueAsNumber: field.type === "number",
                           })}
                           type={field.type || "text"}
                           disabled={field.disabled}
+                          className="input-bordered input"
                         />
                         <span>{field.unit}</span>
                       </div>
+                    ) : isTextArea ? (
+                      <textarea
+                        {...register(fn as Path<T>, {
+                          required: field.required ?? false,
+                        })}
+                        disabled={field.disabled}
+                        rows={field.rows}
+                      />
                     ) : (
                       <input
                         {...register(fn as Path<T>, {
                           required: field.required ?? false,
+                          valueAsDate: field.type === "date",
+                          valueAsNumber: field.type === "number",
                         })}
                         type={field.type || "text"}
                         disabled={field.disabled}

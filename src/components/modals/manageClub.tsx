@@ -36,7 +36,7 @@ export const CreateClub = () => {
   const createClub = trpc.clubs.createClub.useMutation({
     onSuccess: () => {
       utils.clubs.getClubsForManager.invalidate(sessionData?.user?.id ?? "");
-      toast.success(t("club-created") as string);
+      toast.success(t("club.created") as string);
     },
     onError(error) {
       toast.error(error.message);
@@ -67,14 +67,14 @@ export const CreateClub = () => {
 
   return (
     <Modal
-      title={t("create-new-club")}
+      title={t("club.create-new")}
       buttonIcon={<i className="bx bx-plus bx-sm" />}
       className="w-11/12 max-w-4xl"
       cancelButtonText=""
       closeModal={closeModal}
     >
-      <h3>{t("create-new-club")}</h3>
-      <p className="py-4">{t("enter-new-club-info")}</p>
+      <h3>{t("club.create-new")}</h3>
+      <p className="py-4">{t("club.enter-new-club-info")}</p>
       <ClubForm onSubmit={onSubmit} onCancel={() => setCloseModal(true)} />
     </Modal>
   );
@@ -113,7 +113,7 @@ export const UpdateClub = ({ clubId }: PropsWithoutRef<PropsUpdateDelete>) => {
     onSuccess: () => {
       utils.clubs.getClubsForManager.invalidate(sessionData?.user?.id ?? "");
       utils.clubs.getClubById.invalidate(clubId);
-      toast.success(t("club-updated") as string);
+      toast.success(t("club.updated") as string);
     },
     onError(error) {
       toast.error(error.message);
@@ -138,7 +138,7 @@ export const UpdateClub = ({ clubId }: PropsWithoutRef<PropsUpdateDelete>) => {
 
   return (
     <Modal
-      title={t("update-club")}
+      title={t("club.update")}
       buttonIcon={<i className="bx bx-edit bx-sm" />}
       variant={"Icon-Outlined-Primary"}
       className="w-11/12 max-w-4xl"
@@ -146,7 +146,7 @@ export const UpdateClub = ({ clubId }: PropsWithoutRef<PropsUpdateDelete>) => {
       closeModal={closeModal}
     >
       <h3>
-        {t("update-the-club")} {queryClub.data?.name}
+        {t("club.update")} {queryClub.data?.name}
       </h3>
       {initialData ? (
         <ClubForm
@@ -238,7 +238,7 @@ function ClubForm({ onSubmit, onCancel, update, initialData }: ClubFormProps) {
       className="grid grid-cols-2 items-start gap-4"
     >
       <div className="grid grid-cols-[auto_1fr] items-center gap-2">
-        <label className="required">{t("club-name")}</label>
+        <label className="required">{t("club.name")}</label>
         <div>
           <input
             {...register("name", {
@@ -260,12 +260,12 @@ function ClubForm({ onSubmit, onCancel, update, initialData }: ClubFormProps) {
                 {...register("isSite")}
                 defaultChecked={true}
               />
-              <span className="label-text">{t("is-site")}</span>
+              <span className="label-text">{t("club.is-site")}</span>
             </label>
           </div>
         )}
 
-        <label className="required">{t("club-address")}</label>
+        <label className="required">{t("club.address")}</label>
         <div>
           <input
             {...register("address", {
@@ -280,7 +280,7 @@ function ClubForm({ onSubmit, onCancel, update, initialData }: ClubFormProps) {
         </div>
         <div className="col-span-2 flex flex-col items-center justify-start gap-4">
           <div className="w-full ">
-            <label>{t("logo")}</label>
+            <label>{t("club.logo")}</label>
             <input
               type="file"
               className="file-input-bordered file-input-primary file-input w-full"
@@ -288,7 +288,7 @@ function ClubForm({ onSubmit, onCancel, update, initialData }: ClubFormProps) {
               accept="image/*"
             />
             <p className="col-span-2 text-sm text-gray-500">
-              {t("logo-size", { size: formatSize(MAX_SIZE_LOGO) })}
+              {t("club.logo-size", { size: formatSize(MAX_SIZE_LOGO) })}
             </p>
           </div>
           {imagePreview ? (
@@ -300,7 +300,7 @@ function ClubForm({ onSubmit, onCancel, update, initialData }: ClubFormProps) {
               >
                 <ButtonIcon
                   iconComponent={<i className="bx bx-trash" />}
-                  title={t("delete-logo")}
+                  title={t("club.delete-logo")}
                   buttonVariant="Icon-Secondary"
                   buttonSize="sm"
                 />
@@ -312,7 +312,7 @@ function ClubForm({ onSubmit, onCancel, update, initialData }: ClubFormProps) {
       <div className="flex flex-col gap-2">
         <div className="grid grid-cols-[auto_1fr] items-center gap-2">
           <AddressSearch
-            label={t("club-search-address")}
+            label={t("club.search-address")}
             defaultAddress={fields.searchAddress}
             onSearch={(adr) => {
               setValue("searchAddress", adr.address);
@@ -343,7 +343,7 @@ function ClubForm({ onSubmit, onCancel, update, initialData }: ClubFormProps) {
       </div>
       <div className="col-span-2 flex items-center justify-end gap-2">
         <button
-          className="btn-outline btn btn-secondary"
+          className="btn-outline btn-secondary btn"
           onClick={(e) => {
             e.preventDefault();
             onCancel();
@@ -351,7 +351,7 @@ function ClubForm({ onSubmit, onCancel, update, initialData }: ClubFormProps) {
         >
           {t("common:cancel")}
         </button>
-        <button className="btn btn-primary" type="submit">
+        <button className="btn-primary btn" type="submit">
           {t("common:save")}
         </button>
       </div>
@@ -368,7 +368,7 @@ export const DeleteClub = ({ clubId }: PropsWithoutRef<PropsUpdateDelete>) => {
     onSuccess: () => {
       utils.clubs.getClubsForManager.invalidate(sessionData?.user?.id ?? "");
       utils.clubs.getClubById.invalidate(clubId);
-      toast.success(t("club-deleted") as string);
+      toast.success(t("deleted") as string);
     },
     onError(error) {
       toast.error(error.message);
@@ -377,8 +377,8 @@ export const DeleteClub = ({ clubId }: PropsWithoutRef<PropsUpdateDelete>) => {
 
   return (
     <Confirmation
-      message={t("club-deletion-message")}
-      title={t("club-deletion")}
+      message={t("club.deletion-message")}
+      title={t("club.deletion")}
       onConfirm={() => {
         deleteClub.mutate(clubId);
       }}
@@ -410,13 +410,13 @@ export const AddCoachToClub = ({ clubId }: { clubId: string }) => {
 
   return (
     <Modal
-      title={t("add-coach")}
+      title={t("coach.add")}
       handleSubmit={onSubmit}
       buttonIcon={<i className="bx bx-plus bx-sm" />}
       variant={"Primary"}
       className="w-11/12 max-w-3xl"
     >
-      <h3>{t("find-coach")}</h3>
+      <h3>{t("coach.find")}</h3>
       <select
         className="w-full"
         value={coachId}
@@ -496,7 +496,7 @@ export function CoachDataPresentation({
       />
 
       <div className="flex flex-col gap-2">
-        <label>{t("activities")}</label>
+        <label>{t("activity.activities")}</label>
         <div className="flex flex-wrap gap-2">
           {activityGroups.map((ag) => (
             <span key={ag.id} className="pill">
@@ -504,7 +504,7 @@ export function CoachDataPresentation({
             </span>
           ))}
         </div>
-        <label>{t("certifications")}</label>
+        <label>{t("coach.certifications")}</label>
         <div className="flex flex-wrap gap-2">
           {certifications.map((cert) => (
             <CollapsableGroup
@@ -521,7 +521,7 @@ export function CoachDataPresentation({
           ))}
         </div>
         <div className="flex items-center gap-4">
-          <label>{t("rating")}</label>
+          <label>{t("coach.rating")}</label>
           <Rating note={rating} />
         </div>
         {pageId ? (
@@ -530,8 +530,8 @@ export function CoachDataPresentation({
             target="_blank"
             rel="noreferrer"
           >
-            <button className="btn btn-primary flex items-center gap-4">
-              <span>{t("view-page")}</span>
+            <button className="btn-primary btn flex items-center gap-4">
+              <span>{t("coach.view-page")}</span>
               <i className="bx bx-link-external bx-xs" />
             </button>
           </Link>

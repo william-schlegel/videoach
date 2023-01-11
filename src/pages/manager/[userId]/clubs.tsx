@@ -31,6 +31,7 @@ import {
 import CollapsableGroup from "@ui/collapsableGroup";
 import Layout from "@root/src/components/layout";
 import Image from "next/image";
+import ButtonIcon from "@ui/buttonIcon";
 
 const ManageClubs = ({
   userId,
@@ -55,7 +56,9 @@ const ManageClubs = ({
   return (
     <Layout className="container mx-auto">
       <div className="mb-4 flex flex-row items-center gap-4">
-        <h1>{t("manage-my-club", { count: clubQuery.data?.length ?? 0 })}</h1>
+        <h1>
+          {t("club.manage-my-club", { count: clubQuery.data?.length ?? 0 })}
+        </h1>
         <CreateClub />
       </div>
       <div className="flex gap-4">
@@ -161,6 +164,14 @@ export function ClubContent({ userId, clubId }: ClubContentProps) {
           <p>({clubQuery.data?.address})</p>
         </div>
         <div className="flex items-center gap-2">
+          <Link href={`./${clubId}/subscription`}>
+            <ButtonIcon
+              iconComponent={<i className="bx bx-euro bx-sm" />}
+              title={t("manage-subscriptions")}
+              buttonVariant="Icon-Outlined-Primary"
+              buttonSize="md"
+            />
+          </Link>
           <UpdateClub clubId={clubId} />
           <CreateClubCalendar clubId={clubId} />
           <DeleteClub clubId={clubId} />
@@ -175,13 +186,13 @@ export function ClubContent({ userId, clubId }: ClubContentProps) {
           <div className="flex-1 rounded border border-primary p-4 ">
             <div className="flex flex-row items-center justify-between gap-4">
               <h3>
-                {t("site", { count: clubQuery?.data?.sites?.length ?? 0 })}
+                {t("site.site", { count: clubQuery?.data?.sites?.length ?? 0 })}
               </h3>
               <Link
-                className="btn btn-secondary"
+                className="btn-secondary btn"
                 href={`${path}${clubId}/sites`}
               >
-                {t("manage-sites")}
+                {t("site.manage")}
               </Link>
             </div>
             {clubQuery?.data?.sites?.map((site) => (
@@ -193,7 +204,7 @@ export function ClubContent({ userId, clubId }: ClubContentProps) {
                       {site.rooms.length}
                     </span>
                   )}
-                  {t("room", { count: site.rooms.length })}
+                  {t("room.room", { count: site.rooms.length })}
                 </div>
               </div>
             ))}
@@ -201,7 +212,7 @@ export function ClubContent({ userId, clubId }: ClubContentProps) {
           <div className="flex-1 rounded border border-primary p-4 ">
             <div className="mb-4 flex flex-row items-center justify-between gap-4">
               <h3>
-                {t("activity", {
+                {t("activity.activity", {
                   count: clubQuery?.data?.activities?.length ?? 0,
                 })}
               </h3>
@@ -236,8 +247,8 @@ export function ClubContent({ userId, clubId }: ClubContentProps) {
         </div>
         <div className="flex flex-col gap-2 rounded border border-primary p-4">
           <div className="flex items-center gap-4">
-            <h3>{t("manage-club-activities")}</h3>
-            <p>{t("manage-club-activities-help")}</p>
+            <h3>{t("activity.manage-club-activities")}</h3>
+            <p>{t("activity.manage-club-activities-help")}</p>
           </div>
           <div className="flex flex-col gap-2">
             {clubQuery.data?.sites?.map((site) => (
@@ -263,7 +274,7 @@ export function ClubContent({ userId, clubId }: ClubContentProps) {
                           {a.name}
                           <div
                             className="tooltip flex items-center"
-                            data-tip={t("remove-activity")}
+                            data-tip={t("activity.remove")}
                           >
                             <i
                               className="bx bx-x bx-sm cursor-pointer rounded-full bg-base-100 text-secondary hover:bg-secondary hover:text-secondary-content"

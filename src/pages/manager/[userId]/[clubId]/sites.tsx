@@ -52,13 +52,13 @@ const ManageSites = ({
       <div className="mb-4 flex flex-row items-center justify-between">
         <div className="flex items-center gap-4">
           <h1 className="flex items-center gap-4">
-            {t("manage-my-sites", { count: siteQuery.data?.length ?? 0 })}
+            {t("site.manage-my-sites", { count: siteQuery.data?.length ?? 0 })}
             <span className="text-secondary">{clubQuery.data?.name}</span>
           </h1>
           <CreateSite clubId={clubId} />
         </div>
-        <Link className="btn-outline btn btn-primary" href={`${path}clubs`}>
-          {t("back-to-clubs")}
+        <Link className="btn-outline btn-primary btn" href={`${path}clubs`}>
+          {t("site.back-to-clubs")}
         </Link>
       </div>
       <div className="flex gap-4">
@@ -140,9 +140,11 @@ export function SiteContent({ clubId, siteId }: SiteContentProps) {
       <div className="flex flex-wrap gap-4">
         <div className="flex-1 rounded border border-primary p-4 ">
           <div className="mb-4 flex flex-row items-center justify-between gap-4">
-            <h3>{t("room", { count: siteQuery?.data?.rooms?.length ?? 0 })}</h3>
-            <Link className="btn btn-secondary" href={`${path}${siteId}/rooms`}>
-              {t("manage-rooms")}
+            <h3>
+              {t("room.room", { count: siteQuery?.data?.rooms?.length ?? 0 })}
+            </h3>
+            <Link className="btn-secondary btn" href={`${path}${siteId}/rooms`}>
+              {t("room.manage")}
             </Link>
           </div>
           <div className="flex gap-4">

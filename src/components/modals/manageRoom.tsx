@@ -31,9 +31,9 @@ type CreateRoomProps = {
 };
 
 export const RESERVATIONS = [
-  { value: RoomReservation.NONE, label: "no-reservation" },
-  { value: RoomReservation.POSSIBLE, label: "reservation-possible" },
-  { value: RoomReservation.MANDATORY, label: "reservation-mandatory" },
+  { value: RoomReservation.NONE, label: "room.no-reservation" },
+  { value: RoomReservation.POSSIBLE, label: "room.reservation-possible" },
+  { value: RoomReservation.MANDATORY, label: "room.reservation-mandatory" },
 ] as const;
 
 export const CreateRoom = ({
@@ -45,7 +45,7 @@ export const CreateRoom = ({
     onSuccess: () => {
       utils.sites.getRoomsForSite.invalidate(siteId);
       reset();
-      toast.success(t("room-created") as string);
+      toast.success(t("room.created") as string);
     },
     onError(error) {
       toast.error(error.message);
@@ -67,7 +67,7 @@ export const CreateRoom = ({
         siteId,
         name: data.name,
         reservation: data.reservation,
-        capacity: Number(data.capacity),
+        capacity: data.capacity,
         unavailable: false,
         openWithClub: true,
       });
@@ -80,12 +80,12 @@ export const CreateRoom = ({
   return (
     <>
       <Modal
-        title={t("new-room")}
+        title={t("room.new")}
         handleSubmit={handleSubmit(onSubmit, onError)}
         buttonIcon={<i className="bx bx-plus bx-sm" />}
         variant={variant}
       >
-        <h3>{t("new-room")}</h3>
+        <h3>{t("room.new")}</h3>
         <RoomForm register={register} errors={errors} getValues={getValues} />
       </Modal>
     </>
@@ -114,7 +114,7 @@ export const UpdateRoom = ({
       utils.sites.getRoomsForSite.invalidate(siteId);
       utils.sites.getRoomById.invalidate(roomId);
       reset();
-      toast.success(t("room-updated") as string);
+      toast.success(t("room.updated") as string);
     },
     onError(error) {
       toast.error(error.message);
@@ -135,7 +135,7 @@ export const UpdateRoom = ({
       updateRoom.mutate({
         id: roomId,
         ...data,
-        capacity: Number(data.capacity),
+        capacity: data.capacity,
       });
   };
 
@@ -146,12 +146,12 @@ export const UpdateRoom = ({
   return (
     <>
       <Modal
-        title={t("update-room")}
+        title={t("room.update")}
         handleSubmit={handleSubmit(onSubmit, onError)}
         buttonIcon={<i className="bx bx-edit bx-sm" />}
         variant={variant}
       >
-        <h3>{t("update-room")}</h3>
+        <h3>{t("room.update")}</h3>
         {queryRoom.isLoading ? (
           <Spinner />
         ) : (
@@ -173,7 +173,7 @@ export const DeleteRoom = ({
   const deleteRoom = trpc.sites.deleteRoom.useMutation({
     onSuccess: () => {
       utils.sites.getRoomsForSite.invalidate(siteId);
-      toast.success(t("room-deleted") as string);
+      toast.success(t("room.deleted") as string);
     },
     onError(error) {
       toast.error(error.message);
@@ -182,8 +182,8 @@ export const DeleteRoom = ({
 
   return (
     <Confirmation
-      message={t("room-deletion-message")}
-      title={t("room-deletion")}
+      message={t("room.deletion-message")}
+      title={t("room.deletion")}
       buttonIcon={<i className="bx bx-trash bx-sm" />}
       onConfirm={() => {
         deleteRoom.mutate(roomId);
@@ -211,12 +211,12 @@ function RoomForm<T extends FieldValues>({
       register={register}
       fields={[
         {
-          label: t("room-name"),
+          label: t("room.name"),
           name: "name",
-          required: t("room-name-mandatory"),
+          required: t("name-mandatory"),
         },
         {
-          label: t("capacity"),
+          label: t("room.capacity"),
           name: "capacity",
           type: "number",
         },
@@ -246,7 +246,7 @@ function RoomForm<T extends FieldValues>({
                   {...register("unavailable" as Path<T>)}
                   defaultChecked={false}
                 />
-                <span className="label-text">{t("room-unavailable")}</span>
+                <span className="label-text">{t("room.unavailable")}</span>
               </label>
             </div>
           ),

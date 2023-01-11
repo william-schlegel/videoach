@@ -29,7 +29,7 @@ const CalendarData = {
 
 export const calendarRouter = router({
   getCalendarById: protectedProcedure
-    .input(z.string())
+    .input(z.string().cuid())
     .query(({ ctx, input }) => {
       return ctx.prisma.openingCalendar.findUnique({
         where: { id: input },

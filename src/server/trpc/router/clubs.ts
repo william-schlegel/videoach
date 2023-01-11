@@ -6,7 +6,7 @@ import { getDocUrl } from "./files";
 
 export const clubRouter = router({
   getClubById: protectedProcedure
-    .input(z.string())
+    .input(z.string().cuid())
     .query(async ({ ctx, input }) => {
       const myClub = await ctx.prisma.club.findUnique({
         where: { id: input },

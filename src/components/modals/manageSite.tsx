@@ -38,7 +38,7 @@ export const CreateSite = ({ clubId }: CreateSiteProps) => {
     onSuccess: () => {
       utils.clubs.getClubById.invalidate(clubId);
       utils.sites.getSitesForClub.invalidate(clubId);
-      toast.success(t("site-created") as string);
+      toast.success(t("site.created") as string);
     },
     onError(error) {
       toast.error(error.message);
@@ -54,15 +54,15 @@ export const CreateSite = ({ clubId }: CreateSiteProps) => {
 
   return (
     <Modal
-      title={t("create-site")}
+      title={t("site.create")}
       handleSubmit={handleSubmit(onSubmit, onError)}
       errors={errors}
       buttonIcon={<i className="bx bx-plus bx-xs" />}
       onOpenModal={() => reset()}
       className="w-11/12 max-w-5xl"
     >
-      <h3>{t("create-new-site")}</h3>
-      <p className="py-4">{t("enter-info-new-site")}</p>
+      <h3>{t("site.create")}</h3>
+      <p className="py-4">{t("site.enter-info-new-site")}</p>
       <SiteForm register={register} errors={errors} />
     </Modal>
   );
@@ -90,7 +90,7 @@ export const UpdateSite = ({ siteId, clubId }: UpdateSiteProps) => {
     onSuccess: () => {
       utils.sites.getSiteById.invalidate(siteId);
       utils.sites.getSitesForClub.invalidate(clubId);
-      toast.success(t("site-updated") as string);
+      toast.success(t("site.updated") as string);
     },
     onError(error) {
       toast.error(error.message);
@@ -109,9 +109,9 @@ export const UpdateSite = ({ siteId, clubId }: UpdateSiteProps) => {
 
   return (
     <Modal
-      title={t("update-site-name", { siteName: querySite.data?.name })}
+      title={t("update-name", { siteName: querySite.data?.name })}
       handleSubmit={handleSubmit(onSubmit, onError)}
-      submitButtonText={t("update-site")}
+      submitButtonText={t("site.update")}
       errors={errors}
       buttonIcon={<i className="bx bx-edit bx-sm" />}
       variant={"Icon-Outlined-Primary"}
@@ -119,7 +119,7 @@ export const UpdateSite = ({ siteId, clubId }: UpdateSiteProps) => {
     >
       <div className="flex items-center justify-between">
         <h3 className="flex items-center gap-4">
-          {t("update-site")}
+          {t("site.update")}
           <span className="text-primary">{querySite?.data?.name}</span>
         </h3>
       </div>
@@ -147,7 +147,7 @@ export const DeleteSite = ({
     onSuccess: () => {
       utils.clubs.getClubsForManager.invalidate(sessionData?.user?.id ?? "");
       utils.clubs.getClubById.invalidate(clubId);
-      toast.success(t("site-deleted") as string);
+      toast.success(t("site.deleted") as string);
     },
     onError(error) {
       toast.error(error.message);
@@ -156,8 +156,8 @@ export const DeleteSite = ({
 
   return (
     <Confirmation
-      message={t("site-deletion-message")}
-      title={t("site-deletion")}
+      message={t("site.deletion-message")}
+      title={t("site.deletion")}
       buttonIcon={<i className="bx bx-trash bx-sm" />}
       onConfirm={() => {
         deleteSite.mutate(siteId);
@@ -183,12 +183,12 @@ function SiteForm<T extends FieldValues>({
       register={register}
       fields={[
         {
-          label: t("site-name"),
+          label: t("site.name"),
           name: "name",
           required: t("name-mandatory"),
         },
         {
-          label: t("site-address"),
+          label: t("site.address"),
           name: "address",
           required: t("address-mandatory"),
         },

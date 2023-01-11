@@ -30,6 +30,7 @@
     color: red;
     font-size: 0.8em;
     padding-inline-start: 0.25em;
+    align-self: start;
   }
 
   /*label:has(+ input["required"])::after*/

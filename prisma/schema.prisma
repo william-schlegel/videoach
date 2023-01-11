@@ -93,8 +93,11 @@ model User {
   instagramLink      String?
   planningActivities PlanningActivity[]
   plannings          Planning[]
+  subscriptionId     String?
+  subscription       Subscription?      @relation(fields: [subscriptionId], references: [id])
 
   @@index([pricingId])
+  @@index([subscriptionId])
 }
 
 model Paiement {
@@ -162,6 +165,7 @@ model Club {
   plannings     Planning[]
   logoId        String?           @unique
   logo          UserDocument?     @relation(fields: [logoId], references: [id])
+  subscriptions Subscription[]
 
   @@index([managerId])
   @@index([logoId])
@@ -206,6 +210,24 @@ model Room {
   @@index([siteId])
 }
 
+model Subscription {
+  id              String          @id @default(cuid())
+  name            String
+  highlight       String
+  description     String
+  startDate       DateTime
+  deletionDate    DateTime?
+  monthly         Float           @default(0)
+  yearly          Float           @default(0)
+  cancelationFee  Float           @default(0)
+  activitieGroups ActivityGroup[]
+  users           User[]
+  clubId          String
+  club            Club            @relation(fields: [clubId], references: [id], onUpdate: NoAction)
+
+  @@index([clubId])
+}
+
 // ----------------------------------------------------------------------------------------------
 
 //                             ACTIVITIES
@@ -222,6 +244,7 @@ model ActivityGroup {
   userId               String?
   certifications       Certification[]
   certificationModules CertificationModule[]
+  subscriptions        Subscription[]
 
   @@index([userId])
 }

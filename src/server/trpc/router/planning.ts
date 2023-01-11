@@ -35,7 +35,7 @@ export const planningRouter = router({
     ),
 
   getPlanningById: protectedProcedure
-    .input(z.string())
+    .input(z.string().cuid())
     .query(({ ctx, input }) =>
       ctx.prisma.planning.findUnique({
         where: { id: input },

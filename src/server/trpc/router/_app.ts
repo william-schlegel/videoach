@@ -9,6 +9,7 @@ import { pageRouter } from "./page";
 import { planningRouter } from "./planning";
 import { pricingRouter } from "./pricing";
 import { siteRouter } from "./sites";
+import { subscriptionRouter } from "./subscription";
 import { userRouter } from "./users";
 
 export const appRouter = router({
@@ -23,6 +24,7 @@ export const appRouter = router({
   files: fileRouter,
   pages: pageRouter,
   plannings: planningRouter,
+  subscriptions: subscriptionRouter,
 });
 
 // export type definition of API

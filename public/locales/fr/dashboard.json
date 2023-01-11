@@ -25,5 +25,7 @@
   "kpi": "KPI",
   "rating": "Note",
   "schedule": "Rendez-vous",
-  "no-planning": "Pas d'activités aujourd'hui"
+  "no-planning": "Pas d'activités aujourd'hui",
+  "member-dashboard": "Espace membre",
+  "reservation": "Réserver une activité"
 }

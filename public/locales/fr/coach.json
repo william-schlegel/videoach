@@ -10,7 +10,6 @@
   "new-group": "Nouveau certificateur",
   "create-group": "Créer un certificateur",
   "create-new-group": "Créer un nouvel organisme de certification",
-  "group-name-mandatory": "Le nom est obligatoire",
   "update-group": "Modifier le nom de l'organisme de certification",
   "group-deletion": "supprimer le groupe",
   "group-deletion-message": "Voulez-vous supprimer ce groupe ?|Cette action est irréversible",

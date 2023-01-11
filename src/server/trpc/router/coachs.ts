@@ -151,7 +151,7 @@ export const coachRouter = router({
       })
     ),
   getCertificationById: protectedProcedure
-    .input(z.string())
+    .input(z.string().cuid())
     .query(({ ctx, input }) =>
       ctx.prisma.certification.findUnique({
         where: { id: input },
@@ -167,7 +167,7 @@ export const coachRouter = router({
     })
   ),
   getCertificationGroupById: protectedProcedure
-    .input(z.string())
+    .input(z.string().cuid())
     .query(({ ctx, input }) =>
       ctx.prisma.certificationGroup.findUnique({
         where: {

@@ -57,13 +57,13 @@ const ManageRooms = ({
       <div className="mb-4 flex flex-row items-center justify-between">
         <div className="flex items-center gap-4">
           <h1 className="flex items-center gap-4">
-            {t("manage-my-rooms", { count: roomQuery.data?.length ?? 0 })}
+            {t("room.manage-my-rooms", { count: roomQuery.data?.length ?? 0 })}
             <span className="text-secondary">{siteQuery.data?.name}</span>
           </h1>
           <CreateRoom siteId={siteId} variant={"Primary"} />
         </div>
-        <Link className="btn-outline btn btn-primary" href={`${path}sites`}>
-          {t("back-to-sites")}
+        <Link className="btn-outline btn-primary btn" href={`${path}sites`}>
+          {t("room.back-to-sites")}
         </Link>
       </div>
       <div className="flex gap-4">
@@ -82,7 +82,7 @@ const ManageRooms = ({
                   <span>{room.name}</span>
                   {room.unavailable ? (
                     <span className="badge badge-error">
-                      {t("room-closed")}
+                      {t("room.closed")}
                     </span>
                   ) : null}
                 </button>
@@ -126,7 +126,7 @@ export function RoomContent({ clubId, siteId, roomId }: RoomContentProps) {
         {roomQuery.data?.unavailable ? (
           <div className="alert alert-error w-fit">
             <i className="bx bx-x bx-xs" />
-            <span>{t("room-closed")}</span>
+            <span>{t("room.closed")}</span>
           </div>
         ) : null}
         <div className="flex items-center gap-2">
@@ -141,7 +141,7 @@ export function RoomContent({ clubId, siteId, roomId }: RoomContentProps) {
       />
       <div className="flex items-center gap-4">
         <div className="flex items-center gap-2">
-          <label className="label">{t("reservation")}</label>
+          <label className="label">{t("room.reservation")}</label>
           <span>
             {t(
               RESERVATIONS.find((r) => r.value === roomQuery.data?.reservation)
@@ -150,7 +150,7 @@ export function RoomContent({ clubId, siteId, roomId }: RoomContentProps) {
           </span>
         </div>
         <div className="flex items-center gap-2">
-          <label className="label">{t("capacity")}</label>
+          <label className="label">{t("room.capacity")}</label>
           <span>{roomQuery.data?.capacity}</span>
         </div>
       </div>

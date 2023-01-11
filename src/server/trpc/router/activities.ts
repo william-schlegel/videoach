@@ -5,14 +5,14 @@ import { router, protectedProcedure } from "../trpc";
 
 export const activityRouter = router({
   getActivityById: protectedProcedure
-    .input(z.string())
+    .input(z.string().cuid())
     .query(({ ctx, input }) => {
       return ctx.prisma.activity.findUnique({
         where: { id: input },
       });
     }),
   getActivityGroupById: protectedProcedure
-    .input(z.string())
+    .input(z.string().cuid())
     .query(({ ctx, input }) => {
       return ctx.prisma.activityGroup.findUnique({
         where: { id: input },

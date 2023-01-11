@@ -55,7 +55,7 @@ function CoachManagementForClub({
       </h1>
       <div className="flex gap-4">
         <aside className="flex min-w-fit max-w-xs flex-grow flex-col gap-2">
-          <h4>{t("coachs")}</h4>
+          <h4>{t("coach.coachs")}</h4>
           <AddCoachToClub clubId={clubId} />
           <ul className="menu overflow-hidden rounded border border-secondary bg-base-100">
             {queryCoachs.data?.map((coach) => (

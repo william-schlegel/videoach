@@ -51,16 +51,16 @@ const AddActivity = ({
 
   return (
     <Modal
-      title={t("select-activities")}
+      title={t("activity.select-activities")}
       handleSubmit={onSubmit}
-      submitButtonText={t("save-activities")}
+      submitButtonText={t("activity.save")}
       buttonIcon={<i className="bx bx-plus bx-xs" />}
       className="w-11/12 max-w-5xl"
     >
-      <h3>{t("select-club-activities")}</h3>
+      <h3>{t("activity.select-club-activities")}</h3>
       <div className="flex flex-1 gap-4">
         <aside className="flex flex-col gap-2">
-          <h4>{t("group")}</h4>
+          <h4>{t("group.group")}</h4>
           <ul className="menu overflow-hidden rounded border border-secondary bg-base-100">
             {queryGroups.data?.map((group) => (
               <li key={group.id}>
@@ -81,7 +81,7 @@ const AddActivity = ({
           {withAdd ? <NewGroup userId={userId} /> : null}
         </aside>
         <div className="flex flex-grow flex-col gap-2">
-          <h4>{t("activities")}</h4>
+          <h4>{t("activity.activities")}</h4>
           <div className="flex flex-wrap gap-2">
             {queryClubActivities.data?.activities
               .filter((a) => a.groupId === groupId)
@@ -127,7 +127,7 @@ const NewActivity = ({ clubId, groupId }: NewActivityProps) => {
   const createActivity = trpc.activities.createActivity.useMutation({
     onSuccess: () => {
       utils.activities.getActivitiesForClub.invalidate();
-      toast.success(t("activity-created") as string);
+      toast.success(t("activity.created") as string);
     },
     onError(error) {
       toast.error(error.message);
@@ -151,9 +151,9 @@ const NewActivity = ({ clubId, groupId }: NewActivityProps) => {
   }
 
   return (
-    <Modal title={t("new-activity")} handleSubmit={addNewActivity}>
+    <Modal title={t("activity.new")} handleSubmit={addNewActivity}>
       <h3>
-        {t("create-activity-group")}
+        {t("activity.create-group")}
         <span className="text-primary">{groupQuery.data?.name}</span>
       </h3>
       <input
@@ -161,9 +161,7 @@ const NewActivity = ({ clubId, groupId }: NewActivityProps) => {
         value={name}
         onChange={(e) => setName(e.target.value)}
       />
-      {error && (
-        <p className="text-sm text-error">{t("activity-name-mandatory")}</p>
-      )}
+      {error && <p className="text-sm text-error">{t("name-mandatory")}</p>}
     </Modal>
   );
 };
@@ -185,7 +183,7 @@ function UpdateActivity({
   const updateActivity = trpc.activities.updateActivity.useMutation({
     onSuccess: () => {
       utils.activities.getActivitiesForClub.invalidate();
-      toast.success(t("activity-updated") as string);
+      toast.success(t("activity.updated") as string);
     },
     onError(error) {
       toast.error(error.message);
@@ -211,14 +209,14 @@ function UpdateActivity({
 
   return (
     <Modal
-      title={t("update-activity")}
+      title={t("activity.update")}
       handleSubmit={update}
       buttonIcon={<i className="bx bx-edit bx-xs" />}
       variant={"Icon-Outlined-Primary"}
       buttonSize="sm"
     >
       <h3>
-        {t("update-activity")}
+        {t("activity.update")}
         <span className="text-primary">{initialName}</span>
       </h3>
       <input
@@ -243,7 +241,7 @@ function DeleteActivity({ clubId, activityId }: DeleteActivityProps) {
   const deleteActivity = trpc.activities.deleteActivity.useMutation({
     onSuccess: () => {
       utils.activities.getActivitiesForClub.invalidate();
-      toast.success(t("activity-deleted") as string);
+      toast.success(t("activity.deleted") as string);
     },
     onError(error) {
       toast.error(error.message);
@@ -253,12 +251,12 @@ function DeleteActivity({ clubId, activityId }: DeleteActivityProps) {
 
   return (
     <Confirmation
-      title={t("activity-deletion")}
-      message={t("activity-deletion-message")}
+      title={t("activity.deletion")}
+      message={t("activity.deletion-message")}
       onConfirm={() => deleteActivity.mutate({ clubId, activityId })}
       buttonIcon={<i className="bx bx-trash bx-xs" />}
       variant={"Icon-Outlined-Secondary"}
-      textConfirmation={t("activity-deletion-confirmation")}
+      textConfirmation={t("activity.deletion-confirmation")}
       buttonSize="sm"
     />
   );
@@ -276,7 +274,7 @@ export const NewGroup = ({ userId, variant = "Primary" }: NewGroupProps) => {
       userId
         ? utils.activities.getActivityGroupsForUser.invalidate(userId)
         : utils.activities.getAllActivityGroups.invalidate(),
-        toast.success(t("group-created") as string);
+        toast.success(t("group.created") as string);
     },
     onError(error) {
       toast.error(error.message);
@@ -300,7 +298,7 @@ export const NewGroup = ({ userId, variant = "Primary" }: NewGroupProps) => {
   }
 
   return (
-    <Modal title={t("new-group")} variant={variant} handleSubmit={addNewGroup}>
+    <Modal title={t("group.new")} variant={variant} handleSubmit={addNewGroup}>
       <h3>Créer un nouveau groupe d&apos;activités</h3>
       <input
         className="input-bordered input w-full"
@@ -339,7 +337,7 @@ export function UpdateGroup({
       userId
         ? utils.activities.getActivityGroupsForUser.invalidate(userId)
         : utils.activities.getAllActivityGroups.invalidate(),
-        toast.success(t("group-updated") as string);
+        toast.success(t("group.updated") as string);
     },
     onError(error) {
       toast.error(error.message);
@@ -365,14 +363,14 @@ export function UpdateGroup({
 
   return (
     <Modal
-      title={t("update-group")}
+      title={t("group.update")}
       handleSubmit={update}
       buttonIcon={<i className={`bx bx-edit bx-${size}`} />}
       variant={variant}
       buttonSize={size}
     >
       <h3>
-        {t("update-group")}{" "}
+        {t("group.update")}&nbsp;
         <span className="text-primary">{groupQuery.data?.name}</span>
       </h3>
       {groupQuery.isLoading ? (
@@ -384,9 +382,7 @@ export function UpdateGroup({
             value={name}
             onChange={(e) => setName(e.target.value)}
           />
-          {error && (
-            <p className="text-sm text-error">{t("group-name-mandatory")}</p>
-          )}
+          {error && <p className="text-sm text-error">{t("name-mandatory")}</p>}
           {userId ? null : (
             <div className="form-control">
               <label className="label cursor-pointer justify-start gap-4">
@@ -397,7 +393,7 @@ export function UpdateGroup({
                   onChange={(e) => setDefaultGroup(e.currentTarget.checked)}
                   disabled={!groupQuery.data?.userId}
                 />
-                <span className="label-text">{t("default")}</span>
+                <span className="label-text">{t("group.default")}</span>
               </label>
             </div>
           )}
@@ -426,7 +422,7 @@ export function DeleteGroup({
       userId
         ? utils.activities.getActivityGroupsForUser.invalidate(userId)
         : utils.activities.getAllActivityGroups.invalidate(),
-        toast.success(t("group-deleted") as string);
+        toast.success(t("group.deleted") as string);
     },
     onError(error) {
       toast.error(error.message);
@@ -436,12 +432,12 @@ export function DeleteGroup({
 
   return (
     <Confirmation
-      title={t("group-deletion")}
-      message={t("group-deletion-message")}
+      title={t("group.deletion")}
+      message={t("group.deletion-message")}
       onConfirm={() => deleteGroup.mutate({ groupId })}
       buttonIcon={<i className={`bx bx-trash bx-${size}`} />}
       variant={variant}
-      textConfirmation={t("group-deletion-confirmation")}
+      textConfirmation={t("group.deletion-confirmation")}
       buttonSize={size}
     />
   );
