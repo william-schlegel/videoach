@@ -20,6 +20,7 @@ import useLocalStorage from "@lib/useLocalstorage";
 import { type TThemes } from "@root/src/components/themeSelector";
 import hslToHex from "@lib/hslToHex";
 import { LATITUDE, LONGITUDE } from "@lib/defaultValues";
+import { isCUID } from "@lib/checkValidity";
 
 export const ROLE_LIST = [
   { label: "user", value: Role.MEMBER },
@@ -51,7 +52,7 @@ export default function Profile() {
   const [theme] = useLocalStorage<TThemes>("theme", "cupcake");
   const myUserId = (Array.isArray(userId) ? userId[0] : userId) || "";
   const userQuery = trpc.users.getUserById.useQuery(myUserId, {
-    enabled: myUserId !== "",
+    enabled: isCUID(myUserId),
     onSuccess: (data) => {
       reset({
         name: data?.name || "",
@@ -264,7 +265,7 @@ export default function Profile() {
           <div>&nbsp;</div>
         )}
         <button
-          className="btn-primary btn col-span-2 w-fit"
+          className="btn btn-primary col-span-2 w-fit"
           disabled={updateUser.isLoading}
         >
           {t("save-profile")}

@@ -11,6 +11,7 @@ import { useTranslation } from "next-i18next";
 import Spinner from "@ui/spinner";
 import { DeleteGroup, NewGroup, UpdateGroup } from "@modals/manageActivity";
 import Layout from "@root/src/components/layout";
+import { isCUID } from "@lib/checkValidity";
 
 function ActivityGroupManagement() {
   const { data: sessionData } = useSession();
@@ -78,6 +79,7 @@ type ClubGroup = {
 
 export function AGContent({ agId }: AGContentProps) {
   const agQuery = trpc.activities.getActivityGroupById.useQuery(agId, {
+    enabled: isCUID(agId),
     onSuccess() {
       setClubs([]);
     },
@@ -132,7 +134,7 @@ export function AGContent({ agId }: AGContentProps) {
             {activitiesQuery.data?.map((activity) => (
               <div key={activity.id} className="pill">
                 <span>{activity.name}</span>
-                <span className="badge-primary badge">
+                <span className="badge badge-primary">
                   {activity.club.name}
                 </span>
               </div>
@@ -145,7 +147,7 @@ export function AGContent({ agId }: AGContentProps) {
             {clubs.map((club) => (
               <div key={club.id} className="pill">
                 <span>{club.name}</span>
-                <span className="badge-primary badge">{club.activities}</span>
+                <span className="badge badge-primary">{club.activities}</span>
               </div>
             ))}
           </div>

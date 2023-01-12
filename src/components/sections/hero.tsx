@@ -1,4 +1,5 @@
 /* eslint-disable @next/next/no-img-element */
+import { isCUID } from "@lib/checkValidity";
 import { formatSize } from "@lib/formatNumber";
 import { useWriteFile } from "@lib/useManageFile";
 import { PAGE_SECTION_LIST } from "@modals/managePage";
@@ -415,7 +416,7 @@ export const HeroDisplay = ({ clubId, pageId }: HeroDisplayProps) => {
   );
   const queryImage = trpc.files.getDocumentUrlById.useQuery(
     heroContent?.images?.[0]?.id ?? "",
-    { enabled: heroContent?.images?.[0]?.id !== undefined }
+    { enabled: isCUID(heroContent?.images?.[0]?.id) }
   );
   const cta = querySection.data?.elements.find((e) => e.elementType === "CTA");
 

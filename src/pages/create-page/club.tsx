@@ -22,6 +22,7 @@ import { HeroCreation } from "@root/src/components/sections/hero";
 import Layout from "@root/src/components/layout";
 import Link from "next/link";
 import { toast } from "react-toastify";
+import { isCUID } from "@lib/checkValidity";
 
 function ClubPage({
   userId,
@@ -35,7 +36,7 @@ function ClubPage({
     },
   });
   const queryPages = trpc.pages.getPagesForClub.useQuery(clubId, {
-    enabled: clubId !== "",
+    enabled: isCUID(clubId),
     onSuccess(data) {
       if (pageId === "") setPageId(data?.[0]?.id ?? "");
     },
@@ -74,7 +75,7 @@ function ClubPage({
                   >
                     <span>{page.name}</span>
                     <div className="flex items-center gap-2">
-                      <span className="badge-secondary badge">
+                      <span className="badge badge-secondary">
                         {t(
                           PAGE_TARGET_LIST.find((t) => t.value === page.target)
                             ?.label ?? ""

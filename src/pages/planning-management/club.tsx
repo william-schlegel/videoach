@@ -45,6 +45,7 @@ import { DndContext, useDraggable, useDroppable } from "@dnd-kit/core";
 import { CSS } from "@dnd-kit/utilities";
 import { type SubmitHandler, useForm } from "react-hook-form";
 import Confirmation from "@ui/confirmation";
+import { isCUID } from "@lib/checkValidity";
 // import { useHover } from "@lib/useHover";
 
 const HHOUR = "h-12"; // 3rem 48px
@@ -66,7 +67,7 @@ function ClubPlanning({
     },
   });
   const queryPlannings = trpc.plannings.getPlanningsForClub.useQuery(clubId, {
-    enabled: clubId !== "",
+    enabled: isCUID(clubId),
     onSuccess(data) {
       if (planningId === "") setPlanningId(data[0]?.id ?? "");
     },
@@ -143,7 +144,7 @@ export function PlanningName({ planning }: { planning: Planning }) {
       {planning.name ? <span>{planning.name}</span> : null}
       <span
         className={`${
-          planning.name ? "badge-secondary badge" : ""
+          planning.name ? "badge badge-secondary" : ""
         } flex items-center gap-1`}
       >
         {!planning.name && <span>{t("from")}</span>}

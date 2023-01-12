@@ -12,6 +12,7 @@ import { useTranslation } from "next-i18next";
 import Layout from "@root/src/components/layout";
 import { AddCoachToClub, CoachDataPresentation } from "@modals/manageClub";
 import { useState } from "react";
+import { isCUID } from "@lib/checkValidity";
 
 function CoachManagementForClub({
   userId,
@@ -25,13 +26,13 @@ function CoachManagementForClub({
     },
   });
   const queryCoachs = trpc.coachs.getCoachsForClub.useQuery(clubId, {
-    enabled: clubId !== "",
+    enabled: isCUID(clubId),
     onSuccess(data) {
       if (coachId === "") setCoachId(data[0]?.id ?? "");
     },
   });
   const queryCoach = trpc.coachs.getCoachById.useQuery(coachId, {
-    enabled: coachId !== "",
+    enabled: isCUID(coachId),
   });
 
   return (

@@ -40,7 +40,15 @@ export const CreateSubscription = ({ clubId }: CreateSubscriptionProps) => {
     formState: { errors },
     reset,
     getValues,
-  } = useForm<SubscriptionFormValues>();
+  } = useForm<SubscriptionFormValues>({
+    defaultValues: {
+      cancelationFee: 0,
+      mode: "ALL_INCLUSIVE",
+      monthly: 0,
+      yearly: 0,
+      startDate: formatDateAsYYYYMMDD(new Date()),
+    },
+  });
   const utils = trpc.useContext();
   const { t } = useTranslation("club");
 

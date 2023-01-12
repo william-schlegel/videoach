@@ -24,6 +24,7 @@ import ButtonIcon from "@ui/buttonIcon";
 import { useWriteFile } from "@lib/useManageFile";
 import { LATITUDE, LONGITUDE } from "@lib/defaultValues";
 import Spinner from "@ui/spinner";
+import { isCUID } from "@lib/checkValidity";
 
 const MAX_SIZE_LOGO = 1024 * 1024;
 
@@ -400,7 +401,7 @@ export const AddCoachToClub = ({ clubId }: { clubId: string }) => {
   const [coachId, setCoachId] = useState("");
   const { t } = useTranslation("club");
   const queryCoach = trpc.coachs.getCoachById.useQuery(coachId, {
-    enabled: coachId !== "",
+    enabled: isCUID(coachId),
   });
 
   const onSubmit = () => {

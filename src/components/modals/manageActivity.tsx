@@ -6,6 +6,7 @@ import { useTranslation } from "next-i18next";
 import { type ButtonSize } from "@ui/buttonIcon";
 import Spinner from "@ui/spinner";
 import { toast } from "react-toastify";
+import { isCUID } from "@lib/checkValidity";
 
 type AddActivityProps = {
   userId: string;
@@ -53,7 +54,7 @@ const AddActivity = ({
     <Modal
       title={t("activity.select-activities")}
       handleSubmit={onSubmit}
-      submitButtonText={t("activity.save")}
+      submitButtonText={t("activity.save-activity")}
       buttonIcon={<i className="bx bx-plus bx-xs" />}
       className="w-11/12 max-w-5xl"
     >
@@ -123,7 +124,9 @@ type NewActivityProps = {
 
 const NewActivity = ({ clubId, groupId }: NewActivityProps) => {
   const utils = trpc.useContext();
-  const groupQuery = trpc.activities.getActivityGroupById.useQuery(groupId);
+  const groupQuery = trpc.activities.getActivityGroupById.useQuery(groupId, {
+    enabled: isCUID(groupId),
+  });
   const createActivity = trpc.activities.createActivity.useMutation({
     onSuccess: () => {
       utils.activities.getActivitiesForClub.invalidate();
@@ -327,6 +330,7 @@ export function UpdateGroup({
 }: UpdateGroupProps) {
   const utils = trpc.useContext();
   const groupQuery = trpc.activities.getActivityGroupById.useQuery(groupId, {
+    enabled: isCUID(groupId),
     onSuccess(data) {
       setName(data?.name ?? "");
       setDefaultGroup(data?.default ?? false);

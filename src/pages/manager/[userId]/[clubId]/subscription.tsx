@@ -1,4 +1,5 @@
 import { authOptions } from "@auth/[...nextauth]";
+import { isCUID } from "@lib/checkValidity";
 import { formatDateLocalized } from "@lib/formatDate";
 import { formatMoney } from "@lib/formatNumber";
 import {
@@ -36,6 +37,7 @@ const ManageSubscriptions = ({
   const siteQuery = trpc.subscriptions.getSubscriptionsForClub.useQuery(
     clubId,
     {
+      enabled: isCUID(clubId),
       onSuccess(data) {
         if (subscriptionId === "") setSubscriptionId(data[0]?.id || "");
       },
@@ -69,7 +71,7 @@ const ManageSubscriptions = ({
           </h1>
           <CreateSubscription clubId={clubId} />
         </div>
-        <Link className="btn-outline btn-primary btn" href={`${path}clubs`}>
+        <Link className="btn-outline btn btn-primary" href={`${path}clubs`}>
           {t("subscription.back-to-clubs")}
         </Link>
       </div>
@@ -273,7 +275,7 @@ export function SubscriptionContent({
               {info}
             </div>
             <button
-              className="btn-primary btn-block btn mt-4"
+              className="btn btn-primary btn-block mt-4"
               onClick={handleSaveSelection}
             >
               {t("subscription.validate-selection")}

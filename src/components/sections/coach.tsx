@@ -21,6 +21,7 @@ import turfCircle from "@turf/circle";
 import hslToHex from "@lib/hslToHex";
 import Head from "next/head";
 import { LATITUDE, LONGITUDE } from "@lib/defaultValues";
+import { isCUID } from "@lib/checkValidity";
 
 type CoachCreationProps = {
   userId: string;
@@ -380,7 +381,7 @@ export const CoachDisplay = ({ pageId }: CoachDisplayProps) => {
     ?.elements.find((e) => e.elementType === "HERO_CONTENT");
   const queryImage = trpc.files.getDocumentUrlById.useQuery(
     hero?.images?.[0]?.id ?? "",
-    { enabled: hero?.images?.[0]?.id !== undefined }
+    { enabled: isCUID(hero?.images?.[0]?.id) }
   );
 
   if (queryPage.isLoading) return <Spinner />;

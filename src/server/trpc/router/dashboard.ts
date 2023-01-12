@@ -30,6 +30,11 @@ export const dashboardRouter = router({
               _count: true,
             },
           },
+          subscriptions: {
+            select: {
+              _count: true,
+            },
+          },
         },
       });
       return clubData;

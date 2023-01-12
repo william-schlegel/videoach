@@ -51,18 +51,27 @@ const ManagerClubs = ({
     [managerQuery.data]
   );
 
+  const subscriptionCount = useMemo(
+    () =>
+      managerQuery.data?.reduce(
+        (acc, r) => (acc += r.subscriptions.length),
+        0
+      ) ?? 0,
+    [managerQuery.data]
+  );
+
   if (managerQuery.isLoading) return <Spinner />;
 
   return (
     <Layout className="container mx-auto my-2 flex flex-col gap-2">
       <h1 className="flex justify-between">
         {t("manager-dashboard")}
-        <Link className="btn-secondary btn" href={`${userId}/clubs`}>
+        <Link className="btn btn-secondary" href={`${userId}/clubs`}>
           {t("manage-club")}
         </Link>
       </h1>
       <section className="stats shadow">
-        <div className="stat">
+        <Link className="stat" href={`${userId}/clubs`}>
           <div className="stat-figure text-primary">
             <i className="bx bx-building bx-lg" />
           </div>
@@ -72,7 +81,7 @@ const ManagerClubs = ({
           <div className="stat-value text-primary">
             {managerQuery.data?.length}
           </div>
-        </div>
+        </Link>
         <div className="stat">
           <div className="stat-figure text-primary">
             <i className="bx bx-map-pin bx-lg" />
@@ -99,6 +108,15 @@ const ManagerClubs = ({
             {t("activities", { count: activityCount })}
           </div>
           <div className="stat-value text-primary">{activityCount}</div>
+        </div>
+        <div className="stat">
+          <div className="stat-figure text-primary">
+            <i className="bx bx-euro bx-lg" />
+          </div>
+          <div className="stat-title">
+            {t("subscriptions", { count: subscriptionCount })}
+          </div>
+          <div className="stat-value text-primary">{subscriptionCount}</div>
         </div>
         <div className="stat">
           <div className="stat-figure text-primary">

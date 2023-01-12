@@ -20,6 +20,7 @@ import {
 import ButtonIcon from "@ui/buttonIcon";
 import { toast } from "react-toastify";
 import Layout from "@root/src/components/layout";
+import { isCUID } from "@lib/checkValidity";
 
 const ManageCertifications = ({
   userId,
@@ -39,7 +40,7 @@ const ManageCertifications = ({
 
   const { t } = useTranslation("coach");
   trpc.files.getDocumentUrlById.useQuery(docId, {
-    enabled: docId !== "",
+    enabled: isCUID(docId),
     onSuccess(data) {
       if (data.url)
         if (data.fileType === "application/pdf") {
