@@ -2,11 +2,9 @@ import {
   useForm,
   type SubmitHandler,
   type SubmitErrorHandler,
-  type FieldValues,
   type FieldErrorsImpl,
   type UseFormRegister,
   type UseFormGetValues,
-  type Path,
 } from "react-hook-form";
 import Modal, { type TModalVariant } from "../ui/modal";
 import SimpleForm from "../ui/simpleform";
@@ -126,16 +124,13 @@ export const DeleteUser = ({
   );
 };
 
-type UserFormProps<T extends FieldValues> = {
+type UserFormProps = {
   errors?: FieldErrorsImpl;
-  register: UseFormRegister<T>;
-  getValues: UseFormGetValues<T>;
+  register: UseFormRegister<UserFormValues>;
+  getValues: UseFormGetValues<UserFormValues>;
 };
 
-function UserForm<T extends FieldValues>({
-  errors,
-  register,
-}: UserFormProps<T>): JSX.Element {
+function UserForm({ errors, register }: UserFormProps): JSX.Element {
   const { t } = useTranslation("auth");
   return (
     <SimpleForm
@@ -157,7 +152,7 @@ function UserForm<T extends FieldValues>({
           label: t("role"),
           name: "role",
           component: (
-            <select className="max-w-xs" {...register("role" as Path<T>)}>
+            <select className="max-w-xs" {...register("role")}>
               {ROLE_LIST.map((rl) => (
                 <option key={rl.value} value={rl.value}>
                   {t(rl.label)}

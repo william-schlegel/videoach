@@ -25,7 +25,7 @@ export function useDayName() {
   }
 
   function getName(value?: DayName | null) {
-    return t(DAYS.find((d) => d.value === value)?.label ?? "monday");
+    return t(getLabel(value));
   }
   return { getName, getLabel };
 }

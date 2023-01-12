@@ -5,7 +5,6 @@ import {
   type SubmitErrorHandler,
   type FieldErrorsImpl,
   type UseFormRegister,
-  type FieldValues,
 } from "react-hook-form";
 import Modal, { type TModalVariant } from "../ui/modal";
 import SimpleForm from "../ui/simpleform";
@@ -167,15 +166,12 @@ export const DeleteSite = ({
   );
 };
 
-type SiteFormProps<T extends FieldValues> = {
+type SiteFormProps = {
   errors?: FieldErrorsImpl;
-  register: UseFormRegister<T>;
+  register: UseFormRegister<SiteFormValues>;
 };
 
-function SiteForm<T extends FieldValues>({
-  errors,
-  register,
-}: SiteFormProps<T>): JSX.Element {
+function SiteForm({ errors, register }: SiteFormProps): JSX.Element {
   const { t } = useTranslation("club");
   return (
     <SimpleForm

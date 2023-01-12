@@ -2,11 +2,9 @@ import {
   useForm,
   type SubmitHandler,
   type SubmitErrorHandler,
-  type FieldValues,
   type FieldErrorsImpl,
   type UseFormRegister,
   type UseFormGetValues,
-  type Path,
 } from "react-hook-form";
 import Modal, { type TModalVariant } from "../ui/modal";
 import SimpleForm from "../ui/simpleform";
@@ -193,17 +191,13 @@ export const DeleteRoom = ({
   );
 };
 
-type RoomFormProps<T extends FieldValues> = {
+type RoomFormProps = {
   errors?: FieldErrorsImpl;
-  register: UseFormRegister<T>;
-  getValues: UseFormGetValues<T>;
+  register: UseFormRegister<RoomFormValues>;
+  getValues: UseFormGetValues<RoomFormValues>;
 };
 
-function RoomForm<T extends FieldValues>({
-  errors,
-  register,
-  getValues,
-}: RoomFormProps<T>): JSX.Element {
+function RoomForm({ errors, register, getValues }: RoomFormProps): JSX.Element {
   const { t } = useTranslation("club");
   return (
     <SimpleForm
@@ -224,8 +218,8 @@ function RoomForm<T extends FieldValues>({
           name: "reservation",
           component: (
             <select
-              defaultValue={getValues("reservation" as Path<T>)}
-              {...register("reservation" as Path<T>)}
+              defaultValue={getValues("reservation")}
+              {...register("reservation")}
             >
               {RESERVATIONS.map((reservation) => (
                 <option key={reservation.value} value={reservation.value}>
@@ -243,7 +237,7 @@ function RoomForm<T extends FieldValues>({
                 <input
                   type="checkbox"
                   className="checkbox-primary checkbox"
-                  {...register("unavailable" as Path<T>)}
+                  {...register("unavailable")}
                   defaultChecked={false}
                 />
                 <span className="label-text">{t("room.unavailable")}</span>

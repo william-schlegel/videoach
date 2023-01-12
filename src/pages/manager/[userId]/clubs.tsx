@@ -164,12 +164,13 @@ export function ClubContent({ userId, clubId }: ClubContentProps) {
           <p>({clubQuery.data?.address})</p>
         </div>
         <div className="flex items-center gap-2">
-          <Link href={`./${clubId}/subscription`}>
+          <Link href={`${path}${clubId}/subscription`}>
             <ButtonIcon
               iconComponent={<i className="bx bx-euro bx-sm" />}
-              title={t("manage-subscriptions")}
-              buttonVariant="Icon-Outlined-Primary"
+              title={t("subscription.manage-subscriptions")}
+              buttonVariant="Icon-Primary"
               buttonSize="md"
+              fullButton
             />
           </Link>
           <UpdateClub clubId={clubId} />

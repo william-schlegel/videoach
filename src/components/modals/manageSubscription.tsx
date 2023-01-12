@@ -1,28 +1,32 @@
-import { trpc } from "../../utils/trpc";
+import { formatDateAsYYYYMMDD } from "@lib/formatDate";
+import { SubscriptionMode, SubscriptionRestriction } from "@prisma/client";
+import Confirmation from "@ui/confirmation";
+import { useSession } from "next-auth/react";
+import { useTranslation } from "next-i18next";
+import { type PropsWithoutRef } from "react";
 import {
   useForm,
-  type SubmitHandler,
-  type SubmitErrorHandler,
   type FieldErrorsImpl,
+  type SubmitErrorHandler,
+  type SubmitHandler,
+  type UseFormGetValues,
   type UseFormRegister,
-  type FieldValues,
 } from "react-hook-form";
+import { toast } from "react-toastify";
+import { trpc } from "../../utils/trpc";
 import Modal, { type TModalVariant } from "../ui/modal";
 import SimpleForm from "../ui/simpleform";
-import { type PropsWithoutRef } from "react";
-import { useSession } from "next-auth/react";
-import Confirmation from "@ui/confirmation";
-import { useTranslation } from "next-i18next";
-import { toast } from "react-toastify";
 
 type SubscriptionFormValues = {
   name: string;
   description: string;
   highlight: string;
-  startDate: Date;
+  startDate: string;
   monthly: number;
   yearly: number;
   cancelationFee: number;
+  mode: SubscriptionMode;
+  restriction: SubscriptionRestriction;
 };
 
 type CreateSubscriptionProps = {
@@ -35,6 +39,7 @@ export const CreateSubscription = ({ clubId }: CreateSubscriptionProps) => {
     handleSubmit,
     formState: { errors },
     reset,
+    getValues,
   } = useForm<SubscriptionFormValues>();
   const utils = trpc.useContext();
   const { t } = useTranslation("club");
@@ -50,12 +55,15 @@ export const CreateSubscription = ({ clubId }: CreateSubscriptionProps) => {
     },
   });
   const onSubmit: SubmitHandler<SubscriptionFormValues> = (data) => {
-    console.log("data :>> ", data);
-    createSubscription.mutate({ clubId, ...data });
+    createSubscription.mutate({
+      clubId,
+      ...data,
+      startDate: new Date(data.startDate),
+    });
   };
 
   const onError: SubmitErrorHandler<SubscriptionFormValues> = (errors) => {
-    console.log("errors", errors);
+    console.error("errors", errors);
   };
 
   return (
@@ -68,7 +76,11 @@ export const CreateSubscription = ({ clubId }: CreateSubscriptionProps) => {
       className="w-11/12 max-w-3xl"
     >
       <h3>{t("subscription.create-new")}</h3>
-      <SubscriptionForm register={register} errors={errors} />
+      <SubscriptionForm
+        register={register}
+        errors={errors}
+        getValues={getValues}
+      />
     </Modal>
   );
 };
@@ -88,12 +100,14 @@ export const UpdateSubscription = ({
     handleSubmit,
     formState: { errors },
     reset,
+    getValues,
   } = useForm<SubscriptionFormValues>();
   const querySubscription = trpc.subscriptions.getSubscriptionById.useQuery(
     subscriptionId,
     {
       onSuccess(data) {
-        if (data) reset(data);
+        if (data)
+          reset({ ...data, startDate: formatDateAsYYYYMMDD(data.startDate) });
       },
     }
   );
@@ -110,12 +124,15 @@ export const UpdateSubscription = ({
   const { t } = useTranslation("club");
 
   const onSubmit: SubmitHandler<SubscriptionFormValues> = (data) => {
-    console.log("data", data);
-    updateSubscription.mutate({ id: subscriptionId, ...data });
+    updateSubscription.mutate({
+      id: subscriptionId,
+      ...data,
+      startDate: new Date(data.startDate),
+    });
   };
 
   const onError: SubmitErrorHandler<SubscriptionFormValues> = (errors) => {
-    console.log("errors", errors);
+    console.error("errors", errors);
   };
 
   return (
@@ -136,7 +153,11 @@ export const UpdateSubscription = ({
           <span className="text-primary">{querySubscription?.data?.name}</span>
         </h3>
       </div>
-      <SubscriptionForm register={register} errors={errors} />
+      <SubscriptionForm
+        register={register}
+        errors={errors}
+        getValues={getValues}
+      />
     </Modal>
   );
 };
@@ -180,15 +201,17 @@ export const DeleteSubscription = ({
   );
 };
 
-type SubscriptionFormProps<T extends FieldValues> = {
+type SubscriptionFormProps = {
   errors?: FieldErrorsImpl;
-  register: UseFormRegister<T>;
+  register: UseFormRegister<SubscriptionFormValues>;
+  getValues: UseFormGetValues<SubscriptionFormValues>;
 };
 
-function SubscriptionForm<T extends FieldValues>({
+function SubscriptionForm({
   errors,
   register,
-}: SubscriptionFormProps<T>): JSX.Element {
+  getValues,
+}: SubscriptionFormProps): JSX.Element {
   const { t } = useTranslation("club");
   return (
     <SimpleForm
@@ -234,7 +257,95 @@ function SubscriptionForm<T extends FieldValues>({
           type: "number",
           unit: "€",
         },
+        {
+          label: t("subscription.select-mode"),
+          name: "mode",
+          component: (
+            <select defaultValue={getValues("mode")} {...register("mode")}>
+              {SUBSCRIPTION_MODES.map((mode) => (
+                <option key={mode.value} value={mode.value}>
+                  {t(mode.label)}
+                </option>
+              ))}
+            </select>
+          ),
+        },
+        {
+          label: t("subscription.select-restriction"),
+          name: "restriction",
+          component: (
+            <select
+              defaultValue={getValues("restriction")}
+              {...register("restriction")}
+            >
+              {SUBSCRIPTION_RESTRICTION.map((restriction) => (
+                <option key={restriction.value} value={restriction.value}>
+                  {t(restriction.label)}
+                </option>
+              ))}
+            </select>
+          ),
+        },
       ]}
     />
   );
+}
+
+export const SUBSCRIPTION_MODES = [
+  {
+    value: SubscriptionMode.ALL_INCLUSIVE,
+    label: "subscription.mode.all-inclusive",
+  },
+  {
+    value: SubscriptionMode.ACTIVITY_GROUP,
+    label: "subscription.mode.activity-group",
+  },
+  { value: SubscriptionMode.ACTIVITY, label: "subscription.mode.activity" },
+  { value: SubscriptionMode.COURSE, label: "subscription.mode.course" },
+  { value: SubscriptionMode.DAY, label: "subscription.mode.day" },
+] as const;
+
+export const SUBSCRIPTION_RESTRICTION = [
+  {
+    value: SubscriptionRestriction.CLUB,
+    label: "subscription.restriction.club",
+  },
+  {
+    value: SubscriptionRestriction.SITE,
+    label: "subscription.restriction.site",
+  },
+  {
+    value: SubscriptionRestriction.ROOM,
+    label: "subscription.restriction.room",
+  },
+] as const;
+
+export function useSubscriptionMode() {
+  const { t } = useTranslation("club");
+  function getModeLabel(value?: SubscriptionMode | null) {
+    return (
+      SUBSCRIPTION_MODES.find((d) => d.value === value)?.label ??
+      "subscription.mode.activity-group"
+    );
+  }
+
+  function getModeName(value?: SubscriptionMode | null) {
+    return t(getModeLabel(value));
+  }
+  return { getModeName, getModeLabel };
+}
+
+export function useSubscriptionRestriction() {
+  const { t } = useTranslation("club");
+  function getRestrictionLabel(value?: SubscriptionRestriction | null) {
+    return (
+      SUBSCRIPTION_RESTRICTION.find((d) => d.value === value)?.label ??
+      "subscription.restriction.club"
+    );
+  }
+
+  function getRestrictionName(value?: SubscriptionRestriction | null) {
+    return t(getRestrictionLabel(value));
+  }
+  return { getRestrictionName, getRestrictionLabel };
 }

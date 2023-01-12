@@ -13,6 +13,7 @@ type Props = {
   iconComponent: ReactNode;
   buttonVariant?: TIconButtonVariant;
   buttonSize?: ButtonSize;
+  fullButton?: boolean;
 };
 
 function ButtonIcon({
@@ -20,6 +21,7 @@ function ButtonIcon({
   iconComponent,
   buttonVariant = "Icon-Outlined-Primary",
   buttonSize = "md",
+  fullButton,
 }: Props) {
   const btnId = useId();
 
@@ -30,7 +32,17 @@ function ButtonIcon({
     buttonVariant === "Icon-Outlined-Primary" ||
     buttonVariant === "Icon-Outlined-Secondary";
 
-  return (
+  return fullButton ? (
+    <label
+      className={`btn ${outlined ? "btn-outline" : ""} ${
+        primary ? "btn-primary" : "btn-secondary"
+      } flex items-center gap-2 btn-${buttonSize}`}
+      tabIndex={0}
+    >
+      {iconComponent}
+      {title}
+    </label>
+  ) : (
     <div className={"tooltip z-50"} data-tip={title}>
       <label
         htmlFor={btnId}

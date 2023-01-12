@@ -133,6 +133,46 @@
     "yearly": "Tarif annuel",
     "cancelation-fee": "Frais de désabonnement",
     "per-month": "€/mois",
-    "per-year": "€/an"
+    "per-year": "€/an",
+    "users_zero": "Aucun abonné",
+    "users_one": "Un abonné",
+    "users_other": "{{count}} abonnés",
+    "info": "Informations",
+    "subscription-content": "Ce qui est compris dans l'abonnement",
+    "select-mode": "Mode de facturation",
+    "selected-mode": "Facturé",
+    "validate-selection": "Valider cette sélection",
+    "mode": {
+      "all-inclusive": "Tout compris",
+      "activity-group": "Par groupe d'activité",
+      "activity": "Par activité",
+      "course": "Par cours",
+      "day": "Par jours",
+      "all-inclusive-select": "Toutes les activités proposées",
+      "activity-group-select_zero": "Aucun groupe d'activités sélectionné",
+      "activity-group-select_one": "Le groupe d'activités sélectionné : ",
+      "activity-group-select_other": "Les groupes d'activités sélectionnés : ",
+      "activity-select_zero": "Aucune activité sélectionnée",
+      "activity-select_one": "L'activité sélectionnée : ",
+      "activity-select_other": "Les activités sélectionnées : ",
+      "day-select": "Toutes les activités du jour"
+    },
+    "select-restriction": "Restriction de lieu",
+    "selected-restriction": "Restreint à",
+    "restriction": {
+      "club": "Un club",
+      "site": "Une sélection de sites d'activités",
+      "room": "Une sélection de salle",
+      "club-select": "sur le club",
+      "site-select_zero": "sur aucun site sélectionné",
+      "site-select_one": "sur le site sélectionné : ",
+      "site-select_other": "sur les sites sélectionnés : ",
+      "room-select_zero": "sur aucune salle sélectionnée",
+      "room-select_one": "sur la salle sélectionnée : ",
+      "room-select_other": "sur les salles sélectionnées : "
+    },
+    "club": "Club",
+    "site": "Site",
+    "room": "Salle"
   }
 }

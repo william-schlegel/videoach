@@ -94,7 +94,7 @@ model User {
   planningActivities PlanningActivity[]
   plannings          Planning[]
   subscriptionId     String?
-  subscription       Subscription?      @relation(fields: [subscriptionId], references: [id])
+  subscription       Subscription?      @relation(fields: [subscriptionId], references: [id], onDelete: NoAction, onUpdate: NoAction)
 
   @@index([pricingId])
   @@index([subscriptionId])
@@ -182,6 +182,7 @@ model Site {
   calendars          OpeningCalendar[]
   plannings          Planning[]
   planningActivities PlanningActivity[]
+  subscriptions      Subscription[]
 
   @@index([clubId])
 }
@@ -206,24 +207,45 @@ model Room {
   activities         Activity[]
   plannings          Planning[]
   planningActivities PlanningActivity[]
+  subscriptions      Subscription[]
 
   @@index([siteId])
 }
 
+enum SubscriptionMode {
+  ALL_INCLUSIVE
+  ACTIVITY_GROUP
+  ACTIVITY
+  DAY
+  COURSE
+}
+
+enum SubscriptionRestriction {
+  CLUB
+  SITE
+  ROOM
+}
+
 model Subscription {
-  id              String          @id @default(cuid())
+  id              String                  @id @default(cuid())
   name            String
+  mode            SubscriptionMode        @default(ALL_INCLUSIVE)
+  restriction     SubscriptionRestriction @default(CLUB)
   highlight       String
   description     String
   startDate       DateTime
   deletionDate    DateTime?
-  monthly         Float           @default(0)
-  yearly          Float           @default(0)
-  cancelationFee  Float           @default(0)
+  monthly         Float                   @default(0)
+  yearly          Float                   @default(0)
+  cancelationFee  Float                   @default(0)
   activitieGroups ActivityGroup[]
+  activities      Activity[]
+  day             DayName?
   users           User[]
   clubId          String
-  club            Club            @relation(fields: [clubId], references: [id], onUpdate: NoAction)
+  club            Club                    @relation(fields: [clubId], references: [id], onUpdate: NoAction)
+  sites           Site[]
+  rooms           Room[]
 
   @@index([clubId])
 }
@@ -258,6 +280,7 @@ model Activity {
   club               Club               @relation(fields: [clubId], references: [id], onDelete: Cascade)
   rooms              Room[]
   planningActivities PlanningActivity[]
+  subscriptions      Subscription[]
 
   @@index([groupId])
   @@index([clubId])
