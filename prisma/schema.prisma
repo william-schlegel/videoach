@@ -93,11 +93,9 @@ model User {
   instagramLink      String?
   planningActivities PlanningActivity[]
   plannings          Planning[]
-  subscriptionId     String?
-  subscription       Subscription?      @relation(fields: [subscriptionId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  subscriptions      Subscription[]
 
   @@index([pricingId])
-  @@index([subscriptionId])
 }
 
 model Paiement {

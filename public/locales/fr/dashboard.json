@@ -29,5 +29,9 @@
   "schedule": "Rendez-vous",
   "no-planning": "Pas d'activités aujourd'hui",
   "member-dashboard": "Espace membre",
-  "reservation": "Réserver une activité"
+  "reservation": "Réserver une activité",
+  "new-subscription": "Prendre un abonnement",
+  "my-subscription_zero": "Je n'ai pas encore d'abonnement",
+  "my-subscription_one": "Mon abonnement",
+  "my-subscription_other": "Mes abonnements"
 }

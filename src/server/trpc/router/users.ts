@@ -31,6 +31,7 @@ export const userRouter = router({
           pricing: true,
           paiements: true,
           accounts: true,
+          subscriptions: true,
         },
       });
     }),
