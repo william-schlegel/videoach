@@ -31,7 +31,24 @@ export const userRouter = router({
           pricing: true,
           paiements: true,
           accounts: true,
-          subscriptions: true,
+        },
+      });
+    }),
+  getUserSubscriptionsById: protectedProcedure
+    .input(z.string().cuid())
+    .query(({ ctx, input }) => {
+      return ctx.prisma.user.findUnique({
+        where: { id: input },
+        include: {
+          subscriptions: {
+            include: {
+              activitieGroups: true,
+              activities: true,
+              sites: true,
+              rooms: true,
+              club: true,
+            },
+          },
         },
       });
     }),

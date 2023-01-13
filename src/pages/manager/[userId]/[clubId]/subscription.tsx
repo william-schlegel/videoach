@@ -21,7 +21,7 @@ import {
 } from "next";
 import { unstable_getServerSession } from "next-auth";
 import { useSession } from "next-auth/react";
-import { useTranslation } from "next-i18next";
+import { useTranslation, i18n } from "next-i18next";
 import { serverSideTranslations } from "next-i18next/serverSideTranslations";
 import Link from "next/link";
 import { useRouter } from "next/router";
@@ -71,7 +71,7 @@ const ManageSubscriptions = ({
           </h1>
           <CreateSubscription clubId={clubId} />
         </div>
-        <Link className="btn-outline btn btn-primary" href={`${path}clubs`}>
+        <Link className="btn-outline btn-primary btn" href={`${path}clubs`}>
           {t("subscription.back-to-clubs")}
         </Link>
       </div>
@@ -138,7 +138,7 @@ export function SubscriptionContent({
     }
   );
 
-  const info = useDisplaySubscriptionInfo(
+  const { info } = useDisplaySubscriptionInfo(
     subQuery.data?.mode ?? "ALL_INCLUSIVE",
     subQuery.data?.restriction ?? "CLUB",
     selectedActivityGroups,
@@ -275,7 +275,7 @@ export function SubscriptionContent({
               {info}
             </div>
             <button
-              className="btn btn-primary btn-block mt-4"
+              className="btn-primary btn-block btn mt-4"
               onClick={handleSaveSelection}
             >
               {t("subscription.validate-selection")}
@@ -432,7 +432,7 @@ function SelectDataForMode({
   );
 }
 
-function useDisplaySubscriptionInfo(
+export function useDisplaySubscriptionInfo(
   mode: SubscriptionMode,
   restriction: SubscriptionRestriction,
   activityGroupIds: string[],
@@ -441,6 +441,7 @@ function useDisplaySubscriptionInfo(
   roomIds: string[]
 ) {
   const { t } = useTranslation("club");
+
   const { data } = trpc.subscriptions.getDataNames.useQuery({
     siteIds,
     roomIds,
@@ -448,26 +449,42 @@ function useDisplaySubscriptionInfo(
     activityIds,
   });
   let info = "";
+  let shortInfo = "";
 
-  if (!data) return "";
+  if (!data)
+    return {
+      info: "",
+      sites: [],
+      rooms: [],
+      activityGroups: [],
+      activities: [],
+    };
+
+  const sites = data.sites.map((s) => s.name);
+  const rooms = data.rooms.map((s) => s.name);
+  const activityGroups = data.activityGroups.map((s) => s.name);
+  const activities = data.activities.map((s) => s.name);
+
+  const listFormatter = new Intl.ListFormat(i18n?.language);
+
   switch (mode) {
     case "ALL_INCLUSIVE":
-      info = t("subscription.mode.all-inclusive-select");
+      shortInfo = t("subscription.mode.all-inclusive-select");
       break;
     case "ACTIVITY_GROUP":
       info = t("subscription.mode.activity-group-select", {
         count: data.activityGroups.length,
       });
-      info = info.concat(data.activityGroups.map((ag) => ag.name).toString());
+      info = info.concat(listFormatter.format(activityGroups));
       break;
     case "ACTIVITY":
       info = t("subscription.mode.activity-select", {
         count: data.activities.length,
       });
-      info = info.concat(data.activities.map((a) => a.name).toString());
+      info = info.concat(listFormatter.format(activities));
       break;
     case "DAY":
-      info = t("subscription.mode.day-select");
+      shortInfo = t("subscription.mode.day-select");
       break;
     default:
   }
@@ -480,18 +497,25 @@ function useDisplaySubscriptionInfo(
       info = info.concat(
         t("subscription.restriction.site-select", { count: data.sites.length })
       );
-      info = info.concat(data.sites.map((s) => s.name).toString());
+      info = info.concat(listFormatter.format(sites));
       break;
     case "ROOM":
       info = info.concat(
         t("subscription.restriction.room-select", { count: data.rooms.length })
       );
-      info = info.concat(data.rooms.map((r) => r.name).toString());
+      info = info.concat(listFormatter.format(rooms));
       break;
     default:
   }
 
-  return info;
+  return {
+    shortInfo,
+    info: shortInfo.concat(info),
+    sites,
+    rooms,
+    activityGroups,
+    activities,
+  };
 }
 
 function DataCell({

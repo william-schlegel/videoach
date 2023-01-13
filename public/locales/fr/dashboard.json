@@ -5,6 +5,8 @@
   "sites_other": "Sites",
   "rooms_one": "Salle",
   "rooms_other": "Salles",
+  "activity-groups_one": "Groupe d'activités",
+  "activity-groups_other": "Groupes d'activités",
   "activities_one": "Activité",
   "activities_other": "Activités",
   "members_one": "Membre",
@@ -33,5 +35,8 @@
   "new-subscription": "Prendre un abonnement",
   "my-subscription_zero": "Je n'ai pas encore d'abonnement",
   "my-subscription_one": "Mon abonnement",
-  "my-subscription_other": "Mes abonnements"
+  "my-subscription_other": "Mes abonnements",
+  "my-planning": "Mon planning",
+  "my-reservations": "Mes réservations",
+  "my-chat": "Discussions"
 }

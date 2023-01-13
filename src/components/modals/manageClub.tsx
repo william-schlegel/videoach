@@ -397,7 +397,12 @@ export const AddCoachToClub = ({ clubId }: { clubId: string }) => {
       if (coachId === "") setCoachId(data?.[0]?.id ?? "");
     },
   });
-  const addCoachToClub = trpc.clubs.updateClubCoach.useMutation();
+  const utils = trpc.useContext();
+  const addCoachToClub = trpc.clubs.updateClubCoach.useMutation({
+    onSuccess() {
+      utils.coachs.getCoachsForClub.invalidate(clubId);
+    },
+  });
   const [coachId, setCoachId] = useState("");
   const { t } = useTranslation("club");
   const queryCoach = trpc.coachs.getCoachById.useQuery(coachId, {
