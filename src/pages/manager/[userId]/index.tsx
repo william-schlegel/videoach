@@ -152,7 +152,7 @@ export default ManagerClubs;
 
 function DailyPlanning({ clubId }: { clubId: string }) {
   const { t } = useTranslation("dashboard");
-  const day = DAYS[dayjs().day() - 1]?.value ?? "MONDAY";
+  const day = DAYS[dayjs().day()]?.value ?? "MONDAY";
   const planning = trpc.plannings.getClubDailyPlanning.useQuery({
     clubId,
     day,

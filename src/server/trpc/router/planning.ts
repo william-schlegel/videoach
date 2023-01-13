@@ -1,3 +1,12 @@
+import type {
+  Activity,
+  Club,
+  Planning,
+  PlanningActivity,
+  Room,
+  Site,
+  User,
+} from "@prisma/client";
 import { DayName } from "@prisma/client";
 import { z } from "zod";
 import { router, protectedProcedure, publicProcedure } from "../trpc";
@@ -210,6 +219,119 @@ export const planningRouter = router({
           },
         },
       });
+      // TODO: manage exception days
+      return planning;
+    }),
+  getMemberDailyPlanning: protectedProcedure
+    .input(
+      z.object({
+        memberId: z.string().cuid(),
+        day: z.nativeEnum(DayName),
+      })
+    )
+    .query(async ({ ctx, input }) => {
+      const user = await ctx.prisma.user.findUnique({
+        where: { id: input.memberId },
+        include: {
+          subscriptions: {
+            include: {
+              activitieGroups: true,
+              activities: true,
+              rooms: true,
+              sites: true,
+            },
+          },
+        },
+      });
+      const clubIds = Array.from(
+        new Set(user?.subscriptions.map((s) => s.clubId))
+      );
+
+      const planningClubs = await ctx.prisma.planning.findMany({
+        where: {
+          startDate: {
+            lte: new Date(Date.now()),
+          },
+          clubId: {
+            in: clubIds,
+          },
+        },
+        include: { club: true },
+      });
+
+      const planning: (Planning & {
+        club: Club;
+        activities: (PlanningActivity & {
+          site: Site;
+          room: Room | null;
+          activity: Activity;
+          coach: User | null;
+        })[];
+      })[] = [];
+
+      for (const planningClub of planningClubs) {
+        const sub = user?.subscriptions.filter(
+          (s) => s.clubId === planningClub.clubId
+        );
+
+        type TIn = { in: string[] };
+        type TFilter = {
+          activityId?: TIn;
+          activity?: { groupId: TIn };
+          siteId?: TIn;
+          roomId?: TIn;
+        };
+        const where: {
+          day: DayName;
+          planningId: string;
+          OR?: TFilter[];
+        } = {
+          day: input.day,
+          planningId: planningClub.id,
+        };
+        for (const s of sub ?? []) {
+          let fAct: TIn | null = null;
+          let fGAct: { groupId: TIn } | null = null;
+          let fSite: TIn | null = null;
+          let fRoom: TIn | null = null;
+
+          if (s.mode === "ACTIVITY_GROUP")
+            fGAct = {
+              groupId: { in: s?.activitieGroups.map((ag) => ag.id) },
+            };
+          if (s.mode === "ACTIVITY")
+            fAct = {
+              in: s.activities.map((a) => a.id),
+            };
+          if (s.restriction === "SITE")
+            fSite = { in: s.sites.map((s) => s.id) };
+          if (s.restriction === "ROOM")
+            fRoom = { in: s.rooms.map((s) => s.id) };
+          const filter: TFilter = {};
+          if (fGAct) filter.activity = fGAct;
+          if (fAct) filter.activityId = fAct;
+          if (fSite) filter.siteId = fSite;
+          if (fRoom) filter.roomId = fRoom;
+          console.log("filter", filter);
+          if (Object.keys(filter).length) {
+            if (!where.OR) where.OR = [];
+            where.OR.push(filter);
+          }
+        }
+        console.log("where", where);
+
+        const pa = await ctx.prisma.planningActivity.findMany({
+          where,
+          include: {
+            activity: true,
+            coach: true,
+            room: true,
+            site: true,
+          },
+        });
+        planning.push({ ...planningClub, activities: pa });
+      }
+
       // TODO: manage exception days
       return planning;
     }),

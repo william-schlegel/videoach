@@ -43,7 +43,7 @@ const CoachDashboard = ({
           </span>
         </div>
         <div className="flex items-center gap-4">
-          <Link className="btn-secondary btn" href={`${userId}/certifications`}>
+          <Link className="btn btn-secondary" href={`${userId}/certifications`}>
             {t("manage-certifications")}
           </Link>
         </div>
@@ -104,7 +104,7 @@ export default CoachDashboard;
 
 function DailyPlanning({ coachId }: { coachId: string }) {
   const { t } = useTranslation("dashboard");
-  const day = DAYS[dayjs().day() - 1]?.value ?? "MONDAY";
+  const day = DAYS[dayjs().day()]?.value ?? "MONDAY";
   const planning = trpc.plannings.getCoachDailyPlanning.useQuery({
     coachId,
     day,

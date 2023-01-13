@@ -9,13 +9,13 @@ import { formatDateAsYYYYMMDD } from "@lib/formatDate";
 import { toast } from "react-toastify";
 
 export const DAYS = [
+  { value: DayName.SUNDAY, label: "sunday" },
   { value: DayName.MONDAY, label: "monday" },
   { value: DayName.TUESDAY, label: "tuesday" },
   { value: DayName.WEDNESDAY, label: "wednesday" },
   { value: DayName.THURSDAY, label: "thursday" },
   { value: DayName.FRIDAY, label: "friday" },
   { value: DayName.SATURDAY, label: "saturday" },
-  { value: DayName.SUNDAY, label: "sunday" },
 ] as const;
 
 export function useDayName() {
