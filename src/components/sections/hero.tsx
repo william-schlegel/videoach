@@ -40,7 +40,9 @@ export const HeroCreation = ({ clubId, pageId }: HeroCreationProps) => {
   const { register, handleSubmit, getValues, control, setValue, reset } =
     useForm<HeroCreationForm>();
   const [imagePreview, setImagePreview] = useState("");
-  const clubQuery = trpc.clubs.getClubById.useQuery(clubId);
+  const clubQuery = trpc.clubs.getClubById.useQuery(clubId, {
+    enabled: isCUID(clubId),
+  });
   const fields = useWatch({ control });
   const utils = trpc.useContext();
   const [updating, setUpdating] = useState(false);
@@ -361,7 +363,7 @@ export const HeroCreation = ({ clubId, pageId }: HeroCreationProps) => {
             </>
           ) : null}
           <div className="col-span-2 flex justify-between">
-            <button className="btn btn-primary" type="submit">
+            <button className="btn-primary btn" type="submit">
               {t("save-section")}
             </button>
             {updating ? (
@@ -493,7 +495,7 @@ function HeroContent({
       <p className="text-gray-100">{description}</p>
       {cta && (
         <button
-          className={`btn btn-primary ${
+          className={`btn-primary btn ${
             preview ? "btn-sm" : "btn-xl"
           } w-fit normal-case`}
           onClick={() => {

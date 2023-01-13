@@ -3,20 +3,25 @@ import {
   useForm,
   type SubmitHandler,
   type SubmitErrorHandler,
-  type FieldErrorsImpl,
-  type UseFormRegister,
+  useWatch,
 } from "react-hook-form";
 import Modal, { type TModalVariant } from "../ui/modal";
-import SimpleForm from "../ui/simpleform";
-import { type PropsWithoutRef } from "react";
+import { useEffect, useState, type PropsWithoutRef } from "react";
 import { useSession } from "next-auth/react";
 import Confirmation from "@ui/confirmation";
 import { useTranslation } from "next-i18next";
 import { toast } from "react-toastify";
+import AddressSearch from "@ui/addressSearch";
+import { Map as MapComponent, Marker } from "react-map-gl";
+import { LATITUDE, LONGITUDE } from "@lib/defaultValues";
+import { env } from "@root/src/env/client.mjs";
 
 type SiteFormValues = {
   name: string;
   address: string;
+  searchAddress: string;
+  longitude: number;
+  latitude: number;
 };
 
 type CreateSiteProps = {
@@ -24,14 +29,10 @@ type CreateSiteProps = {
 };
 
 export const CreateSite = ({ clubId }: CreateSiteProps) => {
-  const {
-    register,
-    handleSubmit,
-    formState: { errors },
-    reset,
-  } = useForm<SiteFormValues>();
   const utils = trpc.useContext();
   const { t } = useTranslation("club");
+
+  const [closeModal, setCloseModal] = useState(false);
 
   const createSite = trpc.sites.createSite.useMutation({
     onSuccess: () => {
@@ -43,26 +44,22 @@ export const CreateSite = ({ clubId }: CreateSiteProps) => {
       toast.error(error.message);
     },
   });
-  const onSubmit: SubmitHandler<SiteFormValues> = (data) => {
+  const onSubmit = (data: SiteFormValues) => {
     createSite.mutate({ clubId, ...data });
-  };
-
-  const onError: SubmitErrorHandler<SiteFormValues> = (errors) => {
-    console.log("errors", errors);
   };
 
   return (
     <Modal
       title={t("site.create")}
-      handleSubmit={handleSubmit(onSubmit, onError)}
-      errors={errors}
       buttonIcon={<i className="bx bx-plus bx-xs" />}
-      onOpenModal={() => reset()}
       className="w-11/12 max-w-5xl"
+      cancelButtonText=""
+      closeModal={closeModal}
+      onCloseModal={() => setCloseModal(false)}
     >
       <h3>{t("site.create")}</h3>
       <p className="py-4">{t("site.enter-info-new-site")}</p>
-      <SiteForm register={register} errors={errors} />
+      <SiteForm onSubmit={onSubmit} onCancel={() => setCloseModal(true)} />
     </Modal>
   );
 };
@@ -74,15 +71,19 @@ type UpdateSiteProps = {
 
 export const UpdateSite = ({ siteId, clubId }: UpdateSiteProps) => {
   const utils = trpc.useContext();
-  const {
-    register,
-    handleSubmit,
-    formState: { errors },
-    reset,
-  } = useForm<SiteFormValues>();
+  const [initialData, setInitialData] = useState<SiteFormValues | undefined>();
+  const [closeModal, setCloseModal] = useState(false);
   const querySite = trpc.sites.getSiteById.useQuery(siteId, {
     onSuccess(data) {
-      if (data) reset(data);
+      if (data) {
+        setInitialData({
+          name: data.name,
+          address: data.address,
+          latitude: data.latitude,
+          longitude: data.longitude,
+          searchAddress: data.searchAddress ?? "",
+        });
+      }
     },
   });
   const updateSite = trpc.sites.updateSite.useMutation({
@@ -97,24 +98,20 @@ export const UpdateSite = ({ siteId, clubId }: UpdateSiteProps) => {
   });
   const { t } = useTranslation("club");
 
-  const onSubmit: SubmitHandler<SiteFormValues> = (data) => {
+  const onSubmit = (data: SiteFormValues) => {
     console.log("data", data);
     updateSite.mutate({ id: siteId, ...data });
-  };
-
-  const onError: SubmitErrorHandler<SiteFormValues> = (errors) => {
-    console.log("errors", errors);
   };
 
   return (
     <Modal
       title={t("update-name", { siteName: querySite.data?.name })}
-      handleSubmit={handleSubmit(onSubmit, onError)}
-      submitButtonText={t("site.update")}
-      errors={errors}
       buttonIcon={<i className="bx bx-edit bx-sm" />}
       variant={"Icon-Outlined-Primary"}
       className="w-2/3 max-w-5xl"
+      cancelButtonText=""
+      closeModal={closeModal}
+      onCloseModal={() => setCloseModal(false)}
     >
       <div className="flex items-center justify-between">
         <h3 className="flex items-center gap-4">
@@ -122,7 +119,11 @@ export const UpdateSite = ({ siteId, clubId }: UpdateSiteProps) => {
           <span className="text-primary">{querySite?.data?.name}</span>
         </h3>
       </div>
-      <SiteForm register={register} errors={errors} />
+      <SiteForm
+        initialData={initialData}
+        onSubmit={onSubmit}
+        onCancel={() => setCloseModal(true)}
+      />
     </Modal>
   );
 };
@@ -167,28 +168,123 @@ export const DeleteSite = ({
 };
 
 type SiteFormProps = {
-  errors?: FieldErrorsImpl;
-  register: UseFormRegister<SiteFormValues>;
+  onSubmit: (data: SiteFormValues) => void;
+  onCancel: () => void;
+  initialData?: SiteFormValues;
 };
 
-function SiteForm({ errors, register }: SiteFormProps): JSX.Element {
+function SiteForm({
+  onSubmit,
+  onCancel,
+  initialData,
+}: SiteFormProps): JSX.Element {
   const { t } = useTranslation("club");
+
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+    reset,
+    control,
+    setValue,
+  } = useForm<SiteFormValues>();
+  const fields = useWatch({ control });
+
+  useEffect(() => {
+    reset(initialData);
+  }, [initialData, reset]);
+
+  const onSubmitForm: SubmitHandler<SiteFormValues> = (data) => {
+    console.log("data :>> ", data);
+    onSubmit(data);
+    reset();
+  };
+
+  const onError: SubmitErrorHandler<SiteFormValues> = (errors) => {
+    console.error("errors", errors);
+  };
+
   return (
-    <SimpleForm
-      errors={errors}
-      register={register}
-      fields={[
-        {
-          label: t("site.name"),
-          name: "name",
-          required: t("name-mandatory"),
-        },
-        {
-          label: t("site.address"),
-          name: "address",
-          required: t("address-mandatory"),
-        },
-      ]}
-    />
+    <form
+      onSubmit={handleSubmit(onSubmitForm, onError)}
+      className={`grid grid-cols-2 items-start gap-4`}
+    >
+      <div className="flex flex-col gap-2">
+        <label className="required w-fit">{t("club.name")}</label>
+        <div>
+          <input
+            {...register("name", {
+              required: t("name-mandatory"),
+            })}
+            type={"text"}
+            className="input-bordered input w-full"
+          />
+          {errors.name ? (
+            <p className="text-sm text-error">{errors.name.message}</p>
+          ) : null}
+        </div>
+        <label className="required w-fit">{t("club.address")}</label>
+        <div>
+          <input
+            {...register("address", {
+              required: t("address-mandatory"),
+            })}
+            type={"text"}
+            className="input-bordered input w-full"
+          />
+          {errors.address ? (
+            <p className="text-sm text-error">{errors.address.message}</p>
+          ) : null}
+        </div>
+      </div>
+      <div className="flex flex-col gap-2">
+        <div className="grid grid-cols-[auto_1fr] items-center gap-2">
+          <AddressSearch
+            label={t("club.search-address")}
+            defaultAddress={fields.searchAddress}
+            onSearch={(adr) => {
+              setValue("searchAddress", adr.address);
+              setValue("latitude", adr.lat);
+              setValue("longitude", adr.lng);
+            }}
+            className="col-span-2"
+            required
+          />
+        </div>
+        <MapComponent
+          initialViewState={{ zoom: 8 }}
+          style={{ width: "100%", height: "20rem" }}
+          mapStyle="mapbox://styles/mapbox/streets-v9"
+          mapboxAccessToken={env.NEXT_PUBLIC_MAPBOX_TOKEN}
+          attributionControl={false}
+          longitude={fields.longitude ?? LONGITUDE}
+          latitude={fields.latitude ?? LATITUDE}
+        >
+          <Marker
+            longitude={fields.longitude ?? LONGITUDE}
+            latitude={fields.latitude ?? LATITUDE}
+            anchor="bottom"
+          >
+            <i className="bx bx-x bx-sm text-secondary" />
+          </Marker>
+        </MapComponent>
+      </div>
+
+      <div className="col-span-2 flex items-center justify-end gap-2">
+        <button
+          type="button"
+          className="btn-outline btn-secondary btn"
+          onClick={(e) => {
+            e.preventDefault();
+            onCancel();
+          }}
+        >
+          {t("common:cancel")}
+        </button>
+        <button className="btn-primary btn" type="submit">
+          {t("common:save")}
+        </button>
+      </div>
+    </form>
   );
 }

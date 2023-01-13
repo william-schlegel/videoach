@@ -144,7 +144,7 @@ export function PlanningName({ planning }: { planning: Planning }) {
       {planning.name ? <span>{planning.name}</span> : null}
       <span
         className={`${
-          planning.name ? "badge badge-secondary" : ""
+          planning.name ? "badge-secondary badge" : ""
         } flex items-center gap-1`}
       >
         {!planning.name && <span>{t("from")}</span>}
@@ -196,10 +196,15 @@ const PlanningContent = ({
   const queryPlanning = trpc.plannings.getPlanningById.useQuery(planningId);
   const { t } = useTranslation("planning");
   const queryClub = trpc.clubs.getClubById.useQuery(clubId);
-  const queryActivities = trpc.activities.getActivitiesForClub.useQuery({
-    clubId,
-    userId,
-  });
+  const queryActivities = trpc.activities.getActivitiesForClub.useQuery(
+    {
+      clubId,
+      userId,
+    },
+    {
+      enabled: isCUID(clubId) && isCUID(userId),
+    }
+  );
   const refModalDrop = useRef<HTMLInputElement>(null);
   const [dropData, setDropData] = useState<DropData>({
     day: "MONDAY",

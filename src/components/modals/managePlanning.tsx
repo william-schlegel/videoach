@@ -13,6 +13,7 @@ import { trpc } from "@trpcclient/trpc";
 import { formatDateAsYYYYMMDD } from "@lib/formatDate";
 import dayjs from "dayjs";
 import { useState } from "react";
+import { isCUID } from "@lib/checkValidity";
 
 type CreatePlanningProps = {
   clubId: string;
@@ -43,7 +44,9 @@ export const CreatePlanning = ({
       toast.error(error.message);
     },
   });
-  const queryClub = trpc.clubs.getClubById.useQuery(clubId);
+  const queryClub = trpc.clubs.getClubById.useQuery(clubId, {
+    enabled: isCUID(clubId),
+  });
   const {
     register,
     handleSubmit,

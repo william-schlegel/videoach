@@ -21,7 +21,7 @@
     "logo": "Logo",
     "logo-size": "Taille maximum du logo {{size}}",
     "delete-logo": "Supprimer le logo",
-    "search-address": "Géolocalisation du club"
+    "search-address": "Géolocalisation du club/site d'activité"
   },
   "site": {
     "site_zero": "Aucun site",
@@ -41,7 +41,8 @@
     "update": "Mettre à jour le site d'activité",
     "created": "Site d'activité créé",
     "updated": "Site d'activité mis à jour",
-    "deleted": "Site d'activité supprimé"
+    "deleted": "Site d'activité supprimé",
+    "search-address": "Géolocalisation du site d'activité"
   },
   "activity": {
     "select-club-activities": "Sélectionner les activités proposées dans ce club",

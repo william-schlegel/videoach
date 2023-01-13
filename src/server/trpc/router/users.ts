@@ -118,6 +118,9 @@ export const userRouter = router({
         searchAddress: z.string().optional(),
         role: z.nativeEnum(Role),
         range: z.number().min(0).max(100).optional(),
+        pricingId: z.string().cuid().optional(),
+        monthlyPayment: z.boolean().optional(),
+        cancelationDate: z.date().optional(),
       })
     )
     .mutation(({ ctx, input }) => {
@@ -131,21 +134,6 @@ export const userRouter = router({
         data: { ...input },
       });
     }),
-  changeUserPlan: protectedProcedure
-    .input(
-      z.object({
-        id: z.string().cuid(),
-        pricingId: z.string().cuid().optional(),
-        monthlyPayment: z.boolean().optional(),
-        cancelationDate: z.date().optional(),
-      })
-    )
-    .mutation(({ ctx, input }) =>
-      ctx.prisma.user.update({
-        where: { id: input.id },
-        data: { ...input },
-      })
-    ),
   deleteUser: protectedProcedure
     .input(z.string())
     .mutation(({ ctx, input }) => {

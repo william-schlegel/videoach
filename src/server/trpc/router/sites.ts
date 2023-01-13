@@ -2,6 +2,16 @@ import { RoomReservation } from "@prisma/client";
 import { z } from "zod";
 import { router, protectedProcedure } from "../trpc";
 
+const SiteObject = z.object({
+  id: z.string().cuid(),
+  clubId: z.string().cuid(),
+  name: z.string(),
+  address: z.string(),
+  searchAddress: z.string(),
+  longitude: z.number(),
+  latitude: z.number(),
+});
+
 const RoomObject = z.object({
   id: z.string().cuid(),
   siteId: z.string().cuid(),
@@ -32,13 +42,7 @@ export const siteRouter = router({
       });
     }),
   createSite: protectedProcedure
-    .input(
-      z.object({
-        name: z.string(),
-        address: z.string(),
-        clubId: z.string().cuid(),
-      })
-    )
+    .input(SiteObject.omit({ id: true }))
     .mutation(({ ctx, input }) =>
       ctx.prisma.site.create({
         data: {
@@ -49,13 +53,7 @@ export const siteRouter = router({
       })
     ),
   updateSite: protectedProcedure
-    .input(
-      z.object({
-        id: z.string().cuid(),
-        name: z.string(),
-        address: z.string(),
-      })
-    )
+    .input(SiteObject.partial())
     .mutation(({ ctx, input }) => {
       return ctx.prisma.site.update({
         where: { id: input.id },

@@ -1,5 +1,5 @@
 import { useTranslation } from "next-i18next";
-import { type ReactNode, useRef, useId, useEffect } from "react";
+import { type ReactNode, useRef, useId, useEffect, useCallback } from "react";
 import { type FieldErrors } from "react-hook-form";
 import { type ButtonSize, type TIconButtonVariant } from "./buttonIcon";
 
@@ -20,6 +20,7 @@ type Props = {
   errors?: FieldErrors;
   buttonIcon?: ReactNode;
   onOpenModal?: () => void;
+  onCloseModal?: () => void;
   variant?: TModalVariant;
   className?: string;
   buttonSize?: ButtonSize;
@@ -40,18 +41,21 @@ export default function Modal({
   className = "",
   buttonSize = "md",
   closeModal,
+  onCloseModal,
 }: Props) {
   const closeRef = useRef<HTMLInputElement>(null);
   const modalId = useId();
   const { t } = useTranslation("common");
-  const close = () => {
+
+  const close = useCallback(() => {
     if (!closeRef.current) return;
     closeRef.current.checked = false;
-  };
+    if (typeof onCloseModal === "function") onCloseModal();
+  }, [onCloseModal]);
 
   useEffect(() => {
     if (closeModal) close();
-  }, [closeModal]);
+  }, [closeModal, close]);
 
   const handleClickSubmit = () => {
     if (typeof errors === "object" && Object.keys(errors).length > 0) return;
@@ -103,7 +107,7 @@ export default function Modal({
         <div className={`modal-box relative overflow-hidden ${className}`}>
           <label
             htmlFor={modalId}
-            className="btn btn-secondary btn-sm btn-circle absolute right-1 top-1"
+            className="btn-secondary btn-sm btn-circle btn absolute right-1 top-1"
           >
             <i className="bx bx-x bx-sm" />
           </label>
@@ -111,7 +115,7 @@ export default function Modal({
           <div className="modal-action">
             {cancelButtonText !== "" ? (
               <button
-                className="btn-outline btn btn-secondary"
+                className="btn-outline btn-secondary btn"
                 onClick={(e) => {
                   e.preventDefault();
                   if (typeof handleCancel === "function") handleCancel();
@@ -123,7 +127,7 @@ export default function Modal({
             ) : null}
             {typeof handleSubmit === "function" ? (
               <button
-                className="btn btn-primary"
+                className="btn-primary btn"
                 onClick={(e) => {
                   e.preventDefault();
                   handleClickSubmit();

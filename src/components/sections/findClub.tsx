@@ -128,7 +128,7 @@ function FindClub({ address = "" }: FindClubProps) {
                           iconComponent={
                             <i className="bx bx-link-external bx-xs" />
                           }
-                          buttonSize="xs"
+                          buttonSize="sm"
                           buttonVariant="Icon-Outlined-Primary"
                         />
                       </Link>

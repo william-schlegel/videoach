@@ -1,4 +1,4 @@
-import { Role } from "@prisma/client";
+import { type Pricing, Role, type PricingOption } from "@prisma/client";
 import { useRouter } from "next/router";
 import { trpc } from "../../utils/trpc";
 import { useForm, useWatch, type SubmitHandler } from "react-hook-form";
@@ -6,8 +6,8 @@ import type { GetServerSidePropsContext } from "next";
 import { useTranslation } from "next-i18next";
 import { serverSideTranslations } from "next-i18next/serverSideTranslations";
 import nextI18nConfig from "@root/next-i18next.config.mjs";
-import { Pricing, PricingContainer } from "@ui/pricing";
-import { remainingDays } from "@lib/formatDate";
+import { Pricing as PricingCard, PricingContainer } from "@ui/pricing";
+import { formatDateAsYYYYMMDD, remainingDays } from "@lib/formatDate";
 import Confirmation from "@ui/confirmation";
 import { toast } from "react-toastify";
 import Layout from "@root/src/components/layout";
@@ -15,12 +15,14 @@ import { env } from "@root/src/env/client.mjs";
 import AddressSearch from "@ui/addressSearch";
 import { Layer, Map as MapComponent, Source } from "react-map-gl";
 import turfCircle from "@turf/circle";
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import useLocalStorage from "@lib/useLocalstorage";
 import { type TThemes } from "@root/src/components/themeSelector";
 import hslToHex from "@lib/hslToHex";
 import { LATITUDE, LONGITUDE } from "@lib/defaultValues";
 import { isCUID } from "@lib/checkValidity";
+import Modal from "@ui/modal";
+import { formatMoney } from "@lib/formatNumber";
 
 export const ROLE_LIST = [
   { label: "user", value: Role.MEMBER },
@@ -51,6 +53,14 @@ export default function Profile() {
   const { userId } = router.query;
   const [theme] = useLocalStorage<TThemes>("theme", "cupcake");
   const myUserId = (Array.isArray(userId) ? userId[0] : userId) || "";
+  const [pricingId, setPricingId] = useState<string | undefined>(undefined);
+  const [monthlyPayment, setMonthlyPayment] = useState<boolean | undefined>(
+    undefined
+  );
+  const [cancelationDate, setCancelationDate] = useState<string | undefined>(
+    undefined
+  );
+
   const userQuery = trpc.users.getUserById.useQuery(myUserId, {
     enabled: isCUID(myUserId),
     onSuccess: (data) => {
@@ -86,15 +96,6 @@ export default function Profile() {
   const pricingQuery = trpc.pricings.getPricingForRole.useQuery(
     fields.role ?? "MEMBER"
   );
-  const planUpdate = trpc.users.changeUserPlan.useMutation({
-    onSuccess() {
-      utils.users.getUserById.invalidate(myUserId);
-      toast.success(t("plan-updated") as string);
-    },
-    onError(error) {
-      toast.error(error.message);
-    },
-  });
 
   const utils = trpc.useContext();
   const updateUser = trpc.users.updateUser.useMutation({
@@ -107,12 +108,19 @@ export default function Profile() {
     },
   });
   const { t } = useTranslation("auth");
-  const onSubmit: SubmitHandler<FormValues> = (data) =>
+  const onSubmit: SubmitHandler<FormValues> = (data) => {
     updateUser.mutate({
       id: myUserId,
       ...data,
       range: Number(data.range),
+      pricingId,
+      monthlyPayment,
+      cancelationDate: cancelationDate ? new Date(cancelationDate) : undefined,
     });
+    setCancelationDate(undefined);
+    setMonthlyPayment(undefined);
+    setPricingId(undefined);
+  };
 
   const circle = useMemo(() => {
     const center = [fields.longitude ?? LONGITUDE, fields.latitude ?? LATITUDE];
@@ -125,7 +133,16 @@ export default function Profile() {
 
   return (
     <Layout className="container mx-auto">
-      <h1>{t("your-profile")}</h1>
+      <div className="flex items-center justify-between">
+        <h1>{t("your-profile")}</h1>
+        <Modal
+          title={t("payments")}
+          buttonIcon={<i className="bx bx-euro bx-sm" />}
+          variant="Secondary"
+        >
+          <h3>{t("payments")}</h3>
+        </Modal>
+      </div>
       <form
         className={`grid grid-cols-2 items-start gap-2`}
         onSubmit={handleSubmit(onSubmit)}
@@ -264,72 +281,122 @@ export default function Profile() {
         ) : (
           <div>&nbsp;</div>
         )}
+
+        <section className="col-span-2 flex flex-col gap-2 rounded-md border border-primary p-4">
+          <div className="grid grid-cols-[auto_1fr] gap-4">
+            <div className="flex flex-col gap-2">
+              <h2>{t("plan")}</h2>
+              {userQuery.data?.pricingId &&
+              userQuery.data.pricing?.roleTarget === fields?.role ? (
+                <>
+                  <label className="self-start">{t("actual-plan")}</label>
+                  <div className="flex gap-2">
+                    <div className="rounded bg-primary px-4 py-2 text-primary-content">
+                      <PlanDetails
+                        monthlyPayment={userQuery.data.monthlyPayment}
+                        pricing={userQuery.data.pricing}
+                      />
+                    </div>
+                    {userQuery.data.trialUntil ? (
+                      <div className="rounded bg-secondary px-4 py-2 text-secondary-content">
+                        {t("trial-remaining", {
+                          count: remainingDays(userQuery.data.trialUntil),
+                        })}
+                      </div>
+                    ) : null}
+                  </div>
+                  <Confirmation
+                    message={t("cancel-plan-message")}
+                    title={t("cancel-plan")}
+                    variant="Outlined-Secondary"
+                    buttonIcon={<i className="bx bx-x bx-sm" />}
+                    textConfirmation={t("cancel-plan-confirm")}
+                    onConfirm={() => setCancelationDate(formatDateAsYYYYMMDD())}
+                  />
+                </>
+              ) : (
+                <div>{t("no-plan-yet")}</div>
+              )}
+              {pricingId ? (
+                <div className="flex flex-1 flex-col border-2 border-warning p-2">
+                  <h4>{t("new-plan")}</h4>
+                  <div className="rounded bg-warning px-4 py-2 text-center text-warning-content">
+                    <PlanDetails
+                      monthlyPayment={
+                        monthlyPayment ?? userQuery.data?.monthlyPayment ?? true
+                      }
+                      pricing={
+                        pricingQuery.data?.find((p) => p.id === pricingId) ??
+                        null
+                      }
+                    />
+                  </div>
+                </div>
+              ) : null}
+              {cancelationDate ? (
+                <div className="alert alert-warning">
+                  <div>
+                    <i className="bx bx-error-circle bx-xs" />
+                    <span>{t("cancelation-requested")}</span>
+                  </div>
+                  <div className="flex-none">
+                    <button
+                      className="btn-outline btn-secondary btn-xs btn"
+                      type="button"
+                      onClick={() => setCancelationDate(undefined)}
+                    >
+                      <i className="bx bx-x bx-xs" />
+                    </button>
+                  </div>
+                </div>
+              ) : null}
+            </div>
+            <div>
+              <label className="self-start">{t("select-plan")}</label>
+              <PricingContainer compact>
+                {pricingQuery.data?.map((pricing) => (
+                  <PricingCard
+                    key={pricing.id}
+                    pricingId={pricing.id}
+                    onSelect={(id, monthly) => {
+                      setPricingId(id);
+                      setMonthlyPayment(monthly);
+                    }}
+                    compact
+                    forceHighlight={pricing.id === userQuery.data?.pricingId}
+                  />
+                ))}
+              </PricingContainer>
+            </div>
+          </div>
+        </section>
         <button
-          className="btn btn-primary col-span-2 w-fit"
+          className="btn-primary btn col-span-2 w-fit"
           disabled={updateUser.isLoading}
         >
           {t("save-profile")}
         </button>
       </form>
-
-      <div className="mt-6 grid grid-cols-2 gap-2">
-        <div className="flex flex-col gap-2 rounded-md border border-primary p-4">
-          <h2>{t("plan")}</h2>
-          {userQuery.data?.pricingId &&
-          userQuery.data.pricing?.roleTarget === fields?.role ? (
-            <>
-              <label className="self-start">{t("actual-plan")}</label>
-              <div className="flex gap-2">
-                <div className="rounded bg-primary px-4 py-2 text-primary-content">
-                  {userQuery.data.pricing?.title}
-                </div>
-                {userQuery.data.trialUntil ? (
-                  <div className="rounded bg-secondary px-4 py-2 text-secondary-content">
-                    {t("trial-remaining", {
-                      count: remainingDays(userQuery.data.trialUntil),
-                    })}
-                  </div>
-                ) : null}
-              </div>
-            </>
-          ) : null}
-          <label className="self-start">{t("select-plan")}</label>
-          <PricingContainer compact>
-            {pricingQuery.data?.map((pricing) => (
-              <Pricing
-                key={pricing.id}
-                pricingId={pricing.id}
-                onSelect={(id, monthly) => {
-                  planUpdate.mutate({
-                    id: myUserId,
-                    monthlyPayment: monthly,
-                    pricingId: id,
-                  });
-                }}
-                compact
-                forceHighlight={pricing.id === userQuery.data?.pricingId}
-              />
-            ))}
-          </PricingContainer>
-          <Confirmation
-            message={t("cancel-plan-message")}
-            title={t("cancel-plan")}
-            variant="Outlined-Secondary"
-            buttonIcon={<i className="bx bx-x bx-sm" />}
-            textConfirmation={t("cancel-plan-confirm")}
-            onConfirm={() =>
-              planUpdate.mutate({
-                id: myUserId,
-                cancelationDate: new Date(Date.now()),
-              })
-            }
-          />
-        </div>
-        <div className="flex flex-col gap-2 rounded-md border border-primary p-4">
-          <h2>{t("payments")}</h2>
-        </div>
-      </div>
     </Layout>
+  );
+}
+
+type PlanDetailsProps = {
+  monthlyPayment: boolean;
+  pricing: Pricing | (Pricing & { options: PricingOption[] }) | null;
+};
+
+function PlanDetails({ monthlyPayment, pricing }: PlanDetailsProps) {
+  const { t } = useTranslation("auth");
+  if (!pricing) return null;
+  return (
+    <>
+      {pricing?.title} (
+      {monthlyPayment
+        ? `${formatMoney(pricing.monthly)} ${t("per-month")}`
+        : `${formatMoney(pricing.yearly)} ${t("per-year")}`}
+      )
+    </>
   );
 }
 

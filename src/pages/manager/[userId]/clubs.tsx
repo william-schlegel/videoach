@@ -32,6 +32,7 @@ import CollapsableGroup from "@ui/collapsableGroup";
 import Layout from "@root/src/components/layout";
 import Image from "next/image";
 import ButtonIcon from "@ui/buttonIcon";
+import { isCUID } from "@lib/checkValidity";
 
 const ManageClubs = ({
   userId,
@@ -101,6 +102,7 @@ export function ClubContent({ userId, clubId }: ClubContentProps) {
         groups.set(act.group.id, act.group);
       setGroups(Array.from(groups.values()));
     },
+    enabled: isCUID(clubId),
   });
   const calendarQuery = trpc.calendars.getCalendarForClub.useQuery(clubId);
   const addActivity = trpc.activities.affectToRoom.useMutation({

@@ -157,9 +157,9 @@ model Club {
   calendars     OpeningCalendar[]
   pages         Page[]
   pageStyle     String            @default("light")
-  searchAddress String?
-  latitude      Float             @default(48.8583701)
-  longitude     Float             @default(2.2944813)
+  // searchAddress String?
+  // latitude      Float             @default(48.8583701)
+  // longitude     Float             @default(2.2944813)
   plannings     Planning[]
   logoId        String?           @unique
   logo          UserDocument?     @relation(fields: [logoId], references: [id])
@@ -173,6 +173,9 @@ model Site {
   id                 String             @id @default(cuid())
   name               String
   address            String
+  searchAddress      String?
+  latitude           Float              @default(48.8583701)
+  longitude          Float              @default(2.2944813)
   clubId             String
   club               Club               @relation(fields: [clubId], references: [id], onDelete: Cascade)
   rooms              Room[]

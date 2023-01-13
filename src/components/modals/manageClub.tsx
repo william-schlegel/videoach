@@ -73,6 +73,7 @@ export const CreateClub = () => {
       className="w-11/12 max-w-4xl"
       cancelButtonText=""
       closeModal={closeModal}
+      onCloseModal={() => setCloseModal(false)}
     >
       <h3>{t("club.create-new")}</h3>
       <p className="py-4">{t("club.enter-new-club-info")}</p>
@@ -104,6 +105,7 @@ export const UpdateClub = ({ clubId }: PropsWithoutRef<PropsUpdateDelete>) => {
           deleteLogo: false,
         });
     },
+    enabled: isCUID(clubId),
   });
   const saveLogo = useWriteFile(
     queryClub.data?.managerId ?? "",
@@ -128,9 +130,6 @@ export const UpdateClub = ({ clubId }: PropsWithoutRef<PropsUpdateDelete>) => {
       id: clubId,
       name: data.name,
       address: data.address,
-      latitude: data.latitude,
-      longitude: data.longitude,
-      searchAddress: data.searchAddress,
       logoId,
     });
     setInitialData(undefined);
@@ -142,9 +141,9 @@ export const UpdateClub = ({ clubId }: PropsWithoutRef<PropsUpdateDelete>) => {
       title={t("club.update")}
       buttonIcon={<i className="bx bx-edit bx-sm" />}
       variant={"Icon-Outlined-Primary"}
-      className="w-11/12 max-w-4xl"
       cancelButtonText=""
       closeModal={closeModal}
+      onCloseModal={() => setCloseModal(false)}
     >
       <h3>
         {t("club.update")} {queryClub.data?.name}
@@ -192,7 +191,11 @@ function ClubForm({ onSubmit, onCancel, update, initialData }: ClubFormProps) {
     reset,
     control,
     setValue,
-  } = useForm<ClubFormValues>();
+  } = useForm<ClubFormValues>({
+    defaultValues: {
+      isSite: true,
+    },
+  });
   const [imagePreview, setImagePreview] = useState("");
   const fields = useWatch({ control });
 
@@ -236,7 +239,9 @@ function ClubForm({ onSubmit, onCancel, update, initialData }: ClubFormProps) {
   return (
     <form
       onSubmit={handleSubmit(onSubmitForm, onError)}
-      className="grid grid-cols-2 items-start gap-4"
+      className={`${
+        update || !fields.isSite ? "" : "grid grid-cols-2"
+      } items-start gap-4`}
     >
       <div className="grid grid-cols-[auto_1fr] items-center gap-2">
         <label className="required">{t("club.name")}</label>
@@ -310,38 +315,40 @@ function ClubForm({ onSubmit, onCancel, update, initialData }: ClubFormProps) {
           ) : null}
         </div>
       </div>
-      <div className="flex flex-col gap-2">
-        <div className="grid grid-cols-[auto_1fr] items-center gap-2">
-          <AddressSearch
-            label={t("club.search-address")}
-            defaultAddress={fields.searchAddress}
-            onSearch={(adr) => {
-              setValue("searchAddress", adr.address);
-              setValue("latitude", adr.lat);
-              setValue("longitude", adr.lng);
-            }}
-            className="col-span-2"
-            required
-          />
-        </div>
-        <MapComponent
-          initialViewState={{ zoom: 8 }}
-          style={{ width: "100%", height: "20rem" }}
-          mapStyle="mapbox://styles/mapbox/streets-v9"
-          mapboxAccessToken={env.NEXT_PUBLIC_MAPBOX_TOKEN}
-          attributionControl={false}
-          longitude={fields.longitude ?? LONGITUDE}
-          latitude={fields.latitude ?? LATITUDE}
-        >
-          <Marker
+      {!update && fields.isSite ? (
+        <div className="flex flex-col gap-2">
+          <div className="grid grid-cols-[auto_1fr] items-center gap-2">
+            <AddressSearch
+              label={t("club.search-address")}
+              defaultAddress={fields.searchAddress}
+              onSearch={(adr) => {
+                setValue("searchAddress", adr.address);
+                setValue("latitude", adr.lat);
+                setValue("longitude", adr.lng);
+              }}
+              className="col-span-2"
+              required
+            />
+          </div>
+          <MapComponent
+            initialViewState={{ zoom: 8 }}
+            style={{ width: "100%", height: "20rem" }}
+            mapStyle="mapbox://styles/mapbox/streets-v9"
+            mapboxAccessToken={env.NEXT_PUBLIC_MAPBOX_TOKEN}
+            attributionControl={false}
             longitude={fields.longitude ?? LONGITUDE}
             latitude={fields.latitude ?? LATITUDE}
-            anchor="bottom"
           >
-            <i className="bx bx-pin bx-sm text-secondary" />
-          </Marker>
-        </MapComponent>
-      </div>
+            <Marker
+              longitude={fields.longitude ?? LONGITUDE}
+              latitude={fields.latitude ?? LATITUDE}
+              anchor="bottom"
+            >
+              <i className="bx bx-pin bx-sm text-secondary" />
+            </Marker>
+          </MapComponent>
+        </div>
+      ) : null}
       <div className="col-span-2 flex items-center justify-end gap-2">
         <button
           className="btn-outline btn-secondary btn"

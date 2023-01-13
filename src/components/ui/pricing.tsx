@@ -72,6 +72,7 @@ export function Pricing({
                   monthlyPrice ? "" : "btn-outline"
                 }`}
                 onClick={() => setMonthlyPrice(true)}
+                type="button"
               >
                 {t("pricing.monthly")}
               </button>
@@ -80,6 +81,7 @@ export function Pricing({
                   monthlyPrice ? "btn-outline" : ""
                 }`}
                 onClick={() => setMonthlyPrice(false)}
+                type="button"
               >
                 {t("pricing.yearly")}
               </button>
@@ -103,6 +105,7 @@ export function Pricing({
           <div className="card-actions">
             <button
               className="btn-primary btn-block btn"
+              type="button"
               onClick={() =>
                 onSelect(pricingQuery.data?.id ?? "", monthlyPrice)
               }

@@ -76,13 +76,13 @@ export const clubRouter = router({
                 create: {
                   name: input.name,
                   address: input.address,
+                  searchAddress: input.searchAddress,
+                  longitude: input.longitude,
+                  latitude: input.latitude,
                 },
               }
             : undefined,
           logoId: input.logoId ? input.logoId : undefined,
-          searchAddress: input.searchAddress,
-          longitude: input.longitude,
-          latitude: input.latitude,
         },
       });
       return club;
@@ -93,9 +93,6 @@ export const clubRouter = router({
         id: z.string().cuid(),
         name: z.string(),
         address: z.string(),
-        searchAddress: z.string(),
-        longitude: z.number(),
-        latitude: z.number(),
         logoId: z.string().cuid().nullable(),
       })
     )
@@ -115,19 +112,12 @@ export const clubRouter = router({
       const data: {
         name: string;
         address: string;
-        latitude: number;
-        longitude: number;
-        searchAddress?: string;
         logoId: string | null;
       } = {
         name: input.name,
         address: input.address,
-        latitude: input.latitude,
-        longitude: input.longitude,
         logoId: input.logoId,
       };
-      if (input.searchAddress) data.searchAddress = input.searchAddress;
-      // if (input.logoId) data.logoId = input.logoId;
 
       const updated = await ctx.prisma.club.update({
         where: { id: input.id },

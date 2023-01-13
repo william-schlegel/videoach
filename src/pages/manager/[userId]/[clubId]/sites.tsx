@@ -18,6 +18,7 @@ import { useRouter } from "next/router";
 import { CreateSiteCalendar } from "@modals/manageCalendar";
 import CalendarWeek from "@root/src/components/calendarWeek";
 import Layout from "@root/src/components/layout";
+import { isCUID } from "@lib/checkValidity";
 
 const ManageSites = ({
   userId,
@@ -25,11 +26,14 @@ const ManageSites = ({
 }: InferGetServerSidePropsType<typeof getServerSideProps>) => {
   const { data: sessionData } = useSession();
   const [siteId, setSiteId] = useState("");
-  const clubQuery = trpc.clubs.getClubById.useQuery(clubId);
+  const clubQuery = trpc.clubs.getClubById.useQuery(clubId, {
+    enabled: isCUID(clubId),
+  });
   const siteQuery = trpc.sites.getSitesForClub.useQuery(clubId, {
     onSuccess(data) {
       if (siteId === "") setSiteId(data[0]?.id || "");
     },
+    enabled: isCUID(clubId),
   });
   const { t } = useTranslation("club");
   const router = useRouter();

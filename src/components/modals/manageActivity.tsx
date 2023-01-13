@@ -32,10 +32,15 @@ const AddActivity = ({
       },
     }
   );
-  const queryClubActivities = trpc.activities.getActivitiesForClub.useQuery({
-    clubId,
-    userId,
-  });
+  const queryClubActivities = trpc.activities.getActivitiesForClub.useQuery(
+    {
+      clubId,
+      userId,
+    },
+    {
+      enabled: isCUID(clubId) && isCUID(userId),
+    }
+  );
   const updateClubActivities = trpc.clubs.updateClubActivities.useMutation({
     onSuccess() {
       onSuccess();
