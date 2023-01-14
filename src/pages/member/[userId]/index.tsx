@@ -1,10 +1,13 @@
 import { authOptions } from "@auth/[...nextauth]";
+import { isCUID } from "@lib/checkValidity";
 import { DAYS } from "@modals/manageCalendar";
 import type {
   Activity,
   ActivityGroup,
   Club,
   DayName,
+  DayOpeningTime,
+  OpeningTime,
   Room,
   Site,
 } from "@prisma/client";
@@ -104,7 +107,10 @@ function DailyPlanning({ memberId, day }: DailyPlanningProps) {
           </div>
           <div className="flex shrink-0 flex-wrap items-start gap-2 p-2">
             {plan.activities.map((activity) => (
-              <div key={activity.id} className="border border-base-300 p-2">
+              <div
+                key={activity.id}
+                className="border border-base-300 bg-base-100 p-2"
+              >
                 <p>
                   <span className="text-xs">{activity.startTime}</span>
                   {" ("}
@@ -119,9 +125,85 @@ function DailyPlanning({ memberId, day }: DailyPlanningProps) {
                 </p>
               </div>
             ))}
+            {plan.withNoCalendar.map((activity) => (
+              <Wnc key={activity.id} activity={activity} day={day} />
+            ))}
           </div>
         </div>
       ))}
+    </div>
+  );
+}
+
+type WncProps = {
+  activity: Activity & {
+    site: {
+      name: string;
+    } | null;
+    room: {
+      name: string;
+    } | null;
+  };
+  day: DayName;
+};
+
+function Wnc({ activity, day }: WncProps) {
+  const { t } = useTranslation("dashboard");
+  const calRoom = trpc.calendars.getCalendarForRoom.useQuery(
+    {
+      clubId: activity.clubId,
+      siteId: activity.siteId ?? "",
+      roomId: activity.roomId ?? "",
+    },
+    { enabled: isCUID(activity.roomId) && isCUID(activity.siteId) }
+  );
+  const calSite = trpc.calendars.getCalendarForSite.useQuery(
+    {
+      clubId: activity.clubId,
+      siteId: activity.siteId ?? "",
+    },
+    { enabled: isCUID(activity.siteId) }
+  );
+  const calClub = trpc.calendars.getCalendarForClub.useQuery(
+    activity.clubId,
+
+    { enabled: isCUID(activity.clubId) }
+  );
+
+  let openingText = "";
+  let OT:
+    | (DayOpeningTime & {
+        workingHours: OpeningTime[];
+      })
+    | null = null;
+  if (calRoom.data)
+    OT = calRoom.data.openingTime.find((d) => d.name === day) ?? null;
+  else if (calSite.data)
+    OT = calSite.data.openingTime.find((d) => d.name === day) ?? null;
+  else if (calClub.data)
+    OT = calClub.data.openingTime.find((d) => d.name === day) ?? null;
+
+  if (OT?.wholeDay) openingText = t("all-day");
+  else if (OT?.closed) openingText = t("closed");
+  else {
+    openingText =
+      OT?.workingHours.map((wh) => `${wh.opening}-${wh.closing}`).join(" | ") ??
+      "";
+  }
+
+  return (
+    <div key={activity.id} className="border border-base-300 bg-base-100 p-2">
+      <p>
+        <span className="text-xs">{openingText}</span>&nbsp;
+        <span>{activity.name}</span>
+      </p>
+      <p className="text-xs">
+        {activity.site?.name ? <span>{activity.site?.name}</span> : null}
+        {activity.room?.name ? <span>{activity.room?.name}</span> : null}
+        {!activity.site?.name && !activity.room?.name ? (
+          <span>{t("whole-club")}</span>
+        ) : null}
+      </p>
     </div>
   );
 }

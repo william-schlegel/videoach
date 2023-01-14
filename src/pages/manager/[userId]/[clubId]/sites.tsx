@@ -61,7 +61,7 @@ const ManageSites = ({
           </h1>
           <CreateSite clubId={clubId} />
         </div>
-        <Link className="btn-outline btn-primary btn" href={`${path}clubs`}>
+        <Link className="btn-outline btn btn-primary" href={`${path}clubs`}>
           {t("site.back-to-clubs")}
         </Link>
       </div>
@@ -110,7 +110,6 @@ export function SiteContent({ clubId, siteId }: SiteContentProps) {
   const calendarQuery = trpc.calendars.getCalendarForSite.useQuery({
     siteId,
     clubId,
-    openWithClub: siteQuery.data?.openWithClub,
   });
 
   const { t } = useTranslation("club");
@@ -147,7 +146,7 @@ export function SiteContent({ clubId, siteId }: SiteContentProps) {
             <h3>
               {t("room.room", { count: siteQuery?.data?.rooms?.length ?? 0 })}
             </h3>
-            <Link className="btn-secondary btn" href={`${path}${siteId}/rooms`}>
+            <Link className="btn btn-secondary" href={`${path}${siteId}/rooms`}>
               {t("room.manage")}
             </Link>
           </div>

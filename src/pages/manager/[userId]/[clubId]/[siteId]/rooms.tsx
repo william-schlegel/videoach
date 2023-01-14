@@ -62,7 +62,7 @@ const ManageRooms = ({
           </h1>
           <CreateRoom siteId={siteId} variant={"Primary"} />
         </div>
-        <Link className="btn-outline btn-primary btn" href={`${path}sites`}>
+        <Link className="btn-outline btn btn-primary" href={`${path}sites`}>
           {t("room.back-to-sites")}
         </Link>
       </div>
@@ -81,7 +81,7 @@ const ManageRooms = ({
                 >
                   <span>{room.name}</span>
                   {room.unavailable ? (
-                    <span className="badge badge-error">
+                    <span className="badge-error badge">
                       {t("room.closed")}
                     </span>
                   ) : null}
@@ -112,8 +112,6 @@ export function RoomContent({ clubId, siteId, roomId }: RoomContentProps) {
     roomId,
     siteId,
     clubId,
-    openWithClub: roomQuery.data?.openWithClub,
-    openWithSite: roomQuery.data?.openWithSite,
   });
   const { t } = useTranslation("club");
 

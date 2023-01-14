@@ -51,7 +51,7 @@ export const calendarRouter = router({
       );
       return ctx.prisma.openingCalendar.findFirst({
         where: { clubs: { some: { id: input } }, startDate: { lte: dtNow } },
-        orderBy: { startDate: "asc" },
+        orderBy: { startDate: "desc" },
         include: { openingTime: { include: { workingHours: true } } },
       });
     }),
@@ -79,18 +79,25 @@ export const calendarRouter = router({
           sites: { some: { id: input.siteId } },
           startDate: { lte: dtNow },
         },
-        orderBy: { startDate: "asc" },
+        orderBy: { startDate: "desc" },
         include: { openingTime: { include: { workingHours: true } } },
       });
-      if (!siteCal && input.openWithClub) {
-        return ctx.prisma.openingCalendar.findFirst({
-          where: {
-            clubs: { some: { id: input.clubId } },
-            startDate: { lte: dtNow },
-          },
-          orderBy: { startDate: "asc" },
-          include: { openingTime: { include: { workingHours: true } } },
+      if (!siteCal) {
+        const site = await ctx.prisma.site.findUnique({
+          where: { id: input.siteId },
+          select: { openWithClub: true },
         });
+
+        if (site?.openWithClub) {
+          return ctx.prisma.openingCalendar.findFirst({
+            where: {
+              clubs: { some: { id: input.clubId } },
+              startDate: { lte: dtNow },
+            },
+            orderBy: { startDate: "desc" },
+            include: { openingTime: { include: { workingHours: true } } },
+          });
+        }
       }
       return siteCal;
     }),
@@ -100,8 +107,6 @@ export const calendarRouter = router({
         roomId: z.string().cuid(),
         siteId: z.string().cuid(),
         clubId: z.string().cuid(),
-        openWithSite: z.boolean().default(false),
-        openWithClub: z.boolean().default(false),
       })
     )
     .query(async ({ ctx, input }) => {
@@ -120,31 +125,44 @@ export const calendarRouter = router({
           rooms: { some: { id: input.roomId } },
           startDate: { lte: dtNow },
         },
-        orderBy: { startDate: "asc" },
+        orderBy: { startDate: "desc" },
         include: { openingTime: { include: { workingHours: true } } },
       });
-      if (!roomCal && input.openWithSite) {
-        const siteCal = await ctx.prisma.openingCalendar.findFirst({
-          where: {
-            sites: { some: { id: input.siteId } },
-            startDate: { lte: dtNow },
-          },
-          orderBy: { startDate: "asc" },
-          include: { openingTime: { include: { workingHours: true } } },
+      if (!roomCal) {
+        const room = await ctx.prisma.room.findUnique({
+          where: { id: input.siteId },
+          select: { openWithSite: true },
         });
-        if (!siteCal && input.openWithClub) {
-          const clubCal = await ctx.prisma.openingCalendar.findFirst({
+        if (room?.openWithSite) {
+          const siteCal = await ctx.prisma.openingCalendar.findFirst({
             where: {
-              clubs: { some: { id: input.clubId } },
+              sites: { some: { id: input.siteId } },
               startDate: { lte: dtNow },
             },
-            orderBy: { startDate: "asc" },
+            orderBy: { startDate: "desc" },
             include: { openingTime: { include: { workingHours: true } } },
           });
-          return clubCal;
+          if (!siteCal) {
+            const site = await ctx.prisma.site.findUnique({
+              where: { id: input.siteId },
+              select: { openWithClub: true },
+            });
+            if (site?.openWithClub) {
+              const clubCal = await ctx.prisma.openingCalendar.findFirst({
+                where: {
+                  clubs: { some: { id: input.clubId } },
+                  startDate: { lte: dtNow },
+                },
+                orderBy: { startDate: "desc" },
+                include: { openingTime: { include: { workingHours: true } } },
+              });
+              return clubCal;
+            }
+          }
+          return siteCal;
         }
-        return siteCal;
       }
+
       return roomCal;
     }),
   createCalendar: protectedProcedure
@@ -161,7 +179,6 @@ export const calendarRouter = router({
           })),
         },
       }));
-      console.log("createOT :>> ", createOT);
       return ctx.prisma.openingCalendar.create({
         data: {
           startDate: input.startDate,

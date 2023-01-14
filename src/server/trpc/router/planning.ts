@@ -267,6 +267,14 @@ export const planningRouter = router({
           activity: Activity;
           coach: User | null;
         })[];
+        withNoCalendar: (Activity & {
+          site: {
+            name: string;
+          } | null;
+          room: {
+            name: string;
+          } | null;
+        })[];
       })[] = [];
 
       for (const planningClub of planningClubs) {
@@ -289,33 +297,57 @@ export const planningRouter = router({
           day: input.day,
           planningId: planningClub.id,
         };
+        type TFilterNC = {
+          id?: TIn;
+          groupId?: TIn;
+        };
+
+        const whereNoCal: {
+          clubId: string;
+          noCalendar: boolean;
+          OR?: TFilterNC[];
+        } = {
+          clubId: planningClub.clubId,
+          noCalendar: true,
+        };
+
         for (const s of sub ?? []) {
           let fAct: TIn | null = null;
-          let fGAct: { groupId: TIn } | null = null;
+          let fGAct: TIn | null = null;
           let fSite: TIn | null = null;
           let fRoom: TIn | null = null;
 
           if (s.mode === "ACTIVITY_GROUP")
             fGAct = {
-              groupId: { in: s?.activitieGroups.map((ag) => ag.id) },
+              in: s?.activitieGroups.map((ag) => ag.id),
             };
           if (s.mode === "ACTIVITY")
             fAct = {
               in: s.activities.map((a) => a.id),
             };
-          if (s.restriction === "SITE")
-            fSite = { in: s.sites.map((s) => s.id) };
-          if (s.restriction === "ROOM")
-            fRoom = { in: s.rooms.map((s) => s.id) };
+          if (s.restriction === "SITE") {
+            const sites = s.sites.map((s) => s.id);
+            fSite = { in: sites };
+          }
+          if (s.restriction === "ROOM") {
+            const rooms = s.rooms.map((s) => s.id);
+            fRoom = { in: rooms };
+          }
           const filter: TFilter = {};
-          if (fGAct) filter.activity = fGAct;
+          if (fGAct) filter.activity = { groupId: fGAct };
           if (fAct) filter.activityId = fAct;
           if (fSite) filter.siteId = fSite;
           if (fRoom) filter.roomId = fRoom;
-          console.log("filter", filter);
           if (Object.keys(filter).length) {
             if (!where.OR) where.OR = [];
             where.OR.push(filter);
+          }
+          const filterNC: TFilterNC = {};
+          if (fGAct) filterNC.groupId = fGAct;
+          if (fAct) filterNC.id = fAct;
+          if (Object.keys(filterNC).length) {
+            if (!whereNoCal.OR) whereNoCal.OR = [];
+            whereNoCal.OR.push(filterNC);
           }
         }
         console.log("where", where);
@@ -329,7 +361,15 @@ export const planningRouter = router({
             site: true,
           },
         });
-        planning.push({ ...planningClub, activities: pa });
+        const withNoCalendar = await ctx.prisma.activity.findMany({
+          where: whereNoCal,
+          include: {
+            site: { select: { name: true } },
+            room: { select: { name: true } },
+          },
+        });
+
+        planning.push({ ...planningClub, activities: pa, withNoCalendar });
       }
 
       // TODO: manage exception days

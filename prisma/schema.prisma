@@ -184,6 +184,7 @@ model Site {
   plannings          Planning[]
   planningActivities PlanningActivity[]
   subscriptions      Subscription[]
+  activity           Activity[]
 
   @@index([clubId])
 }
@@ -205,10 +206,11 @@ model Room {
   calendars          OpeningCalendar[]
   siteId             String
   site               Site               @relation(fields: [siteId], references: [id], onDelete: Cascade)
-  activities         Activity[]
+  activities         Activity[]         @relation(name: "rooms")
   plannings          Planning[]
   planningActivities PlanningActivity[]
   subscriptions      Subscription[]
+  activity           Activity[]         @relation(name: "room")
 
   @@index([siteId])
 }
@@ -279,12 +281,19 @@ model Activity {
   group              ActivityGroup      @relation(fields: [groupId], references: [id], onDelete: Cascade)
   clubId             String
   club               Club               @relation(fields: [clubId], references: [id], onDelete: Cascade)
-  rooms              Room[]
+  rooms              Room[]             @relation(name: "rooms")
   planningActivities PlanningActivity[]
   subscriptions      Subscription[]
+  noCalendar         Boolean            @default(false)
+  siteId             String?
+  site               Site?              @relation(fields: [siteId], references: [id])
+  roomId             String?
+  room               Room?              @relation(fields: [roomId], references: [id], name: "room")
 
   @@index([groupId])
   @@index([clubId])
+  @@index([siteId])
+  @@index([roomId])
 }
 
 model OpeningCalendar {
