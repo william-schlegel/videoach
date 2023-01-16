@@ -56,7 +56,7 @@ const Home = () => {
         </div>
       </section>
       <section id="find-coach" className="bg-base-100">
-        <div className="container mx-auto p-4">
+        <div className="@container container mx-auto p-4">
           <h2>{t("find-coach")}</h2>
           <FindCoach />
         </div>

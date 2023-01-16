@@ -81,7 +81,6 @@ export const pricingRouter = router({
       await ctx.prisma.pricingOption.deleteMany({
         where: { pricingId: input.base.id },
       });
-      console.log("input.base :>> ", input.base);
       return ctx.prisma.pricing.update({
         where: { id: input.base.id },
         data: {

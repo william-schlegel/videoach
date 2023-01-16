@@ -57,7 +57,7 @@ function UserManagement() {
   };
 
   const onError: SubmitErrorHandler<UserFilter> = (errors) => {
-    console.error("errors :>> ", errors);
+    console.error("errors", errors);
   };
 
   if (sessionData && sessionData.user?.role !== Role.ADMIN)

@@ -195,7 +195,6 @@ function SiteForm({
   }, [initialData, reset]);
 
   const onSubmitForm: SubmitHandler<SiteFormValues> = (data) => {
-    console.log("data :>> ", data);
     onSubmit(data);
     reset();
   };

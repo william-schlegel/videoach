@@ -47,17 +47,19 @@ const MemberDashboard = ({
       <h1 className="flex justify-between">
         {t("member-dashboard")}
         <Link
-          className="btn btn-secondary"
+          className="btn-secondary btn"
           href={`/member/${userId}/subscribe`}
         >
           {t("new-subscription")}
         </Link>
       </h1>
       <h2>
-        {t("my-subscription", { count: queryUser.data?.subscriptions.length })}
+        {t("my-subscription", {
+          count: queryUser.data?.memberData?.subscriptions.length ?? 0,
+        })}
       </h2>
       <section className="mb-4 grid grid-flow-col gap-4">
-        {queryUser.data?.subscriptions.map((sub) => (
+        {queryUser.data?.memberData?.subscriptions.map((sub) => (
           <Subscription key={sub.id} subscription={sub} />
         ))}
       </section>

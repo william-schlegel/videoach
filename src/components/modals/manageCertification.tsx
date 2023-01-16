@@ -182,7 +182,7 @@ export const CreateCertification = ({ userId }: CreateCertificationProps) => {
             {selectedGroup?.modules?.map((mod) => (
               <button
                 key={mod.id}
-                className={`btn btn-primary normal-case ${
+                className={`btn-primary btn normal-case ${
                   moduleIds.get(mod.id)?.selected ? "" : "btn-outline"
                 }`}
                 onClick={() => toggleModule(mod.id)}
@@ -198,7 +198,7 @@ export const CreateCertification = ({ userId }: CreateCertificationProps) => {
             {Array.from(selectedActivities.values()).map((act) => (
               <button
                 key={act.id}
-                className={`btn btn-primary normal-case ${
+                className={`btn-primary btn normal-case ${
                   activityIds.get(act.id)?.selected ? "" : "btn-outline"
                 }`}
                 onClick={() => toggleActivity(act.id)}
@@ -380,7 +380,6 @@ export const CreateCertificationGroup = ({
 
   const onSubmit = () => {
     if (!data) return;
-    console.log("data :>> ", data);
     createGroup.mutate({
       name: data.name,
       modules: data.modules.map((m) => ({
@@ -441,7 +440,6 @@ export function UpdateCertificationGroup({
   });
 
   const onSubmit = () => {
-    console.log("data :>> ", data);
     updateGroup.mutate({
       id: groupId,
       name: data?.name ?? "",
@@ -686,7 +684,7 @@ function CertificationGroupForm({
             <div className="flex flex-wrap gap-2">
               {agQuery.data?.map((ag) => (
                 <button
-                  className={`btn btn-primary btn-sm normal-case ${
+                  className={`btn-primary btn-sm btn normal-case ${
                     selectedModule?.activityIds.includes(ag.id) ||
                     activityIds.has(ag.id)
                       ? ""

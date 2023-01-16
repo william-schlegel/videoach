@@ -11,24 +11,27 @@ import { trpc } from "@trpcclient/trpc";
 import { useTranslation } from "next-i18next";
 import Layout from "@root/src/components/layout";
 import { AddCoachToClub, CoachDataPresentation } from "@modals/manageClub";
-import { useState } from "react";
 import { isCUID } from "@lib/checkValidity";
+import { useRouter } from "next/router";
+import Link from "next/link";
+import createLink from "@lib/createLink";
 
 function CoachManagementForClub({
   userId,
 }: InferGetServerSidePropsType<typeof getServerSideProps>) {
   const { t } = useTranslation("club");
-  const [clubId, setClubId] = useState("");
-  const [coachId, setCoachId] = useState("");
+  const router = useRouter();
+  const clubId = router.query.clubId as string;
+  const coachId = router.query.coachId as string;
   const queryClubs = trpc.clubs.getClubsForManager.useQuery(userId, {
     onSuccess(data) {
-      if (clubId === "") setClubId(data[0]?.id ?? "");
+      if (!clubId) router.push(createLink({ clubId: data[0]?.id, coachId }));
     },
   });
   const queryCoachs = trpc.coachs.getCoachsForClub.useQuery(clubId, {
     enabled: isCUID(clubId),
     onSuccess(data) {
-      if (coachId === "") setCoachId(data[0]?.id ?? "");
+      if (!coachId) router.push(createLink({ clubId, coachId: data[0]?.id }));
     },
   });
   const queryCoach = trpc.coachs.getCoachById.useQuery(coachId, {
@@ -44,7 +47,11 @@ function CoachManagementForClub({
           <select
             className="w-48 min-w-fit"
             value={clubId}
-            onChange={(e) => setClubId(e.target.value)}
+            onChange={(e) => {
+              router.push(
+                createLink({ clubId: e.target.value, coachId: undefined })
+              );
+            }}
           >
             {queryClubs.data?.map((club) => (
               <option key={club.id} value={club.id}>
@@ -61,14 +68,14 @@ function CoachManagementForClub({
           <ul className="menu overflow-hidden rounded border border-secondary bg-base-100">
             {queryCoachs.data?.map((coach) => (
               <li key={coach.id}>
-                <div className={`flex ${coachId === coach.id ? "active" : ""}`}>
-                  <button
-                    onClick={() => setCoachId(coach.id)}
-                    className="flex flex-1 items-center justify-between"
-                  >
-                    {coach.name}
-                  </button>
-                </div>
+                <Link
+                  href={createLink({ clubId, coachId: coach.id })}
+                  className={`w-full text-center ${
+                    coachId === coach.id ? "active" : ""
+                  }`}
+                >
+                  {coach.name}
+                </Link>
               </li>
             ))}
           </ul>
@@ -77,13 +84,13 @@ function CoachManagementForClub({
           <CoachDataPresentation
             url={queryCoach.data.imageUrl}
             activityGroups={
-              queryCoach.data.activityGroups?.map((ag) => ({
+              queryCoach.data.coachData?.activityGroups?.map((ag) => ({
                 id: ag.id,
                 name: ag.name,
               })) ?? []
             }
             certifications={
-              queryCoach.data.certifications?.map((cert) => ({
+              queryCoach.data.coachData?.certifications?.map((cert) => ({
                 id: cert.id,
                 name: cert.name,
                 modules: cert.modules.map((mod) => ({
@@ -92,9 +99,9 @@ function CoachManagementForClub({
                 })),
               })) ?? []
             }
-            rating={queryCoach.data.rating ?? 0}
+            rating={queryCoach.data.coachData?.rating ?? 0}
             id={queryCoach.data.id ?? ""}
-            pageId={queryCoach.data.page?.id}
+            pageId={queryCoach.data.coachData?.page?.id}
           />
         ) : null}
       </div>
@@ -124,7 +131,7 @@ export const getServerSideProps = async ({
     props: {
       ...(await serverSideTranslations(
         locale ?? "fr",
-        ["common", "club", "coach"],
+        ["common", "club", "coach", "home"],
         nextI18nConfig
       )),
       userId: session?.user?.id || "",

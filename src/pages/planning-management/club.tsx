@@ -4,8 +4,8 @@ import type {
   DayName,
   Planning,
   Room,
-  User,
   Site,
+  UserCoach,
 } from "@prisma/client";
 import { Role, PlanningActivity } from "@prisma/client";
 import {
@@ -17,12 +17,7 @@ import { serverSideTranslations } from "next-i18next/serverSideTranslations";
 import nextI18nConfig from "@root/next-i18next.config.mjs";
 import { trpc } from "@trpcclient/trpc";
 import { useTranslation } from "next-i18next";
-import {
-  useEffect,
-  useMemo,
-  type ReactNode,
-  // , useEffect
-} from "react";
+import { useEffect, useMemo, type ReactNode } from "react";
 import { useRef, useState } from "react";
 import Spinner from "@ui/spinner";
 import Layout from "@root/src/components/layout";
@@ -46,6 +41,8 @@ import { CSS } from "@dnd-kit/utilities";
 import { type SubmitHandler, useForm } from "react-hook-form";
 import Confirmation from "@ui/confirmation";
 import { isCUID } from "@lib/checkValidity";
+import { useRouter } from "next/router";
+import createLink from "@lib/createLink";
 // import { useHover } from "@lib/useHover";
 
 const HHOUR = "h-12"; // 3rem 48px
@@ -59,17 +56,19 @@ function ClubPlanning({
   userId,
 }: InferGetServerSidePropsType<typeof getServerSideProps>) {
   const { t } = useTranslation("planning");
-  const [clubId, setClubId] = useState("");
-  const [planningId, setPlanningId] = useState("");
+  const router = useRouter();
+  const clubId = router.query.clubId as string;
+  const planningId = router.query.planningId as string;
   const queryClubs = trpc.clubs.getClubsForManager.useQuery(userId, {
     onSuccess(data) {
-      if (clubId === "") setClubId(data[0]?.id ?? "");
+      if (!clubId) router.push(createLink({ clubId: data[0]?.id, planningId }));
     },
   });
   const queryPlannings = trpc.plannings.getPlanningsForClub.useQuery(clubId, {
     enabled: isCUID(clubId),
     onSuccess(data) {
-      if (planningId === "") setPlanningId(data[0]?.id ?? "");
+      if (!planningId)
+        router.push(createLink({ clubId, planningId: data[0]?.id }));
     },
   });
 
@@ -83,8 +82,9 @@ function ClubPlanning({
             className="w-48 min-w-fit"
             value={clubId}
             onChange={(e) => {
-              setPlanningId("");
-              setClubId(e.target.value);
+              router.push(
+                createLink({ clubId: e.target.value, planningId: undefined })
+              );
             }}
           >
             {queryClubs.data?.map((club) => (
@@ -108,7 +108,11 @@ function ClubPlanning({
                   }`}
                 >
                   <button
-                    onClick={() => setPlanningId(planning.id)}
+                    onClick={() =>
+                      router.push(
+                        createLink({ clubId, planningId: planning.id })
+                      )
+                    }
                     className="flex flex-1 items-center justify-between"
                   >
                     <PlanningName planning={planning} />
@@ -414,7 +418,7 @@ type PlanningActivityCompleted = PlanningActivity & {
   site: Site | null;
   room: Room | null;
   activity: Activity;
-  coach: User | null;
+  coach: UserCoach | null;
 };
 
 type PlanningActivitiesProps = {

@@ -5,7 +5,7 @@ import type {
   PlanningActivity,
   Room,
   Site,
-  User,
+  UserCoach,
 } from "@prisma/client";
 import { DayName } from "@prisma/client";
 import { z } from "zod";
@@ -233,18 +233,22 @@ export const planningRouter = router({
       const user = await ctx.prisma.user.findUnique({
         where: { id: input.memberId },
         include: {
-          subscriptions: {
+          memberData: {
             include: {
-              activitieGroups: true,
-              activities: true,
-              rooms: true,
-              sites: true,
+              subscriptions: {
+                include: {
+                  activitieGroups: true,
+                  activities: true,
+                  rooms: true,
+                  sites: true,
+                },
+              },
             },
           },
         },
       });
       const clubIds = Array.from(
-        new Set(user?.subscriptions.map((s) => s.clubId))
+        new Set(user?.memberData?.subscriptions.map((s) => s.clubId))
       );
 
       const planningClubs = await ctx.prisma.planning.findMany({
@@ -265,7 +269,7 @@ export const planningRouter = router({
           site: Site;
           room: Room | null;
           activity: Activity;
-          coach: User | null;
+          coach: UserCoach | null;
         })[];
         withNoCalendar: (Activity & {
           site: {
@@ -278,7 +282,7 @@ export const planningRouter = router({
       })[] = [];
 
       for (const planningClub of planningClubs) {
-        const sub = user?.subscriptions.filter(
+        const sub = user?.memberData?.subscriptions.filter(
           (s) => s.clubId === planningClub.clubId
         );
 

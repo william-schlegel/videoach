@@ -191,9 +191,9 @@ model Club {
   calendars     OpeningCalendar[]
   pages         Page[]
   pageStyle     String            @default("light")
-  // searchAddress String?
-  // latitude      Float             @default(48.8583701)
-  // longitude     Float             @default(2.2944813)
+  searchAddress String?
+  latitude      Float             @default(48.8583701)
+  longitude     Float             @default(2.2944813)
   plannings     Planning[]
   logoId        String?           @unique
   logo          UserDocument?     @relation(fields: [logoId], references: [id])
@@ -240,11 +240,13 @@ model Room {
   calendars          OpeningCalendar[]
   siteId             String
   site               Site               @relation(fields: [siteId], references: [id], onDelete: Cascade)
-  activities         Activity[]         @relation("rooms-activities") // room possible affectation for activity
+  // room possible affectation for activity
+  activities         Activity[]         @relation("rooms-activities")
   plannings          Planning[]
   planningActivities PlanningActivity[]
   subscriptions      Subscription[]
-  // activity           Activity[]         @relation("room-activity") // room for activity 
+  // room for activities with no calendar
+  activity           Activity[]         @relation("room-activity") // room for activity 
 
   @@index([siteId])
 }
@@ -370,11 +372,12 @@ model Activity {
   noCalendar         Boolean            @default(false)
   siteId             String?
   site               Site?              @relation(fields: [siteId], references: [id])
-  // roomId             String?
-  // room               Room?              @relation(fields: [roomId], references: [id], name: "room-activity")
+  // for activities with no calendar
+  roomId             String?
+  room               Room?              @relation(fields: [roomId], references: [id], name: "room-activity")
   coachs             UserCoach[]
-  // @@index([roomId])
 
+  @@index([roomId])
   @@index([groupId])
   @@index([clubId])
   @@index([siteId])

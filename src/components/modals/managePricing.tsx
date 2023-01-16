@@ -94,7 +94,7 @@ export const CreatePricing = ({ variant = "Primary" }: CreatePricingProps) => {
   };
 
   const onError: SubmitErrorHandler<PricingFormValues> = (errors) => {
-    console.log("errors :>> ", errors);
+    console.error("errors :>> ", errors);
   };
 
   return (
@@ -180,7 +180,7 @@ export const UpdatePricing = ({
   };
 
   const onError: SubmitErrorHandler<PricingFormValues> = (errors) => {
-    console.log("errors :>> ", errors);
+    console.error("errors :>> ", errors);
   };
 
   return (

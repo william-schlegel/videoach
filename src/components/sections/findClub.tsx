@@ -142,7 +142,7 @@ function FindClub({ address = "" }: FindClubProps) {
           </table>
         </div>
       </div>
-      <div className="min-h-[50vh]">
+      <div className="min-h-[30vh]">
         <div className="h-full border border-primary">
           <Map
             initialViewState={{ zoom: 9 }}

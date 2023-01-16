@@ -25,6 +25,7 @@ import { useWriteFile } from "@lib/useManageFile";
 import { LATITUDE, LONGITUDE } from "@lib/defaultValues";
 import Spinner from "@ui/spinner";
 import { isCUID } from "@lib/checkValidity";
+import FindCoach from "../sections/findCoach";
 
 const MAX_SIZE_LOGO = 1024 * 1024;
 
@@ -52,7 +53,6 @@ export const CreateClub = () => {
   const onSubmit = async (data: ClubFormValues) => {
     let logoId: string | undefined = "";
     if (data.logo?.[0]) logoId = await saveLogo(data.logo[0]);
-    console.log("logoId :>> ", logoId);
     createClub.mutate({
       userId: sessionData?.user?.id ?? "",
       name: data.name,
@@ -226,7 +226,6 @@ function ClubForm({ onSubmit, onCancel, update, initialData }: ClubFormProps) {
   };
 
   const onSubmitForm: SubmitHandler<ClubFormValues> = (data) => {
-    console.log("data :>> ", data);
     onSubmit(data);
     reset();
     setImagePreview("");
@@ -399,77 +398,31 @@ export const DeleteClub = ({ clubId }: PropsWithoutRef<PropsUpdateDelete>) => {
 export default CreateClub;
 
 export const AddCoachToClub = ({ clubId }: { clubId: string }) => {
-  const queryCoachs = trpc.coachs.getAllCoachs.useQuery(undefined, {
-    onSuccess(data) {
-      if (coachId === "") setCoachId(data?.[0]?.id ?? "");
-    },
-  });
   const utils = trpc.useContext();
   const addCoachToClub = trpc.clubs.updateClubCoach.useMutation({
     onSuccess() {
       utils.coachs.getCoachsForClub.invalidate(clubId);
+      setCloseModal(false);
     },
   });
-  const [coachId, setCoachId] = useState("");
+  const [closeModal, setCloseModal] = useState(false);
   const { t } = useTranslation("club");
-  const queryCoach = trpc.coachs.getCoachById.useQuery(coachId, {
-    enabled: isCUID(coachId),
-  });
-
-  const onSubmit = () => {
-    if (!coachId) return;
-    addCoachToClub.mutate({ id: clubId, coachId });
-  };
 
   return (
     <Modal
       title={t("coach.add")}
-      handleSubmit={onSubmit}
+      closeModal={closeModal}
       buttonIcon={<i className="bx bx-plus bx-sm" />}
       variant={"Primary"}
-      className="w-11/12 max-w-3xl"
+      className="w-11/12 max-w-3xl @container"
     >
       <h3>{t("coach.find")}</h3>
-      <select
-        className="w-full"
-        value={coachId}
-        onChange={(e) => setCoachId(e.target.value)}
-      >
-        {queryCoachs.data?.map((coach) => (
-          <option key={coach.id} value={coach.id}>
-            {coach.name}
-            {"   ("}
-            {coach.email}
-            {")"}
-          </option>
-        ))}
-      </select>
-      {queryCoach.data ? (
-        <div className="mt-4 grid grid-cols-[auto_1fr] gap-2">
-          <CoachDataPresentation
-            url={queryCoach.data.imageUrl}
-            activityGroups={
-              queryCoach.data.activityGroups?.map((ag) => ({
-                id: ag.id,
-                name: ag.name,
-              })) ?? []
-            }
-            certifications={
-              queryCoach.data.certifications?.map((cert) => ({
-                id: cert.id,
-                name: cert.name,
-                modules: cert.modules.map((mod) => ({
-                  id: mod.id,
-                  name: mod.name,
-                })),
-              })) ?? []
-            }
-            rating={queryCoach.data.rating ?? 0}
-            id={queryCoach.data.id ?? ""}
-            pageId={queryCoach.data.page?.id}
-          />
-        </div>
-      ) : null}
+      <FindCoach
+        onSelect={(coachId) => {
+          addCoachToClub.mutate({ clubId, coachId });
+          setCloseModal(true);
+        }}
+      />
     </Modal>
   );
 };

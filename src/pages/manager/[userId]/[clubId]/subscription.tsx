@@ -1,5 +1,6 @@
 import { authOptions } from "@auth/[...nextauth]";
 import { isCUID } from "@lib/checkValidity";
+import createLink from "@lib/createLink";
 import { formatDateLocalized } from "@lib/formatDate";
 import { formatMoney } from "@lib/formatNumber";
 import {
@@ -42,18 +43,12 @@ const ManageSubscriptions = ({
     {
       enabled: isCUID(clubId),
       onSuccess(data) {
-        if (!subscriptionId) router.push(createLink(data[0]?.id));
+        if (!subscriptionId)
+          router.push(createLink({ subscriptionId: data[0]?.id }));
       },
     }
   );
   const { t } = useTranslation("club");
-
-  function createLink(id: string | undefined) {
-    const url = new URL(window.location.href);
-    url.searchParams.delete("subscriptionId");
-    url.searchParams.append("subscriptionId", id ?? "");
-    return url.href;
-  }
 
   if (
     sessionData &&
@@ -93,7 +88,7 @@ const ManageSubscriptions = ({
             {siteQuery.data?.map((site) => (
               <li key={site.id}>
                 <Link
-                  href={createLink(site.id)}
+                  href={createLink({ subscriptionId: site.id })}
                   className={`w-full text-center ${
                     subscriptionId === site.id ? "active" : ""
                   }`}

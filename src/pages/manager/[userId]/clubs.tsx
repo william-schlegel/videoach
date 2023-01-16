@@ -33,6 +33,7 @@ import Layout from "@root/src/components/layout";
 import Image from "next/image";
 import ButtonIcon from "@ui/buttonIcon";
 import { isCUID } from "@lib/checkValidity";
+import createLink from "@lib/createLink";
 
 const ManageClubs = ({
   userId,
@@ -42,18 +43,11 @@ const ManageClubs = ({
   const clubId = router.query.clubId as string;
   const clubQuery = trpc.clubs.getClubsForManager.useQuery(userId, {
     onSuccess(data) {
-      if (!clubId) router.push(createLink(data[0]?.id)); //  setClubId(data[0]?.id || "");
+      if (!clubId) router.push(createLink({ clubId: data[0]?.id }));
     },
   });
 
   const { t } = useTranslation("club");
-
-  function createLink(id: string | undefined) {
-    const url = new URL(window.location.href);
-    url.searchParams.delete("clubId");
-    url.searchParams.append("clubId", id ?? "");
-    return url.href;
-  }
 
   if (
     sessionData &&
@@ -79,7 +73,7 @@ const ManageClubs = ({
             {clubQuery.data?.map((club) => (
               <li key={club.id}>
                 <Link
-                  href={createLink(club.id)}
+                  href={createLink({ clubId: club.id })}
                   className={`w-full text-center ${
                     clubId === club.id ? "active" : ""
                   }`}
@@ -129,11 +123,6 @@ export function ClubContent({ userId, clubId }: ClubContentProps) {
   const [groups, setGroups] = useState<ActivityGroup[]>([]);
   const utils = trpc.useContext();
   const { t } = useTranslation("club");
-  const router = useRouter();
-
-  const root = router.asPath.split("/");
-  root.pop();
-  const path = root.reduce((a, r) => a.concat(`${r}/`), "");
 
   const sensors = useSensors(
     useSensor(PointerSensor, {
@@ -177,7 +166,7 @@ export function ClubContent({ userId, clubId }: ClubContentProps) {
           <p>({clubQuery.data?.address})</p>
         </div>
         <div className="flex items-center gap-2">
-          <Link href={`${path}${clubId}/subscription`}>
+          <Link href={`/manager/${userId}/${clubId}/subscription`}>
             <ButtonIcon
               iconComponent={<i className="bx bx-euro bx-sm" />}
               title={t("subscription.manage-subscriptions")}
@@ -204,7 +193,7 @@ export function ClubContent({ userId, clubId }: ClubContentProps) {
               </h3>
               <Link
                 className="btn-secondary btn"
-                href={`${path}${clubId}/sites`}
+                href={`/manager/${userId}/${clubId}/sites`}
               >
                 {t("site.manage")}
               </Link>

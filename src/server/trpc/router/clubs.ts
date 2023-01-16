@@ -189,13 +189,13 @@ export const clubRouter = router({
   updateClubCoach: protectedProcedure
     .input(
       z.object({
-        id: z.string().cuid(),
+        clubId: z.string().cuid(),
         coachId: z.string().cuid(),
       })
     )
     .mutation(async ({ ctx, input }) => {
       const club = await ctx.prisma.club.findFirst({
-        where: { id: input.id },
+        where: { id: input.clubId },
       });
       if (
         ctx.session.user.role !== Role.ADMIN &&
@@ -206,12 +206,12 @@ export const clubRouter = router({
           message: "You are not authorized to modify this club",
         });
 
-      return ctx.prisma.user.update({
-        where: { id: input.coachId },
+      return ctx.prisma.userCoach.update({
+        where: { userId: input.coachId },
         data: {
           clubs: {
             connect: {
-              id: input.id,
+              id: input.clubId,
             },
           },
         },

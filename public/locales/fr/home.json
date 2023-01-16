@@ -21,6 +21,7 @@
   "rating": "Note",
   "certifications": "Certifications",
   "page": "Page",
+  "select": "Sélectionner",
   "page-coach": "Page de présentation de {{name}}",
   "page-club": "Page du club {{name}}",
   "pricing": {

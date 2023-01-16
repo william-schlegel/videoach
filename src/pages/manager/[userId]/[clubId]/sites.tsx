@@ -19,6 +19,7 @@ import { CreateSiteCalendar } from "@modals/manageCalendar";
 import CalendarWeek from "@root/src/components/calendarWeek";
 import Layout from "@root/src/components/layout";
 import { isCUID } from "@lib/checkValidity";
+import createLink from "@lib/createLink";
 
 const ManageSites = ({
   userId,
@@ -32,18 +33,11 @@ const ManageSites = ({
   const siteId = router.query.siteId as string;
   const siteQuery = trpc.sites.getSitesForClub.useQuery(clubId, {
     onSuccess(data) {
-      if (!siteId) router.push(createLink(data[0]?.id));
+      if (!siteId) router.push(createLink({ siteId: data[0]?.id }));
     },
     enabled: isCUID(clubId),
   });
   const { t } = useTranslation("club");
-
-  function createLink(id: string | undefined) {
-    const url = new URL(window.location.href);
-    url.searchParams.delete("siteId");
-    url.searchParams.append("siteId", id ?? "");
-    return url.href;
-  }
 
   if (
     sessionData &&
@@ -81,7 +75,7 @@ const ManageSites = ({
             {siteQuery.data?.map((site) => (
               <li key={site.id}>
                 <Link
-                  href={createLink(site.id)}
+                  href={createLink({ siteId: site.id })}
                   className={`w-full text-center ${
                     siteId === site.id ? "active" : ""
                   }`}

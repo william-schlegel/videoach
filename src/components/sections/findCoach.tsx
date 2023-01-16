@@ -21,7 +21,11 @@ import Rating from "@ui/rating";
 //   certifications: string[];
 // };
 
-function FindCoach() {
+type FindCoachProps = {
+  onSelect?: (id: string) => void;
+};
+
+function FindCoach({ onSelect }: FindCoachProps) {
   const { t } = useTranslation("home");
   const [myAddress, setMyAddress] = useState<AddressData>({
     address: "",
@@ -41,9 +45,10 @@ function FindCoach() {
     });
     return c;
   }, [myAddress.lat, myAddress.lng, range]);
+  const withSelect = typeof onSelect === "function";
 
   return (
-    <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
+    <div className="grid grid-cols-1 gap-4 @3xl:grid-cols-2">
       <div className="flex flex-col items-center gap-4">
         <div className="w-full max-w-sm text-start">
           <AddressSearch
@@ -78,6 +83,7 @@ function FindCoach() {
                 <th>{t("rating")}</th>
                 <th>{t("certifications")}</th>
                 <th>{t("page")}</th>
+                {withSelect ? <th>{t("select")}</th> : null}
               </tr>
             </thead>
             <tbody>
@@ -121,13 +127,24 @@ function FindCoach() {
                       <span>&nbsp;</span>
                     )}
                   </td>
+                  {withSelect ? (
+                    <td>
+                      <span
+                        className="btn-primary btn-xs btn"
+                        tabIndex={0}
+                        onClick={() => onSelect(res.id)}
+                      >
+                        {t("select")}
+                      </span>
+                    </td>
+                  ) : null}
                 </tr>
               ))}
             </tbody>
           </table>
         </div>
       </div>
-      <div className="min-h-[50vh]">
+      <div className="min-h-[30vh]">
         <div className="h-full border border-primary">
           <Map
             initialViewState={{ zoom: 9 }}

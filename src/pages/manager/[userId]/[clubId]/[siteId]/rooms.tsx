@@ -23,6 +23,7 @@ import {
 } from "@modals/manageRoom";
 import Layout from "@root/src/components/layout";
 import { isCUID } from "@lib/checkValidity";
+import createLink from "@lib/createLink";
 
 const ManageRooms = ({
   clubId,
@@ -34,17 +35,10 @@ const ManageRooms = ({
   const siteQuery = trpc.sites.getSiteById.useQuery(siteId);
   const roomQuery = trpc.sites.getRoomsForSite.useQuery(siteId, {
     onSuccess(data) {
-      if (!roomId) router.push(createLink(data[0]?.id || ""));
+      if (!roomId) router.push(createLink({ roomId: data[0]?.id }));
     },
   });
   const { t } = useTranslation("club");
-
-  function createLink(id: string | undefined) {
-    const url = new URL(window.location.href);
-    url.searchParams.delete("roomId");
-    url.searchParams.append("roomId", id ?? "");
-    return url.href;
-  }
 
   if (
     sessionData &&
@@ -82,14 +76,14 @@ const ManageRooms = ({
             {roomQuery.data?.map((room) => (
               <li key={room.id}>
                 <Link
-                  href={createLink(room.id)}
+                  href={createLink({ roomId: room.id })}
                   className={`w-full text-center ${
                     roomId === room.id ? "active" : ""
                   }`}
                 >
                   <span>{room.name}</span>
                   {room.unavailable ? (
-                    <span className="badge badge-error">
+                    <span className="badge-error badge">
                       {t("room.closed")}
                     </span>
                   ) : null}
