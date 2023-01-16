@@ -1,4 +1,4 @@
-import { Role } from "@prisma/client";
+import { CoachingLevelList, Role } from "@prisma/client";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 import { router, protectedProcedure, publicProcedure } from "../trpc";
@@ -12,6 +12,30 @@ const CertificationData = z.object({
   userId: z.string().cuid(),
   modules: z.array(z.string().cuid()),
   activityGroups: z.array(z.string().cuid()),
+});
+
+const OfferData = z.object({
+  coachId: z.string().cuid(),
+  id: z.string().cuid(),
+  startDate: z.date(),
+  physical: z.boolean().default(false),
+  inHouse: z.boolean().default(false),
+  publicPlace: z.boolean().default(false),
+  perHourPhysical: z.number().min(0),
+  perDayPhysical: z.number().min(0),
+  travelFee: z.number().min(0),
+  travelLimit: z.number().min(0),
+  webcam: z.boolean().default(false),
+  perHourWebcam: z.number().min(0),
+  perDayWebcam: z.number().min(0),
+  freeHours: z.number().min(0),
+  levels: z.array(z.nativeEnum(CoachingLevelList)),
+  packs: z.array(
+    z.object({
+      nbHours: z.number().min(0),
+      packPrice: z.number().min(0),
+    })
+  ),
 });
 
 export const coachRouter = router({
@@ -68,7 +92,7 @@ export const coachRouter = router({
         data: {
           name: input.name,
           obtainedIn: input.obtainedIn,
-          user: {
+          coach: {
             connect: {
               userId: input.userId,
             },
@@ -103,7 +127,7 @@ export const coachRouter = router({
         data: {
           name: input.name,
           obtainedIn: input.obtainedIn,
-          userId: input.userId,
+          coachId: input.userId,
           modules: input.modules
             ? {
                 connect: input.modules.map((m) => ({ id: m })),
@@ -309,6 +333,51 @@ export const coachRouter = router({
     .mutation(async ({ ctx, input }) => {
       return ctx.prisma.certificationModule.delete({
         where: { id: input },
+      });
+    }),
+  getCoachData: protectedProcedure
+    .input(z.string().cuid())
+    .query(({ ctx, input }) =>
+      ctx.prisma.userCoach.findUnique({
+        where: { userId: input },
+        include: {
+          coachingActivities: true,
+          coachingLevel: true,
+          coachingPrices: {
+            include: {
+              packs: true,
+            },
+          },
+        },
+      })
+    ),
+  createCoachOffer: protectedProcedure
+    .input(OfferData.omit({ id: true }))
+    .mutation(async ({ ctx, input }) => {
+      return ctx.prisma.coachingPrice.create({
+        data: {
+          coachId: input.coachId,
+          inHouse: input.inHouse,
+          physical: input.physical,
+          publicPlace: input.publicPlace,
+          startDate: input.startDate,
+          webcam: input.webcam,
+          freeHours: input.freeHours,
+          perDayPhysical: input.perDayPhysical,
+          perDayWebcam: input.perDayWebcam,
+          perHourPhysical: input.perHourPhysical,
+          perHourWebcam: input.perHourWebcam,
+          travelFee: input.travelFee,
+          travelLimit: input.travelLimit,
+          packs: {
+            createMany: {
+              data: input.packs.map((pack) => ({
+                nbHours: pack.nbHours,
+                packPrice: pack.packPrice,
+              })),
+            },
+          },
+        },
       });
     }),
 });

@@ -64,7 +64,7 @@ export const pageRouter = router({
     .input(z.string().cuid())
     .query(async ({ ctx, input }) => {
       const page = await ctx.prisma.page.findFirst({
-        where: { userId: input },
+        where: { coachId: input },
       });
       console.log("getPageForCoach input", { input, page });
       if (page) return page;
@@ -78,7 +78,7 @@ export const pageRouter = router({
         data: {
           name: user.name ?? "coach",
           target: "HOME",
-          user: {
+          coach: {
             connect: {
               userId: input,
             },

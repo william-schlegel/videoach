@@ -23,7 +23,7 @@ export const activityRouter = router({
     .query(({ ctx, input }) => {
       return ctx.prisma.activityGroup.findMany({
         where: {
-          OR: [{ default: true }, { userId: input }],
+          OR: [{ default: true }, { coachId: input }],
         },
         include: { activities: true },
         orderBy: {
@@ -33,7 +33,7 @@ export const activityRouter = router({
     }),
   getAllActivityGroups: protectedProcedure.query(({ ctx }) => {
     return ctx.prisma.activityGroup.findMany({
-      include: { user: true },
+      include: { coach: true },
       orderBy: {
         name: "asc",
       },
@@ -149,7 +149,7 @@ export const activityRouter = router({
       ctx.prisma.activityGroup.create({
         data: {
           name: input.name,
-          userId: input.userId,
+          coachId: input.userId,
           default: input.default,
         },
       })
@@ -183,7 +183,7 @@ export const activityRouter = router({
       });
       if (
         ctx.session.user.role !== Role.ADMIN &&
-        ctx.session.user.id !== group?.userId
+        ctx.session.user.id !== group?.coachId
       )
         throw new TRPCError({
           code: "UNAUTHORIZED",

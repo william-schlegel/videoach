@@ -43,6 +43,11 @@ const MENUS: MenuDefinitionType[] = [
     access: ["MANAGER", "MANAGER_COACH"],
   },
   {
+    label: "navigation.coaching-offer",
+    page: `/coach/offer`,
+    access: ["COACH", "MANAGER_COACH"],
+  },
+  {
     label: "navigation.presentation-page",
     page: `/create-page`,
     access: ["MANAGER", "COACH", "MANAGER_COACH"],

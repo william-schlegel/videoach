@@ -302,9 +302,12 @@ enum CoachingLevelList {
 }
 
 model CoachingLevel {
-  id    String            @id @default(cuid())
-  level CoachingLevelList
-  user  UserCoach[]
+  id      String            @id @default(cuid())
+  coachId String
+  coach   UserCoach         @relation(fields: [coachId], references: [userId], onDelete: Cascade)
+  level   CoachingLevelList
+
+  @@index([coachId])
 }
 
 model CoachingPrice {
@@ -321,11 +324,11 @@ model CoachingPrice {
   perHourWebcam   Float               @default(0)
   perDayWebcam    Float               @default(0)
   freeHours       Int                 @default(0)
-  userId          String
-  user            UserCoach           @relation(fields: [userId], references: [userId], onDelete: Cascade)
+  coachId         String
+  coach           UserCoach           @relation(fields: [coachId], references: [userId], onDelete: Cascade)
   packs           CoachingPricePack[]
 
-  @@index([userId])
+  @@index([coachId])
 }
 
 model CoachingPricePack {
@@ -344,19 +347,18 @@ model CoachingPricePack {
 
 // ----------------------------------------------------------------------------------------------
 
-// activity group may be standard (default group) or belong to a specific user
 model ActivityGroup {
   id                   String                @id @default(cuid())
   name                 String
   default              Boolean               @default(false)
   activities           Activity[]
-  user                 UserCoach?            @relation(fields: [userId], references: [id], onDelete: Cascade)
-  userId               String?
+  coach                UserCoach?            @relation(fields: [coachId], references: [id], onDelete: Cascade)
+  coachId              String?
   certifications       Certification[]
   certificationModules CertificationModule[]
   subscriptions        Subscription[]
 
-  @@index([userId])
+  @@index([coachId])
 }
 
 model Activity {
@@ -478,13 +480,13 @@ model Certification {
   obtainedIn     DateTime
   documentId     String?               @unique
   document       UserDocument?         @relation(fields: [documentId], references: [id])
-  user           UserCoach             @relation(fields: [userId], references: [id], onDelete: Cascade)
-  userId         String
+  coach          UserCoach             @relation(fields: [coachId], references: [id], onDelete: Cascade)
+  coachId        String
   modules        CertificationModule[]
   activityGroups ActivityGroup[]
   manualModule   String?
 
-  @@index([userId])
+  @@index([coachId])
 }
 
 // ----------------------------------------------------------------------------------------------
@@ -562,12 +564,12 @@ model Page {
   sections  PageSection[]
   clubId    String?
   club      Club?         @relation(fields: [clubId], references: [id], onDelete: Cascade)
-  userId    String?       @unique
-  user      UserCoach?    @relation(fields: [userId], references: [userId], onDelete: Cascade)
+  coachId   String?       @unique
+  coach     UserCoach?    @relation(fields: [coachId], references: [userId], onDelete: Cascade)
   published Boolean       @default(false)
 
   @@index([clubId])
-  @@index([userId])
+  @@index([coachId])
 }
 
 // ----------------------------------------------------------------------------------------------
