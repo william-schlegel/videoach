@@ -17,6 +17,7 @@ import {
 import { formatDateAsYYYYMMDD } from "@lib/formatDate";
 import { formatMoney } from "@lib/formatNumber";
 import { useState } from "react";
+import Spinner from "@ui/spinner";
 
 type OfferProps = {
   userId: string;
@@ -51,6 +52,23 @@ function Offer({ userId }: OfferProps) {
 
   const coachData = trpc.coachs.getCoachData.useQuery(userId, {
     enabled: isCUID(userId),
+    onSuccess(data) {
+      reset({
+        inHouse: data?.coachingPrices[0]?.inHouse ?? false,
+        physical: data?.coachingPrices[0]?.physical ?? false,
+        webcam: data?.coachingPrices[0]?.webcam ?? false,
+        publicPlace: data?.coachingPrices[0]?.publicPlace ?? false,
+        perHourPhysical: data?.coachingPrices[0]?.perHourPhysical ?? 0,
+        perDayPhysical: data?.coachingPrices[0]?.perDayPhysical ?? 0,
+        perHourWebcam: data?.coachingPrices[0]?.perHourWebcam ?? 0,
+        perDayWebcam: data?.coachingPrices[0]?.perDayWebcam ?? 0,
+        travelFee: data?.coachingPrices[0]?.travelFee ?? 0,
+        travelLimit: data?.coachingPrices[0]?.travelLimit ?? 0,
+        freeHours: data?.coachingPrices[0]?.freeHours ?? 0,
+        levels: data?.coachingLevel.map((l) => l.level) ?? [],
+        packs: data?.coachingPrices[0]?.packs ?? [],
+      });
+    },
   });
   const {
     register,
@@ -108,242 +126,253 @@ function Offer({ userId }: OfferProps) {
   return (
     <Layout className="container mx-auto">
       <h1>{t("offer.my-offer")}</h1>
-      <form
-        onSubmit={handleSubmit(onSubmit, onError)}
-        className="flex flex-col gap-2"
-      >
-        <div className="flex items-center gap-4">
-          <label className="required">{t("offer.start-date")}</label>
-          <div className="flex flex-col gap-2">
-            <input
-              className="input-bordered input"
-              {...register("startDate", {
-                valueAsDate: true,
-                required: t("offer.date-mandatory"),
-              })}
-              type="date"
-              defaultValue={formatDateAsYYYYMMDD()}
-            />
-            {errors.startDate ? (
-              <p className="text-sm text-error">{errors.startDate.message}</p>
-            ) : null}
-          </div>{" "}
-        </div>
+      {coachData.isLoading ? (
+        <Spinner />
+      ) : (
+        <form
+          onSubmit={handleSubmit(onSubmit, onError)}
+          className="flex flex-col gap-2"
+        >
+          <div className="flex items-center gap-4">
+            <label className="required">{t("offer.start-date")}</label>
+            <div className="flex flex-col gap-2">
+              <input
+                className="input-bordered input"
+                {...register("startDate", {
+                  valueAsDate: true,
+                  required: t("offer.date-mandatory"),
+                })}
+                type="date"
+                defaultValue={formatDateAsYYYYMMDD()}
+              />
+              {errors.startDate ? (
+                <p className="text-sm text-error">{errors.startDate.message}</p>
+              ) : null}
+            </div>{" "}
+          </div>
 
-        <div className="grid grid-cols-1 gap-2 xl:grid-cols-[2fr_1fr_1fr]">
-          <fieldset className="grid grid-cols-2 rounded border border-primary p-4">
-            <div>
-              <div className="form-control">
-                <label className="label cursor-pointer justify-start gap-4">
-                  <input
-                    type="checkbox"
-                    className="checkbox-primary checkbox"
-                    {...register("physical")}
-                    defaultChecked={false}
-                  />
-                  <span className="label-text">{t("offer.physical")}</span>
-                </label>
-              </div>
-              {fields.physical ? (
-                <>
-                  <div className="flex gap-2">
-                    <div className="form-control">
-                      <label className="label cursor-pointer justify-start gap-2">
+          <div className="grid grid-cols-1 gap-2 xl:grid-cols-[2fr_1fr_1fr]">
+            <fieldset className="grid grid-cols-2 rounded border border-primary p-4">
+              <div>
+                <div className="form-control">
+                  <label className="label cursor-pointer justify-start gap-4">
+                    <input
+                      type="checkbox"
+                      className="checkbox-primary checkbox"
+                      {...register("physical")}
+                      defaultChecked={false}
+                    />
+                    <span className="label-text">{t("offer.physical")}</span>
+                  </label>
+                </div>
+                {fields.physical ? (
+                  <>
+                    <div className="flex gap-2">
+                      <div className="form-control">
+                        <label className="label cursor-pointer justify-start gap-2">
+                          <input
+                            type="checkbox"
+                            className="checkbox-primary checkbox"
+                            {...register("inHouse")}
+                            defaultChecked={false}
+                          />
+                          <span className="label-text">
+                            {t("offer.in-house")}
+                          </span>
+                        </label>
+                      </div>
+                      <div className="form-control">
+                        <label className="label cursor-pointer justify-start gap-2">
+                          <input
+                            type="checkbox"
+                            className="checkbox-primary checkbox"
+                            {...register("publicPlace")}
+                            defaultChecked={false}
+                          />
+                          <span className="label-text">
+                            {t("offer.public-place")}
+                          </span>
+                        </label>
+                      </div>
+                    </div>
+                    <div className="grid grid-cols-[auto_1fr]">
+                      <label>{t("offer.tarif")}</label>
+                      <label className="input-group">
                         <input
-                          type="checkbox"
-                          className="checkbox-primary checkbox"
-                          {...register("inHouse")}
-                          defaultChecked={false}
+                          {...register("perHourPhysical", {
+                            valueAsNumber: true,
+                          })}
+                          type={"number"}
+                          className="input-bordered input w-full"
                         />
-                        <span className="label-text">
-                          {t("offer.in-house")}
+                        <span>{t("offer.per-hour")}</span>
+                      </label>
+                      <span>&nbsp;</span>
+                      <label className="input-group">
+                        <input
+                          {...register("perDayPhysical", {
+                            valueAsNumber: true,
+                          })}
+                          type={"number"}
+                          className="input-bordered input w-full"
+                        />
+                        <span>{t("offer.per-day")}</span>
+                      </label>
+                      <label>{t("offer.travel-fee")}</label>
+                      <label className="input-group">
+                        <input
+                          {...register("travelFee", { valueAsNumber: true })}
+                          type={"number"}
+                          className="input-bordered input w-full"
+                        />
+                        <span>€</span>
+                      </label>
+
+                      <label>{t("offer.travel-limit")}</label>
+                      <label className="input-group">
+                        <input
+                          {...register("travelLimit", { valueAsNumber: true })}
+                          type={"number"}
+                          className="input-bordered input w-full"
+                        />
+                        <span>km</span>
+                      </label>
+                    </div>
+                  </>
+                ) : null}
+              </div>
+              <div>
+                <div className="form-control">
+                  <label className="label cursor-pointer justify-start gap-4">
+                    <input
+                      type="checkbox"
+                      className="checkbox-primary checkbox"
+                      {...register("webcam")}
+                      defaultChecked={false}
+                    />
+                    <span className="label-text">{t("offer.webcam")}</span>
+                  </label>
+                </div>
+                {fields.webcam ? (
+                  <>
+                    <div className="grid grid-cols-[auto_1fr]">
+                      <label>{t("offer.tarif")}</label>
+                      <label className="input-group">
+                        <input
+                          {...register("perHourWebcam")}
+                          type={"number"}
+                          className="input-bordered input w-full"
+                        />
+                        <span>
+                          {t("offer.per-hour", { valueAsNumber: true })}
+                        </span>
+                      </label>
+                      <span>&nbsp;</span>
+                      <label className="input-group">
+                        <input
+                          {...register("perDayWebcam")}
+                          type={"number"}
+                          className="input-bordered input w-full"
+                        />
+                        <span>
+                          {t("offer.per-day", { valueAsNumber: true })}
                         </span>
                       </label>
                     </div>
-                    <div className="form-control">
-                      <label className="label cursor-pointer justify-start gap-2">
-                        <input
-                          type="checkbox"
-                          className="checkbox-primary checkbox"
-                          {...register("publicPlace")}
-                          defaultChecked={false}
-                        />
-                        <span className="label-text">
-                          {t("offer.public-place")}
-                        </span>
-                      </label>
-                    </div>
-                  </div>
-                  <div className="grid grid-cols-[auto_1fr]">
-                    <label>{t("offer.tarif")}</label>
-                    <label className="input-group">
-                      <input
-                        {...register("perHourPhysical", {
-                          valueAsNumber: true,
-                        })}
-                        type={"number"}
-                        className="input-bordered input w-full"
-                      />
-                      <span>{t("offer.per-hour")}</span>
-                    </label>
-                    <span>&nbsp;</span>
-                    <label className="input-group">
-                      <input
-                        {...register("perDayPhysical", { valueAsNumber: true })}
-                        type={"number"}
-                        className="input-bordered input w-full"
-                      />
-                      <span>{t("offer.per-day")}</span>
-                    </label>
-                    <label>{t("offer.travel-fee")}</label>
-                    <label className="input-group">
-                      <input
-                        {...register("travelFee", { valueAsNumber: true })}
-                        type={"number"}
-                        className="input-bordered input w-full"
-                      />
-                      <span>€</span>
-                    </label>
-
-                    <label>{t("offer.travel-limit")}</label>
-                    <label className="input-group">
-                      <input
-                        {...register("travelLimit", { valueAsNumber: true })}
-                        type={"number"}
-                        className="input-bordered input w-full"
-                      />
-                      <span>km</span>
-                    </label>
-                  </div>
-                </>
-              ) : null}
-            </div>
-            <div>
-              <div className="form-control">
-                <label className="label cursor-pointer justify-start gap-4">
-                  <input
-                    type="checkbox"
-                    className="checkbox-primary checkbox"
-                    {...register("webcam")}
-                    defaultChecked={false}
-                  />
-                  <span className="label-text">{t("offer.webcam")}</span>
-                </label>
+                  </>
+                ) : null}
               </div>
-              {fields.webcam ? (
-                <>
-                  <div className="grid grid-cols-[auto_1fr]">
-                    <label>{t("offer.tarif")}</label>
-                    <label className="input-group">
-                      <input
-                        {...register("perHourWebcam")}
-                        type={"number"}
-                        className="input-bordered input w-full"
-                      />
-                      <span>
-                        {t("offer.per-hour", { valueAsNumber: true })}
-                      </span>
-                    </label>
-                    <span>&nbsp;</span>
-                    <label className="input-group">
-                      <input
-                        {...register("perDayWebcam")}
-                        type={"number"}
-                        className="input-bordered input w-full"
-                      />
-                      <span>{t("offer.per-day", { valueAsNumber: true })}</span>
-                    </label>
-                  </div>
-                </>
-              ) : null}
-            </div>
-          </fieldset>
-          <fieldset className="flex flex-col rounded border border-primary p-4">
-            <label>{t("offer.packs")}</label>
-            <table className="table-compact w-full table-auto bg-base-100">
-              <thead>
-                <tr>
-                  <th>{t("offer.nb-hour")}</th>
-                  <th>{t("offer.tarif")}</th>
-                  <th></th>
-                </tr>
-              </thead>
-              <tbody>
-                {fields.packs?.map((pack, idx) => (
-                  <tr key={idx} className="text-end">
-                    <td>{pack.nbHours}</td>
-                    <td>{formatMoney(pack.packPrice)}</td>
-                    <td>
-                      <i
-                        className="bx bx-trash bx-xs cursor-pointer text-red-500"
-                        onClick={() => handleDeletePack(idx)}
-                      />
-                    </td>
+            </fieldset>
+            <fieldset className="flex flex-col rounded border border-primary p-4">
+              <label>{t("offer.packs")}</label>
+              <table className="table-compact w-full table-auto bg-base-100">
+                <thead>
+                  <tr>
+                    <th>{t("offer.nb-hour")}</th>
+                    <th>{t("offer.tarif")}</th>
+                    <th></th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
-            <div className="grid grid-cols-[auto_1fr]">
-              <label>{t("offer.nb-hour")}</label>
-              <label className="input-group">
-                <input
-                  value={pack.nbHours}
-                  onChange={(e) =>
-                    setPack((p) => ({ ...p, nbHours: e.target.valueAsNumber }))
-                  }
-                  type={"number"}
-                  className="input-bordered input w-full"
-                />
-                <span>h</span>
-              </label>
-              <label>{t("offer.tarif")}</label>
-              <label className="input-group">
-                <input
-                  value={pack.packPrice}
-                  onChange={(e) =>
-                    setPack((p) => ({
-                      ...p,
-                      packPrice: e.target.valueAsNumber,
-                    }))
-                  }
-                  type={"number"}
-                  className="input-bordered input w-full"
-                />
-                <span>€</span>
-              </label>
-            </div>
-            <button
-              type="button"
-              className="btn-primary btn"
-              onClick={() => handleAddPack()}
-            >
-              {t("offer.add-pack")}
-            </button>
-          </fieldset>
-          <fieldset className="grid grid-cols-2 rounded border border-primary p-4">
-            <div className="flex flex-col">
-              <label>{t("offer.levels")}</label>
-              {COACHING_LEVEL.map((level, idx) => (
-                <label
-                  key={level.value}
-                  className="label cursor-pointer justify-start gap-4"
-                >
+                </thead>
+                <tbody>
+                  {fields.packs?.map((pack, idx) => (
+                    <tr key={idx} className="text-end">
+                      <td>{pack.nbHours}</td>
+                      <td>{formatMoney(pack.packPrice)}</td>
+                      <td>
+                        <i
+                          className="bx bx-trash bx-xs cursor-pointer text-red-500"
+                          onClick={() => handleDeletePack(idx)}
+                        />
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+              <div className="grid grid-cols-[auto_1fr]">
+                <label>{t("offer.nb-hour")}</label>
+                <label className="input-group">
                   <input
-                    type="checkbox"
-                    className="checkbox-primary checkbox"
-                    {...register(`levels.${idx}`)}
-                    defaultChecked={false}
+                    value={pack.nbHours}
+                    onChange={(e) =>
+                      setPack((p) => ({
+                        ...p,
+                        nbHours: e.target.valueAsNumber,
+                      }))
+                    }
+                    type={"number"}
+                    className="input-bordered input w-full"
                   />
-                  <span className="label-text">{getName(level.value)}</span>
+                  <span>h</span>
                 </label>
-              ))}
-            </div>
-          </fieldset>
-        </div>
-        <button type="submit" className="btn-primary btn self-end">
-          {t("offer.save")}
-        </button>
-      </form>
+                <label>{t("offer.tarif")}</label>
+                <label className="input-group">
+                  <input
+                    value={pack.packPrice}
+                    onChange={(e) =>
+                      setPack((p) => ({
+                        ...p,
+                        packPrice: e.target.valueAsNumber,
+                      }))
+                    }
+                    type={"number"}
+                    className="input-bordered input w-full"
+                  />
+                  <span>€</span>
+                </label>
+              </div>
+              <button
+                type="button"
+                className="btn-primary btn"
+                onClick={() => handleAddPack()}
+              >
+                {t("offer.add-pack")}
+              </button>
+            </fieldset>
+            <fieldset className="grid grid-cols-2 rounded border border-primary p-4">
+              <div className="flex flex-col">
+                <label>{t("offer.levels")}</label>
+                {COACHING_LEVEL.map((level, idx) => (
+                  <label
+                    key={level.value}
+                    className="label cursor-pointer justify-start gap-4"
+                  >
+                    <input
+                      type="checkbox"
+                      className="checkbox-primary checkbox"
+                      {...register(`levels.${idx}`)}
+                      defaultChecked={false}
+                    />
+                    <span className="label-text">{getName(level.value)}</span>
+                  </label>
+                ))}
+              </div>
+            </fieldset>
+          </div>
+          <button type="submit" className="btn-primary btn self-end">
+            {t("offer.save")}
+          </button>
+        </form>
+      )}
     </Layout>
   );
 }

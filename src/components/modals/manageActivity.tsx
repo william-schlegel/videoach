@@ -400,7 +400,7 @@ export function UpdateGroup({
                   checked={defaultGroup}
                   className="checkbox-primary checkbox"
                   onChange={(e) => setDefaultGroup(e.currentTarget.checked)}
-                  disabled={!groupQuery.data?.userId}
+                  disabled={!groupQuery.data?.coachId}
                 />
                 <span className="label-text">{t("group.default")}</span>
               </label>
