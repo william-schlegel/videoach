@@ -349,16 +349,16 @@ export const CoachCreation = ({ userId, pageId }: CoachCreationProps) => {
             />
             <MapSection
               longitude={
-                queryCoach.data?.searchAddress
-                  ? queryCoach.data?.longitude
+                queryCoach.data?.coachData?.searchAddress
+                  ? queryCoach.data?.coachData?.longitude
                   : undefined
               }
               latitude={
-                queryCoach.data?.searchAddress
-                  ? queryCoach.data?.latitude
+                queryCoach.data?.coachData?.searchAddress
+                  ? queryCoach.data?.coachData?.latitude
                   : undefined
               }
-              range={queryCoach.data?.range ?? 10}
+              range={queryCoach.data?.coachData?.range ?? 10}
               preview
               theme={previewTheme}
             />
@@ -376,7 +376,7 @@ type CoachDisplayProps = {
 export const CoachDisplay = ({ pageId }: CoachDisplayProps) => {
   const queryPage = trpc.pages.getCoachPage.useQuery(pageId);
   const pageData = queryPage.data?.pageData;
-  const hero = pageData?.page?.sections
+  const hero = pageData?.coachData?.page?.sections
     .find((s) => s.model === "HERO")
     ?.elements.find((e) => e.elementType === "HERO_CONTENT");
   const queryImage = trpc.files.getDocumentUrlById.useQuery(
@@ -387,28 +387,31 @@ export const CoachDisplay = ({ pageId }: CoachDisplayProps) => {
   if (queryPage.isLoading) return <Spinner />;
   if (!queryPage.data) return <div>No page defined for this coach</div>;
 
-  const cta = pageData?.page?.sections
+  const cta = pageData?.coachData?.page?.sections
     .find((s) => s.model === "HERO")
     ?.elements.find((e) => e.elementType === "CTA");
   const options = new Map(
-    pageData?.page?.sections
+    pageData?.coachData?.page?.sections
       .find((s) => s.model === "HERO")
       ?.elements.filter((e) => e.elementType === "OPTION")
       .map((o) => [o.title, o.optionValue])
   );
 
   const activities = new Map<string, { id: string; name: string }>();
-  if (pageData?.certifications)
-    for (const mod of pageData.certifications)
+  if (pageData?.coachData?.certifications)
+    for (const mod of pageData.coachData.certifications)
       for (const ag of mod.activityGroups)
         activities.set(ag.id, { id: ag.id, name: ag.name });
   const certifications =
-    pageData?.certifications.map((c) => ({ id: c.id, name: c.name })) ?? [];
+    pageData?.coachData?.certifications.map((c) => ({
+      id: c.id,
+      name: c.name,
+    })) ?? [];
   const ca = { certifications, activities: Array.from(activities.values()) };
 
   return (
     <div
-      data-theme={pageData?.pageStyle ?? "light"}
+      data-theme={pageData?.coachData?.pageStyle ?? "light"}
       className="flex min-h-screen flex-col items-center justify-center"
     >
       <Head>
@@ -431,10 +434,18 @@ export const CoachDisplay = ({ pageId }: CoachDisplayProps) => {
         activities={ca.activities}
       />
       <MapSection
-        longitude={pageData?.searchAddress ? pageData?.longitude : undefined}
-        latitude={pageData?.searchAddress ? pageData?.latitude : undefined}
-        theme={(pageData?.pageStyle as TThemes) ?? "light"}
-        range={pageData?.range ?? 10}
+        longitude={
+          pageData?.coachData?.searchAddress
+            ? pageData?.coachData?.longitude
+            : undefined
+        }
+        latitude={
+          pageData?.coachData?.searchAddress
+            ? pageData?.coachData?.latitude
+            : undefined
+        }
+        theme={(pageData?.coachData?.pageStyle as TThemes) ?? "light"}
+        range={pageData?.coachData?.range ?? 10}
       />
     </div>
   );

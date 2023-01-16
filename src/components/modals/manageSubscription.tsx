@@ -25,6 +25,7 @@ type SubscriptionFormValues = {
   monthly: number;
   yearly: number;
   cancelationFee: number;
+  inscriptionFee: number;
   mode: SubscriptionMode;
   restriction: SubscriptionRestriction;
 };
@@ -42,6 +43,7 @@ export const CreateSubscription = ({ clubId }: CreateSubscriptionProps) => {
     getValues,
   } = useForm<SubscriptionFormValues>({
     defaultValues: {
+      inscriptionFee: 0,
       cancelationFee: 0,
       mode: "ALL_INCLUSIVE",
       monthly: 0,
@@ -258,6 +260,12 @@ function SubscriptionForm({
           name: "yearly",
           type: "number",
           unit: t("subscription.per-year"),
+        },
+        {
+          label: t("subscription.inscription-fee"),
+          name: "inscriptionFee",
+          type: "number",
+          unit: "€",
         },
         {
           label: t("subscription.cancelation-fee"),

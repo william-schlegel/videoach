@@ -28,6 +28,7 @@ export const userRouter = router({
       return ctx.prisma.user.findUnique({
         where: { id: input },
         include: {
+          coachData: true,
           pricing: true,
           paiements: true,
           accounts: true,
@@ -40,13 +41,17 @@ export const userRouter = router({
       return ctx.prisma.user.findUnique({
         where: { id: input },
         include: {
-          subscriptions: {
+          memberData: {
             include: {
-              activitieGroups: true,
-              activities: true,
-              sites: true,
-              rooms: true,
-              club: true,
+              subscriptions: {
+                include: {
+                  activitieGroups: true,
+                  activities: true,
+                  sites: true,
+                  rooms: true,
+                  club: true,
+                },
+              },
             },
           },
         },
@@ -65,11 +70,20 @@ export const userRouter = router({
         include: {
           pricing: true,
           paiements: true,
-          managedClubs: {
-            select: { _count: true },
+          managerData: {
+            include: {
+              managedClubs: {
+                select: { _count: true },
+              },
+            },
           },
-          certifications: true,
-          clubs: true,
+          coachData: {
+            include: {
+              certifications: true,
+              page: true,
+              clubs: true,
+            },
+          },
         },
       });
     }),
@@ -113,25 +127,54 @@ export const userRouter = router({
         email: z.string().email().optional(),
         phone: z.string().optional(),
         address: z.string().optional(),
-        longitude: z.number().optional(),
-        latitude: z.number().optional(),
-        searchAddress: z.string().optional(),
         role: z.nativeEnum(Role),
-        range: z.number().min(0).max(100).optional(),
         pricingId: z.string().cuid().optional(),
         monthlyPayment: z.boolean().optional(),
         cancelationDate: z.date().optional(),
+        // coach data
+        longitude: z.number().optional(),
+        latitude: z.number().optional(),
+        searchAddress: z.string().optional(),
+        range: z.number().min(0).max(100).optional(),
       })
     )
-    .mutation(({ ctx, input }) => {
+    .mutation(async ({ ctx, input }) => {
       if (input.role === Role.ADMIN && ctx.session.user?.role !== Role.ADMIN)
         throw new TRPCError({
           code: "UNAUTHORIZED",
           message: "Only an admin user can give admin access",
         });
+      if (input.role === Role.COACH || input.role === Role.MANAGER_COACH) {
+        await ctx.prisma.userCoach.upsert({
+          where: { userId: input.id },
+          update: {
+            longitude: input.longitude,
+            latitude: input.latitude,
+            searchAddress: input.searchAddress,
+            range: input.range,
+          },
+          create: {
+            userId: input.id,
+            longitude: input.longitude,
+            latitude: input.latitude,
+            searchAddress: input.searchAddress,
+            range: input.range,
+          },
+        });
+      }
+
       return ctx.prisma.user.update({
         where: { id: input.id },
-        data: { ...input },
+        data: {
+          name: input.name,
+          email: input.email,
+          phone: input.phone,
+          address: input.address,
+          role: input.role,
+          pricingId: input.pricingId,
+          monthlyPayment: input.monthlyPayment,
+          cancelationDate: input.cancelationDate,
+        },
       });
     }),
   deleteUser: protectedProcedure

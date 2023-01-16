@@ -20,13 +20,14 @@ const CoachDashboard = ({
 }: InferGetServerSidePropsType<typeof getServerSideProps>) => {
   const coachQuery = trpc.dashboards.getCoachDataForUserId.useQuery(userId);
   const { t } = useTranslation("dashboard");
-  const clubCount = coachQuery.data?.clubs?.length ?? 0;
-  const certificationCount = coachQuery.data?.certifications?.length ?? 0;
-  const activityCount = coachQuery.data?.activityGroups?.length ?? 0;
+  const clubCount = coachQuery.data?.coachData?.clubs?.length ?? 0;
+  const certificationCount =
+    coachQuery.data?.coachData?.certifications?.length ?? 0;
+  const activityCount = coachQuery.data?.coachData?.activityGroups?.length ?? 0;
 
   if (coachQuery.isLoading) return <Spinner />;
 
-  const published = coachQuery.data?.page?.published;
+  const published = coachQuery.data?.coachData?.page?.published;
   return (
     <Layout className="container mx-auto my-2 flex flex-col gap-2">
       <h1 className="flex items-center justify-between">
@@ -43,7 +44,7 @@ const CoachDashboard = ({
           </span>
         </div>
         <div className="flex items-center gap-4">
-          <Link className="btn btn-secondary" href={`${userId}/certifications`}>
+          <Link className="btn-secondary btn" href={`${userId}/certifications`}>
             {t("manage-certifications")}
           </Link>
         </div>
@@ -80,7 +81,7 @@ const CoachDashboard = ({
           </div>
           <div className="stat-title">{t("dashboard:rating")}</div>
           <div className="stat-value text-primary">
-            {coachQuery.data?.rating?.toFixed(1)}
+            {coachQuery.data?.coachData?.rating?.toFixed(1) ?? t("unrated")}
           </div>
         </div>
       </section>

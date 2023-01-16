@@ -54,10 +54,14 @@ export const dashboardRouter = router({
       const clubData = await ctx.prisma.user.findUnique({
         where: { id: input },
         include: {
-          clubs: true,
-          certifications: true,
-          activityGroups: true,
-          page: true,
+          coachData: {
+            include: {
+              clubs: true,
+              certifications: true,
+              activityGroups: true,
+              page: true,
+            },
+          },
         },
       });
       return clubData;

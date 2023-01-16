@@ -25,23 +25,25 @@ const ManageSites = ({
   clubId,
 }: InferGetServerSidePropsType<typeof getServerSideProps>) => {
   const { data: sessionData } = useSession();
-  const [siteId, setSiteId] = useState("");
   const clubQuery = trpc.clubs.getClubById.useQuery(clubId, {
     enabled: isCUID(clubId),
   });
+  const router = useRouter();
+  const siteId = router.query.siteId as string;
   const siteQuery = trpc.sites.getSitesForClub.useQuery(clubId, {
     onSuccess(data) {
-      if (siteId === "") setSiteId(data[0]?.id || "");
+      if (!siteId) router.push(createLink(data[0]?.id));
     },
     enabled: isCUID(clubId),
   });
   const { t } = useTranslation("club");
-  const router = useRouter();
 
-  const root = router.asPath.split("/");
-  root.pop();
-  root.pop();
-  const path = root.reduce((a, r) => a.concat(`${r}/`), "");
+  function createLink(id: string | undefined) {
+    const url = new URL(window.location.href);
+    url.searchParams.delete("siteId");
+    url.searchParams.append("siteId", id ?? "");
+    return url.href;
+  }
 
   if (
     sessionData &&
@@ -61,9 +63,15 @@ const ManageSites = ({
           </h1>
           <CreateSite clubId={clubId} />
         </div>
-        <Link className="btn-outline btn btn-primary" href={`${path}clubs`}>
+        <button
+          className="btn-outline btn-primary btn"
+          onClick={() => {
+            const path = `/manager/${sessionData?.user?.id}/clubs?clubId=${clubId}`;
+            router.push(path);
+          }}
+        >
           {t("site.back-to-clubs")}
-        </Link>
+        </button>
       </div>
       <div className="flex gap-4">
         {siteQuery.isLoading ? (
@@ -72,14 +80,14 @@ const ManageSites = ({
           <ul className="menu w-1/4 overflow-hidden rounded bg-base-100">
             {siteQuery.data?.map((site) => (
               <li key={site.id}>
-                <button
+                <Link
+                  href={createLink(site.id)}
                   className={`w-full text-center ${
                     siteId === site.id ? "active" : ""
                   }`}
-                  onClick={() => setSiteId(site.id)}
                 >
                   {site.name}
-                </button>
+                </Link>
               </li>
             ))}
           </ul>
@@ -106,11 +114,15 @@ export function SiteContent({ clubId, siteId }: SiteContentProps) {
       if (!actualRoom && data?.rooms?.length)
         setRoomId(data?.rooms?.[0]?.id ?? "");
     },
+    enabled: isCUID(siteId),
   });
-  const calendarQuery = trpc.calendars.getCalendarForSite.useQuery({
-    siteId,
-    clubId,
-  });
+  const calendarQuery = trpc.calendars.getCalendarForSite.useQuery(
+    {
+      siteId,
+      clubId,
+    },
+    { enabled: isCUID(clubId) && isCUID(siteId) }
+  );
 
   const { t } = useTranslation("club");
   const router = useRouter();
@@ -146,7 +158,7 @@ export function SiteContent({ clubId, siteId }: SiteContentProps) {
             <h3>
               {t("room.room", { count: siteQuery?.data?.rooms?.length ?? 0 })}
             </h3>
-            <Link className="btn btn-secondary" href={`${path}${siteId}/rooms`}>
+            <Link className="btn-secondary btn" href={`${path}${siteId}/rooms`}>
               {t("room.manage")}
             </Link>
           </div>

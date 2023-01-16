@@ -69,11 +69,11 @@ export default function Profile() {
         email: data?.email || "",
         phone: data?.phone || "",
         address: data?.address || "",
-        searchAddress: data?.searchAddress || "",
-        longitude: data?.longitude || LONGITUDE,
-        latitude: data?.latitude || LATITUDE,
+        searchAddress: data?.coachData?.searchAddress || "",
+        longitude: data?.coachData?.longitude || LONGITUDE,
+        latitude: data?.coachData?.latitude || LATITUDE,
         role: data?.role || Role.MEMBER,
-        range: data?.range || 10,
+        range: data?.coachData?.range || 10,
       });
     },
   });

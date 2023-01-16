@@ -45,13 +45,14 @@
     "coach-activity": "Activités de coach",
     "user-created": "Utilisateur créé",
     "user-updated": "Utilisateur mis à jour",
-    "user-deleted": "Utilisateur supprimé"
+    "user-deleted": "Utilisateur supprimé",
+    "unrated": "Non noté"
   },
   "ag": {
     "manage-ag": "Gérer les activités",
     "groups": "Groupes d'activité",
-    "group-clubs": "Clubs qui utilisent ce groupe",
-    "group-activities": "Activités attachées à ce groupe",
+    "group-clubs": "Clubs qui utilisent ce groupe (activités)",
+    "group-activities": "Activités attachées à ce groupe (club qui l'a créée)",
     "ag-created": "Groupe d'activité créé",
     "ag-updated": "Groupe d'activité mis à jour",
     "ag-deleted": "Groupe d'activité supprimé"

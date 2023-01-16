@@ -130,8 +130,8 @@ export const calendarRouter = router({
       });
       if (!roomCal) {
         const room = await ctx.prisma.room.findUnique({
-          where: { id: input.siteId },
-          select: { openWithSite: true },
+          where: { id: input.roomId },
+          select: { openWithSite: true, openWithClub: true },
         });
         if (room?.openWithSite) {
           const siteCal = await ctx.prisma.openingCalendar.findFirst({
@@ -160,6 +160,16 @@ export const calendarRouter = router({
             }
           }
           return siteCal;
+        } else if (room?.openWithClub) {
+          const clubCal = await ctx.prisma.openingCalendar.findFirst({
+            where: {
+              clubs: { some: { id: input.clubId } },
+              startDate: { lte: dtNow },
+            },
+            orderBy: { startDate: "desc" },
+            include: { openingTime: { include: { workingHours: true } } },
+          });
+          return clubCal;
         }
       }
 

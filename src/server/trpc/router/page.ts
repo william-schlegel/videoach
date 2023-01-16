@@ -61,11 +61,12 @@ export const pageRouter = router({
       })
     ),
   getPageForCoach: protectedProcedure
-    .input(z.string())
+    .input(z.string().cuid())
     .query(async ({ ctx, input }) => {
       const page = await ctx.prisma.page.findFirst({
         where: { userId: input },
       });
+      console.log("getPageForCoach input", { input, page });
       if (page) return page;
       const user = await ctx.prisma.user.findUnique({ where: { id: input } });
       if (!user)
@@ -77,7 +78,11 @@ export const pageRouter = router({
         data: {
           name: user.name ?? "coach",
           target: "HOME",
-          userId: input,
+          user: {
+            connect: {
+              userId: input,
+            },
+          },
           sections: {
             create: {
               model: "HERO",
@@ -165,18 +170,6 @@ export const pageRouter = router({
       z.object({ pageId: z.string().cuid(), sectionId: z.string().cuid() })
     )
     .mutation(async ({ ctx, input }) => {
-      // await ctx.prisma.page.update({
-      //   where: {
-      //     id: input.pageId,
-      //   },
-      //   data: {
-      //     sections: {
-      //       disconnect: {
-      //         id: input.sectionId,
-      //       },
-      //     },
-      //   },
-      // });
       return ctx.prisma.pageSection.delete({
         where: { id: input.sectionId },
         include: {
@@ -269,31 +262,37 @@ export const pageRouter = router({
     .input(z.string())
     .query(async ({ ctx, input }) => {
       const pageData = await ctx.prisma.user.findFirst({
-        where: { page: { id: input, target: "HOME", published: true } },
+        where: {
+          coachData: { page: { id: input, target: "HOME", published: true } },
+        },
         include: {
-          page: {
+          coachData: {
             include: {
-              sections: {
+              page: {
                 include: {
-                  elements: {
+                  sections: {
                     include: {
-                      images: true,
+                      elements: {
+                        include: {
+                          images: true,
+                        },
+                      },
                     },
                   },
                 },
               },
-            },
-          },
-          certifications: {
-            include: {
-              modules: true,
-              activityGroups: true,
+              certifications: {
+                include: {
+                  modules: true,
+                  activityGroups: true,
+                },
+              },
             },
           },
         },
       });
 
-      const image = pageData?.page?.sections
+      const image = pageData?.coachData?.page?.sections
         .find((s) => s.model === "HERO")
         ?.elements.find((e) => e.elementType === "HERO_CONTENT")?.images?.[0];
       return { pageData, image };
@@ -304,21 +303,28 @@ export const pageRouter = router({
       const user = await ctx.prisma.user.findUnique({
         where: { id: input },
         include: {
-          certifications: {
+          coachData: {
             include: {
-              modules: true,
-              activityGroups: true,
+              certifications: {
+                include: {
+                  modules: true,
+                  activityGroups: true,
+                },
+              },
             },
           },
         },
       });
       const activities = new Map<string, { id: string; name: string }>();
-      if (user?.certifications)
-        for (const mod of user.certifications)
+      if (user?.coachData?.certifications)
+        for (const mod of user.coachData.certifications)
           for (const ag of mod.activityGroups)
             activities.set(ag.id, { id: ag.id, name: ag.name });
       const certifications =
-        user?.certifications.map((c) => ({ id: c.id, name: c.name })) ?? [];
+        user?.coachData?.certifications.map((c) => ({
+          id: c.id,
+          name: c.name,
+        })) ?? [];
       return { certifications, activities: Array.from(activities.values()) };
     }),
   updatePagePublication: protectedProcedure
@@ -337,8 +343,8 @@ export const pageRouter = router({
       })
     )
     .mutation(({ ctx, input }) =>
-      ctx.prisma.user.update({
-        where: { id: input.userId },
+      ctx.prisma.userCoach.update({
+        where: { userId: input.userId },
         data: {
           pageStyle: input.pageStyle,
         },

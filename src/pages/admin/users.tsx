@@ -20,6 +20,7 @@ import {
 import { DeleteUser, UpdateUser } from "@modals/manageUser";
 import { formatMoney } from "@lib/formatNumber";
 import Layout from "@root/src/components/layout";
+import Link from "next/link";
 
 type UserFilter = {
   name?: string;
@@ -180,7 +181,7 @@ export function UserContent({ userId }: UserContentProps) {
 
   const managerCount = useMemo(
     () =>
-      userQuery.data?.managedClubs?.reduce(
+      userQuery.data?.managerData?.managedClubs?.reduce(
         (acc, c) => {
           acc.sites += c._count.sites;
           acc.activities += c._count.activities;
@@ -266,11 +267,12 @@ export function UserContent({ userId }: UserContentProps) {
                 <div className="stat">
                   <div className="stat-title">
                     {t("dashboard:clubs", {
-                      count: userQuery.data?.managedClubs?.length ?? 0,
+                      count:
+                        userQuery.data?.managerData?.managedClubs?.length ?? 0,
                     })}
                   </div>
                   <div className="stat-value text-primary">
-                    {userQuery.data?.managedClubs?.length}
+                    {userQuery.data?.managerData?.managedClubs?.length}
                   </div>
                 </div>
                 <div className="stat">
@@ -310,31 +312,47 @@ export function UserContent({ userId }: UserContentProps) {
                 <div className="stat">
                   <div className="stat-title">
                     {t("dashboard:clubs", {
-                      count: userQuery.data?.clubs?.length ?? 0,
+                      count: userQuery.data?.coachData?.clubs?.length ?? 0,
                     })}
                   </div>
                   <div className="stat-value text-primary">
-                    {userQuery.data?.clubs?.length}
+                    {userQuery.data?.coachData?.clubs?.length ?? 0}
                   </div>
                 </div>
                 <div className="stat">
                   <div className="stat-title">
                     {t("dashboard:certifications", {
-                      count: userQuery.data.certifications.length,
+                      count:
+                        userQuery.data.coachData?.certifications.length ?? 0,
                     })}
                   </div>
                   <div className="stat-value text-primary">
-                    {userQuery.data.certifications.length}
+                    {userQuery.data.coachData?.certifications.length ?? 0}
                   </div>
                 </div>
                 <div className="stat">
                   <div className="stat-title">{t("dashboard:rating")}</div>
                   <div className="stat-value text-primary">
-                    {userQuery.data?.rating?.toFixed(1)}
+                    {userQuery.data.coachData?.rating?.toFixed(1) ??
+                      t("user.unrated")}
                   </div>
                 </div>
               </div>
             </>
+          ) : null}
+          {(userQuery.data?.role === "COACH" ||
+            userQuery.data?.role === "MANAGER_COACH") &&
+          userQuery.data?.coachData?.page &&
+          userQuery.data.coachData.page.published ? (
+            <Link
+              href={`/presentation-page/coach/${userId}/${userQuery.data.coachData.page.id}`}
+              target="_blank"
+              referrerPolicy="no-referrer"
+              className="btn-primary btn flex gap-2"
+            >
+              {t("pages:page-preview")}
+              <i className="bx bx-link-external bx-xs" />
+            </Link>
           ) : null}
         </article>
         <article className="rounded-md border border-primary p-2">
@@ -361,7 +379,7 @@ export const getServerSideProps = async ({
     props: {
       ...(await serverSideTranslations(
         locale ?? "fr",
-        ["common", "admin", "auth", "home", "dashboard"],
+        ["common", "admin", "auth", "home", "dashboard", "pages"],
         nextI18nConfig
       )),
       userId: session?.user?.id || "",

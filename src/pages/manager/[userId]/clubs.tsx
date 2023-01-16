@@ -38,13 +38,22 @@ const ManageClubs = ({
   userId,
 }: InferGetServerSidePropsType<typeof getServerSideProps>) => {
   const { data: sessionData } = useSession();
+  const router = useRouter();
+  const clubId = router.query.clubId as string;
   const clubQuery = trpc.clubs.getClubsForManager.useQuery(userId, {
     onSuccess(data) {
-      if (clubId === "") setClubId(data[0]?.id || "");
+      if (!clubId) router.push(createLink(data[0]?.id)); //  setClubId(data[0]?.id || "");
     },
   });
-  const [clubId, setClubId] = useState("");
+
   const { t } = useTranslation("club");
+
+  function createLink(id: string | undefined) {
+    const url = new URL(window.location.href);
+    url.searchParams.delete("clubId");
+    url.searchParams.append("clubId", id ?? "");
+    return url.href;
+  }
 
   if (
     sessionData &&
@@ -69,14 +78,14 @@ const ManageClubs = ({
           <ul className="menu w-1/4 overflow-hidden rounded bg-base-100">
             {clubQuery.data?.map((club) => (
               <li key={club.id}>
-                <button
+                <Link
+                  href={createLink(club.id)}
                   className={`w-full text-center ${
                     clubId === club.id ? "active" : ""
                   }`}
-                  onClick={() => setClubId(club.id)}
                 >
                   {club.name}
-                </button>
+                </Link>
               </li>
             ))}
           </ul>
@@ -104,7 +113,9 @@ export function ClubContent({ userId, clubId }: ClubContentProps) {
     },
     enabled: isCUID(clubId),
   });
-  const calendarQuery = trpc.calendars.getCalendarForClub.useQuery(clubId);
+  const calendarQuery = trpc.calendars.getCalendarForClub.useQuery(clubId, {
+    enabled: isCUID(clubId),
+  });
   const addActivity = trpc.activities.affectToRoom.useMutation({
     onSuccess() {
       utils.clubs.getClubById.invalidate(clubId);

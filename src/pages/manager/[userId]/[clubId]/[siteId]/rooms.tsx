@@ -1,6 +1,5 @@
 import { Role } from "@prisma/client";
 import { useSession } from "next-auth/react";
-import { useState } from "react";
 import { trpc } from "@trpcclient/trpc";
 import Spinner from "@ui/spinner";
 import {
@@ -23,26 +22,29 @@ import {
   UpdateRoom,
 } from "@modals/manageRoom";
 import Layout from "@root/src/components/layout";
+import { isCUID } from "@lib/checkValidity";
 
 const ManageRooms = ({
   clubId,
   siteId,
 }: InferGetServerSidePropsType<typeof getServerSideProps>) => {
   const { data: sessionData } = useSession();
-  const [roomId, setRoomId] = useState("");
+  const router = useRouter();
+  const roomId = router.query.roomId as string;
   const siteQuery = trpc.sites.getSiteById.useQuery(siteId);
   const roomQuery = trpc.sites.getRoomsForSite.useQuery(siteId, {
     onSuccess(data) {
-      if (roomId === "") setRoomId(data[0]?.id || "");
+      if (!roomId) router.push(createLink(data[0]?.id || ""));
     },
   });
   const { t } = useTranslation("club");
-  const router = useRouter();
 
-  const root = router.asPath.split("/");
-  root.pop();
-  root.pop();
-  const path = root.reduce((a, r) => a.concat(`${r}/`), "");
+  function createLink(id: string | undefined) {
+    const url = new URL(window.location.href);
+    url.searchParams.delete("roomId");
+    url.searchParams.append("roomId", id ?? "");
+    return url.href;
+  }
 
   if (
     sessionData &&
@@ -62,9 +64,15 @@ const ManageRooms = ({
           </h1>
           <CreateRoom siteId={siteId} variant={"Primary"} />
         </div>
-        <Link className="btn-outline btn btn-primary" href={`${path}sites`}>
+        <button
+          className="btn-outline btn-primary btn"
+          onClick={() => {
+            const path = `/manager/${sessionData?.user?.id}/${clubId}/sites?siteId=${siteId}`;
+            router.push(path);
+          }}
+        >
           {t("room.back-to-sites")}
-        </Link>
+        </button>
       </div>
       <div className="flex gap-4">
         {roomQuery.isLoading ? (
@@ -73,19 +81,19 @@ const ManageRooms = ({
           <ul className="menu w-1/4 overflow-hidden rounded bg-base-100">
             {roomQuery.data?.map((room) => (
               <li key={room.id}>
-                <button
-                  className={`flex w-full justify-between text-center ${
+                <Link
+                  href={createLink(room.id)}
+                  className={`w-full text-center ${
                     roomId === room.id ? "active" : ""
                   }`}
-                  onClick={() => setRoomId(room.id)}
                 >
                   <span>{room.name}</span>
                   {room.unavailable ? (
-                    <span className="badge-error badge">
+                    <span className="badge badge-error">
                       {t("room.closed")}
                     </span>
                   ) : null}
-                </button>
+                </Link>
               </li>
             ))}
           </ul>
@@ -107,12 +115,17 @@ type RoomContentProps = {
 };
 
 export function RoomContent({ clubId, siteId, roomId }: RoomContentProps) {
-  const roomQuery = trpc.sites.getRoomById.useQuery(roomId);
-  const calendarQuery = trpc.calendars.getCalendarForRoom.useQuery({
-    roomId,
-    siteId,
-    clubId,
+  const roomQuery = trpc.sites.getRoomById.useQuery(roomId, {
+    enabled: isCUID(roomId),
   });
+  const calendarQuery = trpc.calendars.getCalendarForRoom.useQuery(
+    {
+      roomId,
+      siteId,
+      clubId,
+    },
+    { enabled: isCUID(roomId) && isCUID(siteId) && isCUID(clubId) }
+  );
   const { t } = useTranslation("club");
 
   if (roomQuery.isLoading) return <Spinner />;

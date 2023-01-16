@@ -32,24 +32,28 @@ const ManageSubscriptions = ({
   clubId,
 }: InferGetServerSidePropsType<typeof getServerSideProps>) => {
   const { data: sessionData } = useSession();
-  const [subscriptionId, setSubscriptionId] = useState("");
-  const clubQuery = trpc.clubs.getClubById.useQuery(clubId);
+  const router = useRouter();
+  const subscriptionId = router.query.subscriptionId as string;
+  const clubQuery = trpc.clubs.getClubById.useQuery(clubId, {
+    enabled: isCUID(clubId),
+  });
   const siteQuery = trpc.subscriptions.getSubscriptionsForClub.useQuery(
     clubId,
     {
       enabled: isCUID(clubId),
       onSuccess(data) {
-        if (subscriptionId === "") setSubscriptionId(data[0]?.id || "");
+        if (!subscriptionId) router.push(createLink(data[0]?.id));
       },
     }
   );
   const { t } = useTranslation("club");
-  const router = useRouter();
 
-  const root = router.asPath.split("/");
-  root.pop();
-  root.pop();
-  const path = root.reduce((a, r) => a.concat(`${r}/`), "");
+  function createLink(id: string | undefined) {
+    const url = new URL(window.location.href);
+    url.searchParams.delete("subscriptionId");
+    url.searchParams.append("subscriptionId", id ?? "");
+    return url.href;
+  }
 
   if (
     sessionData &&
@@ -71,9 +75,15 @@ const ManageSubscriptions = ({
           </h1>
           <CreateSubscription clubId={clubId} />
         </div>
-        <Link className="btn-outline btn-primary btn" href={`${path}clubs`}>
+        <button
+          className="btn-outline btn-primary btn"
+          onClick={() => {
+            const path = `/manager/${sessionData?.user?.id}/clubs?clubId=${clubId}`;
+            router.push(path);
+          }}
+        >
           {t("subscription.back-to-clubs")}
-        </Link>
+        </button>
       </div>
       <div className="flex gap-4">
         {siteQuery.isLoading ? (
@@ -82,14 +92,14 @@ const ManageSubscriptions = ({
           <ul className="menu w-1/4 overflow-hidden rounded bg-base-100">
             {siteQuery.data?.map((site) => (
               <li key={site.id}>
-                <button
+                <Link
+                  href={createLink(site.id)}
                   className={`w-full text-center ${
                     subscriptionId === site.id ? "active" : ""
                   }`}
-                  onClick={() => setSubscriptionId(site.id)}
                 >
                   {site.name}
-                </button>
+                </Link>
               </li>
             ))}
           </ul>
@@ -135,6 +145,7 @@ export function SubscriptionContent({
         setSelectedActivityGroups(data?.activitieGroups.map((s) => s.id) ?? []);
         setSelectedActivities(data?.activities.map((s) => s.id) ?? []);
       },
+      enabled: isCUID(subscriptionId),
     }
   );
 
@@ -237,6 +248,10 @@ export function SubscriptionContent({
           <DataCell
             label={t("subscription.yearly")}
             value={formatMoney(subQuery.data?.yearly)}
+          />
+          <DataCell
+            label={t("subscription.inscription-fee")}
+            value={formatMoney(subQuery.data?.inscriptionFee)}
           />
           <DataCell
             label={t("subscription.cancelation-fee")}

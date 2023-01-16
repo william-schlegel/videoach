@@ -58,31 +58,39 @@ enum Role {
 }
 
 model User {
+  id              String         @id @default(cuid())
+  name            String?
+  email           String?        @unique
+  emailVerified   DateTime?
+  image           String?
+  accounts        Account[]
+  sessions        Session[]
+  role            Role           @default(MEMBER)
+  pricingId       String?
+  pricing         Pricing?       @relation(fields: [pricingId], references: [id])
+  monthlyPayment  Boolean        @default(false)
+  trialUntil      DateTime?
+  paiements       Paiement[]
+  dueDate         DateTime?
+  cancelationDate DateTime?
+  documents       UserDocument[]
+  phone           String?
+  address         String?
+  memberData      UserMember?    @relation("member-user")
+  coachData       UserCoach?     @relation("coach-user")
+  managerData     UserManager?   @relation("manager-user")
+
+  @@index([pricingId])
+}
+
+model UserCoach {
   id                 String             @id @default(cuid())
-  name               String?
-  email              String?            @unique
-  emailVerified      DateTime?
-  image              String?
-  accounts           Account[]
-  sessions           Session[]
+  userId             String             @unique
+  user               User               @relation(fields: [userId], references: [id], onDelete: Cascade, name: "coach-user")
   activityGroups     ActivityGroup[]
-  managedClubs       Club[]             @relation("Manager")
-  clubs              Club[]             @relation("Member")
-  role               Role               @default(MEMBER)
-  certifications     Certification[]
-  pricingId          String?
-  pricing            Pricing?           @relation(fields: [pricingId], references: [id])
-  monthlyPayment     Boolean            @default(false)
-  trialUntil         DateTime?
-  paiements          Paiement[]
-  dueDate            DateTime?
-  rating             Float              @default(0)
-  cancelationDate    DateTime?
-  documents          UserDocument[]
-  pageStyle          String             @default("light")
-  page               Page?
-  phone              String?
-  address            String?
+  coachingPrices     CoachingPrice[]
+  coachingLevel      CoachingLevel[]
+  coachingActivities Activity[]
   searchAddress      String?
   latitude           Float              @default(48.8583701)
   longitude          Float              @default(2.2944813)
@@ -91,21 +99,46 @@ model User {
   twitterLink        String?
   youtubeLink        String?
   instagramLink      String?
+  certifications     Certification[]
+  rating             Float              @default(0)
+  pageStyle          String             @default("light")
+  page               Page?
   planningActivities PlanningActivity[]
   plannings          Planning[]
-  subscriptions      Subscription[]
+  clubs              Club[]             @relation("coach-club")
 
-  @@index([pricingId])
+  @@index([userId])
+}
+
+model UserMember {
+  id                    String         @id @default(cuid())
+  userId                String         @unique
+  user                  User           @relation(fields: [userId], references: [id], onDelete: Cascade, name: "member-user")
+  clubs                 Club[]         @relation("member-club")
+  subscriptions         Subscription[]
+  inscriptionFeeOffered Boolean        @default(false)
+  cancelationFeeOffered Boolean        @default(false)
+  subscriptionStart     DateTime?
+}
+
+model UserManager {
+  id           String @id @default(cuid())
+  userId       String @unique
+  user         User   @relation(fields: [userId], references: [id], onDelete: Cascade, name: "manager-user")
+  managedClubs Club[] @relation("manager-club")
 }
 
 model Paiement {
-  id           String   @id @default(cuid())
-  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  userId       String
-  amount       Float
-  paiementDate DateTime
+  id             String       @id @default(cuid())
+  user           User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId         String
+  subscriptionId String
+  subscription   Subscription @relation(fields: [subscriptionId], references: [id])
+  amount         Float
+  paiementDate   DateTime
 
   @@index([userId])
+  @@index([subscriptionId])
 }
 
 model VerificationToken {
@@ -150,10 +183,11 @@ model Club {
   name          String
   address       String
   managerId     String
-  manager       User              @relation(fields: [managerId], references: [id], onDelete: Cascade, name: "Manager")
+  manager       UserManager       @relation(fields: [managerId], references: [id], onDelete: Cascade, name: "manager-club")
   sites         Site[]
   activities    Activity[]
-  members       User[]            @relation(name: "Member")
+  members       UserMember[]      @relation("member-club")
+  coachs        UserCoach[]       @relation("coach-club")
   calendars     OpeningCalendar[]
   pages         Page[]
   pageStyle     String            @default("light")
@@ -206,11 +240,11 @@ model Room {
   calendars          OpeningCalendar[]
   siteId             String
   site               Site               @relation(fields: [siteId], references: [id], onDelete: Cascade)
-  activities         Activity[]         @relation(name: "rooms")
+  activities         Activity[]         @relation("rooms-activities") // room possible affectation for activity
   plannings          Planning[]
   planningActivities PlanningActivity[]
   subscriptions      Subscription[]
-  activity           Activity[]         @relation(name: "room")
+  // activity           Activity[]         @relation("room-activity") // room for activity 
 
   @@index([siteId])
 }
@@ -241,16 +275,65 @@ model Subscription {
   monthly         Float                   @default(0)
   yearly          Float                   @default(0)
   cancelationFee  Float                   @default(0)
+  inscriptionFee  Float                   @default(0)
   activitieGroups ActivityGroup[]
   activities      Activity[]
   day             DayName?
-  users           User[]
+  users           UserMember[]
   clubId          String
   club            Club                    @relation(fields: [clubId], references: [id], onUpdate: NoAction)
   sites           Site[]
   rooms           Room[]
+  paiements       Paiement[]
 
   @@index([clubId])
+}
+
+enum CoachingLevelList {
+  ALL
+  BEGINNER
+  INTERMEDIATE
+  ADVANCED
+  EXPERT
+  COMPETITOR
+  PROFESSIONAL
+}
+
+model CoachingLevel {
+  id    String            @id @default(cuid())
+  level CoachingLevelList
+  user  UserCoach[]
+}
+
+model CoachingPrice {
+  id              String              @id @default(cuid())
+  startDate       DateTime
+  physical        Boolean
+  inHouse         Boolean
+  publicPlace     Boolean
+  perHourPhysical Float               @default(0)
+  perDayPhysical  Float               @default(0)
+  travelFee       Float               @default(0)
+  travelLimit     Int                 @default(0)
+  webcam          Boolean
+  perHourWebcam   Float               @default(0)
+  perDayWebcam    Float               @default(0)
+  freeHours       Int                 @default(0)
+  userId          String
+  user            UserCoach           @relation(fields: [userId], references: [userId], onDelete: Cascade)
+  packs           CoachingPricePack[]
+
+  @@index([userId])
+}
+
+model CoachingPricePack {
+  id              String        @id @default(cuid())
+  nbHours         Int           @default(1)
+  packPrice       Float         @default(0)
+  coachingPriceId String
+  coachingPrice   CoachingPrice @relation(fields: [coachingPriceId], references: [id], onDelete: Cascade)
+
+  @@index([coachingPriceId])
 }
 
 // ----------------------------------------------------------------------------------------------
@@ -265,7 +348,7 @@ model ActivityGroup {
   name                 String
   default              Boolean               @default(false)
   activities           Activity[]
-  user                 User?                 @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user                 UserCoach?            @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId               String?
   certifications       Certification[]
   certificationModules CertificationModule[]
@@ -281,19 +364,20 @@ model Activity {
   group              ActivityGroup      @relation(fields: [groupId], references: [id], onDelete: Cascade)
   clubId             String
   club               Club               @relation(fields: [clubId], references: [id], onDelete: Cascade)
-  rooms              Room[]             @relation(name: "rooms")
+  rooms              Room[]             @relation(name: "rooms-activities")
   planningActivities PlanningActivity[]
   subscriptions      Subscription[]
   noCalendar         Boolean            @default(false)
   siteId             String?
   site               Site?              @relation(fields: [siteId], references: [id])
-  roomId             String?
-  room               Room?              @relation(fields: [roomId], references: [id], name: "room")
+  // roomId             String?
+  // room               Room?              @relation(fields: [roomId], references: [id], name: "room-activity")
+  coachs             UserCoach[]
+  // @@index([roomId])
 
   @@index([groupId])
   @@index([clubId])
   @@index([siteId])
-  @@index([roomId])
 }
 
 model OpeningCalendar {
@@ -391,7 +475,7 @@ model Certification {
   obtainedIn     DateTime
   documentId     String?               @unique
   document       UserDocument?         @relation(fields: [documentId], references: [id])
-  user           User                  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user           UserCoach             @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId         String
   modules        CertificationModule[]
   activityGroups ActivityGroup[]
@@ -476,7 +560,7 @@ model Page {
   clubId    String?
   club      Club?         @relation(fields: [clubId], references: [id], onDelete: Cascade)
   userId    String?       @unique
-  user      User?         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user      UserCoach?    @relation(fields: [userId], references: [userId], onDelete: Cascade)
   published Boolean       @default(false)
 
   @@index([clubId])
@@ -502,7 +586,7 @@ model Planning {
   endDate            DateTime?
   planningActivities PlanningActivity[]
   coachId            String?
-  coach              User?              @relation(fields: [coachId], references: [id])
+  coach              UserCoach?         @relation(fields: [coachId], references: [userId])
 
   @@index([clubId])
   @@index([siteId])
@@ -511,20 +595,20 @@ model Planning {
 }
 
 model PlanningActivity {
-  id         String   @id @default(cuid())
+  id         String     @id @default(cuid())
   planningId String
-  planning   Planning @relation(fields: [planningId], references: [id], onDelete: Cascade)
+  planning   Planning   @relation(fields: [planningId], references: [id], onDelete: Cascade)
   activityId String
-  activity   Activity @relation(fields: [activityId], references: [id], onDelete: Cascade)
+  activity   Activity   @relation(fields: [activityId], references: [id], onDelete: Cascade)
   siteId     String
-  site       Site     @relation(fields: [siteId], references: [id])
+  site       Site       @relation(fields: [siteId], references: [id])
   roomId     String?
-  room       Room?    @relation(fields: [roomId], references: [id])
+  room       Room?      @relation(fields: [roomId], references: [id])
   day        DayName
   startTime  String
   duration   Int
   coachId    String?
-  coach      User?    @relation(fields: [coachId], references: [id])
+  coach      UserCoach? @relation(fields: [coachId], references: [userId])
 
   @@index([planningId])
   @@index([activityId])

@@ -21,19 +21,23 @@ export const coachRouter = router({
       const coach = await ctx.prisma.user.findUnique({
         where: { id: input },
         include: {
-          activityGroups: {
+          coachData: {
             include: {
-              activities: true,
+              activityGroups: {
+                include: {
+                  activities: true,
+                },
+              },
+              certifications: {
+                include: {
+                  modules: true,
+                  document: true,
+                },
+              },
+              clubs: true,
+              page: { select: { id: true } },
             },
           },
-          certifications: {
-            include: {
-              modules: true,
-              document: true,
-            },
-          },
-          clubs: true,
-          page: { select: { id: true } },
         },
       });
       const imageData = await ctx.prisma.page.findFirst({
@@ -65,7 +69,11 @@ export const coachRouter = router({
         data: {
           name: input.name,
           obtainedIn: input.obtainedIn,
-          userId: input.userId,
+          user: {
+            connect: {
+              userId: input.userId,
+            },
+          },
           modules: {
             connect: input.modules.map((m) => ({ id: m })),
           },
@@ -119,8 +127,12 @@ export const coachRouter = router({
     ctx.prisma.user.findMany({
       where: { role: { in: ["COACH", "MANAGER_COACH"] } },
       include: {
-        certifications: true,
-        page: true,
+        coachData: {
+          include: {
+            certifications: true,
+            page: true,
+          },
+        },
       },
     })
   ),
@@ -130,7 +142,7 @@ export const coachRouter = router({
       ctx.prisma.user.findMany({
         where: {
           role: { in: ["COACH", "MANAGER_COACH"] },
-          clubs: { some: { id: input } },
+          coachData: { clubs: { some: { id: input } } },
         },
       })
     ),
@@ -138,8 +150,8 @@ export const coachRouter = router({
   getCertificationsForCoach: protectedProcedure
     .input(z.string())
     .query(({ ctx, input }) =>
-      ctx.prisma.user.findUnique({
-        where: { id: input },
+      ctx.prisma.userCoach.findUnique({
+        where: { userId: input },
         include: {
           certifications: {
             include: {

@@ -29,7 +29,6 @@ function FindCoach() {
     lng: LONGITUDE,
   });
   const [range, setRange] = useState(10);
-  // const [clubSearch, setClubSearch] = useState<ClubSearchResult[]>([]);
   const coachSearch = trpc.coachs.getAllCoachs.useQuery();
   const [theme] = useLocalStorage<TThemes>("theme", "cupcake");
 
@@ -87,12 +86,12 @@ function FindCoach() {
                   <td>{res.name}</td>
                   <td>{/*res.distance*/ "(tbd)"}&nbsp;km</td>
                   <td>
-                    <Rating note={res.rating} />
+                    <Rating note={res.coachData?.rating ?? 0} />
                   </td>
                   <td>
                     <div className="flex flex-wrap gap-1">
-                      {res.certifications.length ? (
-                        res.certifications.map((cert) => (
+                      {res.coachData?.certifications.length ? (
+                        res.coachData?.certifications.map((cert) => (
                           <span key={cert.id} className="pill pill-xs">
                             {cert.name}
                           </span>
@@ -103,9 +102,9 @@ function FindCoach() {
                     </div>
                   </td>
                   <td>
-                    {res.page?.published ? (
+                    {res?.coachData?.page?.published ? (
                       <Link
-                        href={`/presentation-page/coach/${res.id}/${res.page.id}`}
+                        href={`/presentation-page/coach/${res.id}/${res.coachData?.page.id}`}
                         target="_blank"
                         rel="noreferrer"
                       >
