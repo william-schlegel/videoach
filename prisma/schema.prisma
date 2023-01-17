@@ -75,7 +75,7 @@ model User {
   cancelationDate DateTime?
   documents       UserDocument[]
   phone           String?
-  address         String?
+  address         String?        @db.Text
   memberData      UserMember?    @relation("member-user")
   coachData       UserCoach?     @relation("coach-user")
   managerData     UserManager?   @relation("manager-user")
@@ -181,7 +181,7 @@ model UserDocument {
 model Club {
   id            String            @id @default(cuid())
   name          String
-  address       String
+  address       String            @db.Text
   managerId     String
   manager       UserManager       @relation(fields: [managerId], references: [id], onDelete: Cascade, name: "manager-club")
   sites         Site[]
@@ -206,7 +206,7 @@ model Club {
 model Site {
   id                 String             @id @default(cuid())
   name               String
-  address            String
+  address            String             @db.Text
   searchAddress      String?
   latitude           Float              @default(48.8583701)
   longitude          Float              @default(2.2944813)
@@ -271,7 +271,7 @@ model Subscription {
   mode            SubscriptionMode        @default(ALL_INCLUSIVE)
   restriction     SubscriptionRestriction @default(CLUB)
   highlight       String
-  description     String
+  description     String                  @db.Text
   startDate       DateTime
   deletionDate    DateTime?
   monthly         Float                   @default(0)
@@ -312,6 +312,8 @@ model CoachingLevel {
 
 model CoachingPrice {
   id              String              @id @default(cuid())
+  name            String
+  description     String              @db.Text
   startDate       DateTime
   physical        Boolean
   inHouse         Boolean
@@ -430,7 +432,7 @@ model Pricing {
   id           String          @id @default(cuid())
   roleTarget   Role
   title        String
-  description  String
+  description  String          @db.Text
   free         Boolean?        @default(false)
   highlighted  Boolean?        @default(false)
   monthly      Float?          @default(0)
@@ -443,7 +445,7 @@ model Pricing {
 
 model PricingOption {
   id        String  @id @default(cuid())
-  name      String
+  name      String  @db.Text
   weight    Int // for sorting
   pricingId String
   pricing   Pricing @relation(fields: [pricingId], references: [id], onDelete: Cascade)
@@ -536,7 +538,7 @@ model PageSectionElement {
   title       String?
   subTitle    String?
   elementType PageSectionElementType?
-  content     String?
+  content     String?                 @db.Text
   link        String?
   pageId      String?
   pageSection PageSectionModel?
