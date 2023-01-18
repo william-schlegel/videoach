@@ -1,4 +1,4 @@
-import { CoachingLevelList, Role } from "@prisma/client";
+import { CoachingLevelList, CoachingTarget, Role } from "@prisma/client";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 import { router, protectedProcedure, publicProcedure } from "../trpc";
@@ -17,6 +17,10 @@ const CertificationData = z.object({
 const OfferData = z.object({
   coachId: z.string().cuid(),
   id: z.string().cuid(),
+  name: z.string(),
+  target: z.nativeEnum(CoachingTarget),
+  excludingTaxes: z.boolean(),
+  description: z.string(),
   startDate: z.date(),
   physical: z.boolean().default(false),
   inHouse: z.boolean().default(false),
@@ -342,12 +346,33 @@ export const coachRouter = router({
         where: { userId: input },
         include: {
           coachingActivities: true,
-          coachingLevel: true,
           coachingPrices: {
             include: {
               packs: true,
+              coachingLevel: true,
             },
           },
+        },
+      })
+    ),
+  getOfferById: protectedProcedure
+    .input(z.string().cuid())
+    .query(({ ctx, input }) =>
+      ctx.prisma.coachingPrice.findUnique({
+        where: { id: input },
+        include: {
+          packs: true,
+          coachingLevel: true,
+        },
+      })
+    ),
+  getCoachOffers: protectedProcedure
+    .input(z.string().cuid())
+    .query(({ ctx, input }) =>
+      ctx.prisma.coachingPrice.findMany({
+        where: { coachId: input },
+        include: {
+          coachingLevel: true,
         },
       })
     ),
@@ -356,6 +381,10 @@ export const coachRouter = router({
     .mutation(async ({ ctx, input }) => {
       return ctx.prisma.coachingPrice.create({
         data: {
+          name: input.name,
+          description: input.description,
+          target: input.target,
+          excludingTaxes: input.excludingTaxes,
           coachId: input.coachId,
           inHouse: input.inHouse,
           physical: input.physical,
@@ -377,7 +406,72 @@ export const coachRouter = router({
               })),
             },
           },
+          coachingLevel: {
+            createMany: {
+              data: input.levels.map((level) => ({
+                level,
+              })),
+            },
+          },
         },
       });
     }),
+  updateCoachOffer: protectedProcedure
+    .input(OfferData.partial())
+    .mutation(async ({ ctx, input }) => {
+      await ctx.prisma.coachingPricePack.deleteMany({
+        where: {
+          coachingPriceId: input.id,
+        },
+      });
+      await ctx.prisma.coachingLevel.deleteMany({
+        where: {
+          offerId: input.id,
+        },
+      });
+      return ctx.prisma.coachingPrice.update({
+        where: { id: input.id },
+        data: {
+          name: input.name,
+          description: input.description,
+          target: input.target,
+          excludingTaxes: input.excludingTaxes,
+          coachId: input.coachId,
+          inHouse: input.inHouse,
+          physical: input.physical,
+          publicPlace: input.publicPlace,
+          startDate: input.startDate,
+          webcam: input.webcam,
+          freeHours: input.freeHours,
+          perDayPhysical: input.perDayPhysical,
+          perDayWebcam: input.perDayWebcam,
+          perHourPhysical: input.perHourPhysical,
+          perHourWebcam: input.perHourWebcam,
+          travelFee: input.travelFee,
+          travelLimit: input.travelLimit,
+          packs: {
+            createMany: {
+              data:
+                input?.packs?.map((pack) => ({
+                  nbHours: pack.nbHours,
+                  packPrice: pack.packPrice,
+                })) ?? [],
+            },
+          },
+          coachingLevel: {
+            createMany: {
+              data:
+                input?.levels?.map((level) => ({
+                  level,
+                })) ?? [],
+            },
+          },
+        },
+      });
+    }),
+  deleteCoachOffer: protectedProcedure
+    .input(z.string().cuid())
+    .mutation(({ ctx, input }) =>
+      ctx.prisma.coachingPrice.delete({ where: { id: input } })
+    ),
 });

@@ -66,7 +66,7 @@ const ManagerClubs = ({
     <Layout className="container mx-auto my-2 flex flex-col gap-2">
       <h1 className="flex justify-between">
         {t("manager-dashboard")}
-        <Link className="btn btn-secondary" href={`${userId}/clubs`}>
+        <Link className="btn-secondary btn" href={`${userId}/clubs`}>
           {t("manage-club")}
         </Link>
       </h1>
@@ -177,7 +177,7 @@ function DailyPlanning({ clubId }: { clubId: string }) {
             <p className="text-xs">
               <span>{activity.room?.name}</span>
               {" - "}
-              <span>{activity.coach?.name}</span>
+              <span>{activity.coach?.user.name}</span>
             </p>
           </div>
         ))}

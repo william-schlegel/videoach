@@ -179,7 +179,7 @@ export const planningRouter = router({
             },
             include: {
               activity: true,
-              coach: true,
+              coach: { include: { user: true } },
               room: true,
               site: true,
             },

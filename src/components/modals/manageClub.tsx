@@ -232,7 +232,7 @@ function ClubForm({ onSubmit, onCancel, update, initialData }: ClubFormProps) {
   };
 
   const onError: SubmitErrorHandler<ClubFormValues> = (errors) => {
-    console.log("errors", errors);
+    console.error("errors", errors);
   };
 
   return (
@@ -350,7 +350,7 @@ function ClubForm({ onSubmit, onCancel, update, initialData }: ClubFormProps) {
       ) : null}
       <div className="col-span-2 flex items-center justify-end gap-2">
         <button
-          className="btn-outline btn-secondary btn"
+          className="btn-outline btn btn-secondary"
           onClick={(e) => {
             e.preventDefault();
             onCancel();
@@ -358,7 +358,7 @@ function ClubForm({ onSubmit, onCancel, update, initialData }: ClubFormProps) {
         >
           {t("common:cancel")}
         </button>
-        <button className="btn-primary btn" type="submit">
+        <button className="btn btn-primary" type="submit">
           {t("common:save")}
         </button>
       </div>
@@ -496,7 +496,7 @@ export function CoachDataPresentation({
             target="_blank"
             rel="noreferrer"
           >
-            <button className="btn-primary btn flex items-center gap-4">
+            <button className="btn btn-primary flex items-center gap-4">
               <span>{t("coach.view-page")}</span>
               <i className="bx bx-link-external bx-xs" />
             </button>

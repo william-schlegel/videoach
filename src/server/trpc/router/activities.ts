@@ -33,7 +33,7 @@ export const activityRouter = router({
     }),
   getAllActivityGroups: protectedProcedure.query(({ ctx }) => {
     return ctx.prisma.activityGroup.findMany({
-      include: { coach: true },
+      include: { coach: { include: { user: true } } },
       orderBy: {
         name: "asc",
       },

@@ -1,4 +1,4 @@
-import { DAYS, useDayName } from "@modals/manageCalendar";
+import { useDayName } from "@modals/manageCalendar";
 import { type DayName } from "@prisma/client";
 
 type SelectDayProps = {
@@ -7,20 +7,14 @@ type SelectDayProps = {
 };
 
 export default function SelectDay({ day, onNewDay }: SelectDayProps) {
-  const { getName } = useDayName();
+  const { getName, getNextDay, getPreviousDay } = useDayName();
 
   function handlePrev() {
-    let idx = DAYS.findIndex((d) => d.value === day);
-    if (idx === 0) idx = DAYS.length - 1;
-    else idx--;
-    onNewDay(DAYS[idx]?.value ?? "MONDAY");
+    onNewDay(getPreviousDay(day));
   }
 
   function handleNext() {
-    let idx = DAYS.findIndex((d) => d.value === day);
-    if (idx === DAYS.length - 1) idx = 0;
-    else idx++;
-    onNewDay(DAYS[idx]?.value ?? "MONDAY");
+    onNewDay(getNextDay(day));
   }
 
   return (

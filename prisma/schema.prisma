@@ -89,7 +89,6 @@ model UserCoach {
   user               User               @relation(fields: [userId], references: [id], onDelete: Cascade, name: "coach-user")
   activityGroups     ActivityGroup[]
   coachingPrices     CoachingPrice[]
-  coachingLevel      CoachingLevel[]
   coachingActivities Activity[]
   searchAddress      String?
   latitude           Float              @default(48.8583701)
@@ -303,16 +302,24 @@ enum CoachingLevelList {
 
 model CoachingLevel {
   id      String            @id @default(cuid())
-  coachId String
-  coach   UserCoach         @relation(fields: [coachId], references: [userId], onDelete: Cascade)
+  offerId String
+  offer   CoachingPrice     @relation(fields: [offerId], references: [id], onDelete: Cascade)
   level   CoachingLevelList
 
-  @@index([coachId])
+  @@index([offerId])
+}
+
+enum CoachingTarget {
+  INDIVIDUAL
+  COMPANY
 }
 
 model CoachingPrice {
   id              String              @id @default(cuid())
   name            String
+  target          CoachingTarget      @default(INDIVIDUAL)
+  coachingLevel   CoachingLevel[]
+  excludingTaxes  Boolean             @default(false)
   description     String              @db.Text
   startDate       DateTime
   physical        Boolean

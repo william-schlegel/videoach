@@ -1,5 +1,5 @@
 import nextI18nConfig from "@root/next-i18next.config.mjs";
-import { CoachDisplay } from "@root/src/components/sections/coach";
+import { CoachDisplay } from "@sections/coach";
 import { createProxySSGHelpers } from "@trpc/react-query/ssg";
 import { createContextInner } from "@trpcserver/context";
 import { appRouter } from "@trpcserver/router/_app";

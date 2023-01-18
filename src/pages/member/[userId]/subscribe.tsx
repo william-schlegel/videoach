@@ -3,7 +3,7 @@ import { serverSideTranslations } from "next-i18next/serverSideTranslations";
 import nextI18nConfig from "@root/next-i18next.config.mjs";
 import Layout from "@root/src/components/layout";
 import { useTranslation } from "next-i18next";
-import FindClub from "@root/src/components/sections/findClub";
+import FindClub from "@sections/findClub";
 import { useRouter } from "next/router";
 import { trpc } from "@trpcclient/trpc";
 import { isCUID } from "@lib/checkValidity";

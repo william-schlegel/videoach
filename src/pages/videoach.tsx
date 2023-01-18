@@ -4,8 +4,8 @@ import Image from "next/image.js";
 import { useTranslation } from "next-i18next";
 import { useRouter } from "next/router.js";
 import Layout from "@root/src/components/layout";
-import FindClub from "../components/sections/findClub";
-import FindCoach from "../components/sections/findCoach";
+import FindClub from "@sections/findClub";
+import FindCoach from "@sections/findCoach";
 
 const Home = () => {
   const { t } = useTranslation("home");
@@ -28,19 +28,19 @@ const Home = () => {
             <p className="py-6">{t("hero-text")}</p>
             <div className="flex flex-wrap gap-2">
               <button
-                className="btn-accent btn"
+                className="btn btn-accent"
                 onClick={() => router.push("#find-club")}
               >
                 {t("btn-visitor")}
               </button>
               <button
-                className="btn-primary btn"
+                className="btn btn-primary"
                 onClick={() => router.push("/manager")}
               >
                 {t("btn-manager")}
               </button>
               <button
-                className="btn-secondary btn"
+                className="btn btn-secondary"
                 onClick={() => router.push("/coach")}
               >
                 {t("btn-coach")}
@@ -56,7 +56,7 @@ const Home = () => {
         </div>
       </section>
       <section id="find-coach" className="bg-base-100">
-        <div className="@container container mx-auto p-4">
+        <div className="container mx-auto p-4 @container">
           <h2>{t("find-coach")}</h2>
           <FindCoach />
         </div>

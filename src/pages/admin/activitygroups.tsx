@@ -51,7 +51,7 @@ function ActivityGroupManagement() {
                     {ag.default ? (
                       <i className="bx bxs-star bx-xs text-accent" />
                     ) : (
-                      <span className="badge">{ag.user?.name}</span>
+                      <span className="badge">{ag.coach?.user.name}</span>
                     )}
                   </button>
                 </li>
@@ -115,7 +115,7 @@ export function AGContent({ agId }: AGContentProps) {
           {agQuery.data?.default ? (
             <i className="bx bxs-star bx-sm text-accent" />
           ) : (
-            <p className="badge">({agQuery.data?.userId})</p>
+            <p className="badge">({agQuery.data?.name})</p>
           )}
         </div>
         <div className="flex items-center gap-2">
@@ -134,7 +134,7 @@ export function AGContent({ agId }: AGContentProps) {
             {activitiesQuery.data?.map((activity) => (
               <div key={activity.id} className="pill">
                 <span>{activity.name}</span>
-                <span className="badge badge-primary">
+                <span className="badge-primary badge">
                   {activity.club.name}
                 </span>
               </div>
@@ -147,7 +147,7 @@ export function AGContent({ agId }: AGContentProps) {
             {clubs.map((club) => (
               <div key={club.id} className="pill">
                 <span>{club.name}</span>
-                <span className="badge badge-primary">{club.activities}</span>
+                <span className="badge-primary badge">{club.activities}</span>
               </div>
             ))}
           </div>

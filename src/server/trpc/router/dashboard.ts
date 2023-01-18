@@ -60,6 +60,7 @@ export const dashboardRouter = router({
               certifications: true,
               activityGroups: true,
               page: true,
+              coachingPrices: true,
             },
           },
         },

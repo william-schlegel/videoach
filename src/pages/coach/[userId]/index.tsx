@@ -24,6 +24,7 @@ const CoachDashboard = ({
   const certificationCount =
     coachQuery.data?.coachData?.certifications?.length ?? 0;
   const activityCount = coachQuery.data?.coachData?.activityGroups?.length ?? 0;
+  const offerCount = coachQuery.data?.coachData?.coachingPrices?.length ?? 0;
 
   if (coachQuery.isLoading) return <Spinner />;
 
@@ -44,7 +45,7 @@ const CoachDashboard = ({
           </span>
         </div>
         <div className="flex items-center gap-4">
-          <Link className="btn-secondary btn" href={`${userId}/certifications`}>
+          <Link className="btn btn-secondary" href={`${userId}/certifications`}>
             {t("manage-certifications")}
           </Link>
         </div>
@@ -74,6 +75,13 @@ const CoachDashboard = ({
             {t("activities", { count: activityCount })}
           </div>
           <div className="stat-value text-primary">{activityCount}</div>
+        </div>
+        <div className="stat">
+          <div className="stat-figure text-primary">
+            <i className="bx bx-dollar bx-lg" />
+          </div>
+          <div className="stat-title">{t("offers", { count: offerCount })}</div>
+          <div className="stat-value text-primary">{offerCount}</div>
         </div>
         <div className="stat">
           <div className="stat-figure text-primary">

@@ -2,7 +2,7 @@ import { authOptions } from "@auth/[...nextauth]";
 import { Role } from "@prisma/client";
 import nextI18nConfig from "@root/next-i18next.config.mjs";
 import Layout from "@root/src/components/layout";
-import { CoachCreation } from "@root/src/components/sections/coach";
+import { CoachCreation } from "@sections/coach";
 import { trpc } from "@trpcclient/trpc";
 import Spinner from "@ui/spinner";
 import {
@@ -60,7 +60,7 @@ function CoachPage({
               href={`/presentation-page/coach/${userId}/${queryPage.data.id}`}
               target="_blank"
               referrerPolicy="no-referrer"
-              className="btn-primary btn flex gap-2"
+              className="btn btn-primary flex gap-2"
             >
               {t("page-preview")}
               <i className="bx bx-link-external bx-xs" />
