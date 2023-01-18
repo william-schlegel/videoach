@@ -10,6 +10,8 @@
   "manager-text": "Lorem ipsum dolor sit amet consectetur adipisicing elit. Doloribus culpa incidunt perferendis possimus recusandae deleniti ab neque soluta! At, nam excepturi possimus odit ipsam accusamus esse obcaecati vero id reiciendis.",
   "coach-title": "Vous êtes coach sportif",
   "coach-text": "Lorem ipsum dolor sit amet consectetur adipisicing elit. Doloribus culpa incidunt perferendis possimus recusandae deleniti ab neque soluta! At, nam excepturi possimus odit ipsam accusamus esse obcaecati vero id reiciendis.",
+  "company-title": "Vous êtes une société et cherchez un coach pour vos salariés",
+  "company-text": "Lorem ipsum dolor sit amet consectetur adipisicing elit. Doloribus culpa incidunt perferendis possimus recusandae deleniti ab neque soluta! At, nam excepturi possimus odit ipsam accusamus esse obcaecati vero id reiciendis.",
   "my-address": "Mon adresse",
   "search-radius": "Rayon de recherche",
   "search-club": "Rechercher les clubs",
@@ -24,6 +26,8 @@
   "select": "Sélectionner",
   "page-coach": "Page de présentation de {{name}}",
   "page-club": "Page du club {{name}}",
+  "offer-details": "Détails de l'offre",
+  "contact-coach": "Contacter le coach",
   "pricing": {
     "usage": "Tarifs d'utilisation",
     "monthly": "Par mois",

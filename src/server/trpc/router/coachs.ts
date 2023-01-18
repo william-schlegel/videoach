@@ -366,6 +366,53 @@ export const coachRouter = router({
         },
       })
     ),
+  getOffersForCompanies: publicProcedure.query(({ ctx }) =>
+    ctx.prisma.coachingPrice.findMany({
+      where: {
+        target: "COMPANY",
+      },
+    })
+  ),
+  getOfferWithDetails: publicProcedure
+    .input(z.string().cuid())
+    .query(async ({ ctx, input }) => {
+      const offer = await ctx.prisma.coachingPrice.findUnique({
+        where: {
+          id: input,
+        },
+        include: {
+          coach: {
+            include: {
+              page: {
+                include: {
+                  sections: {
+                    include: {
+                      elements: {
+                        include: {
+                          images: true,
+                        },
+                      },
+                    },
+                  },
+                },
+              },
+              user: true,
+              coachingActivities: true,
+            },
+          },
+          coachingLevel: true,
+          packs: true,
+        },
+      });
+      const pageImage =
+        offer?.coach.page?.sections?.[0]?.elements?.[0]?.images?.[0]?.id;
+      let imageUrl = offer?.coach.user.image ?? "/images/dummy.jpg";
+      if (pageImage) {
+        const img = await getDocUrl(offer?.coach.user.id, pageImage);
+        if (img) imageUrl = img;
+      }
+      return { ...offer, imageUrl };
+    }),
   getCoachOffers: protectedProcedure
     .input(z.string().cuid())
     .query(({ ctx, input }) =>
