@@ -47,7 +47,7 @@ export default function SimpleForm<T extends FieldValues>({
   const { t } = useTranslation("common");
   return (
     <form
-      className={`grid grid-cols-[auto_1fr] gap-2 ${className}`}
+      className={`grid grid-cols-[auto_1fr] gap-2 ${className ?? ""}`}
       onSubmit={typeof onSubmit === "function" ? (e) => onSubmit(e) : undefined}
     >
       {isLoading ? (

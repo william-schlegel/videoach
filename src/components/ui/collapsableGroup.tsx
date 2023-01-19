@@ -11,7 +11,8 @@ function CollapsableGroup({ groupName, children, className }: Props) {
   return (
     <button
       onClick={() => setOpened((p) => !p)}
-      className={`pill ${className}`}
+      className={`pill ${className ?? ""}`}
+      type="button"
     >
       <span className="text-primary">{groupName}</span>
       <div className="flex flex-wrap items-center gap-2 transition-transform duration-200">

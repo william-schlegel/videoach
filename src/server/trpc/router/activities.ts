@@ -1,7 +1,7 @@
 import { Role } from "@prisma/client";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
-import { router, protectedProcedure } from "../trpc";
+import { router, protectedProcedure, publicProcedure } from "../trpc";
 
 export const activityRouter = router({
   getActivityById: protectedProcedure
@@ -11,6 +11,13 @@ export const activityRouter = router({
         where: { id: input },
       });
     }),
+  getActivityByName: publicProcedure.input(z.string()).query(({ ctx, input }) =>
+    ctx.prisma.activity.findMany({
+      where: { name: { contains: input } },
+      take: 25,
+      include: { _count: true },
+    })
+  ),
   getActivityGroupById: protectedProcedure
     .input(z.string().cuid())
     .query(({ ctx, input }) => {

@@ -1,8 +1,10 @@
 import { CoachingLevelList, CoachingTarget, Role } from "@prisma/client";
 import { TRPCError } from "@trpc/server";
+import { calculateBBox } from "@trpcserver/lib/distance";
 import { z } from "zod";
 import { router, protectedProcedure, publicProcedure } from "../trpc";
 import { getDocUrl } from "./files";
+import { LONGITUDE, LATITUDE } from "@lib/defaultValues";
 
 const CertificationData = z.object({
   id: z.string().cuid(),
@@ -24,6 +26,7 @@ const OfferData = z.object({
   startDate: z.date(),
   physical: z.boolean().default(false),
   inHouse: z.boolean().default(false),
+  myPlace: z.boolean().default(false),
   publicPlace: z.boolean().default(false),
   perHourPhysical: z.number().min(0),
   perDayPhysical: z.number().min(0),
@@ -366,13 +369,46 @@ export const coachRouter = router({
         },
       })
     ),
-  getOffersForCompanies: publicProcedure.query(({ ctx }) =>
-    ctx.prisma.coachingPrice.findMany({
-      where: {
-        target: "COMPANY",
-      },
-    })
-  ),
+  getOffersForCompanies: publicProcedure
+    .input(
+      z.object({
+        locationLng: z.number().default(LONGITUDE),
+        locationLat: z.number().default(LATITUDE),
+        activityName: z.string().optional(),
+        range: z.number().max(100).default(25),
+        priceMin: z.number().min(0).default(0),
+        priceMax: z.number().max(1000).default(1000),
+      })
+    )
+    .query(({ input, ctx }) => {
+      const bbox = calculateBBox(
+        input.locationLng,
+        input.locationLat,
+        input.range
+      );
+      return ctx.prisma.coachingPrice.findMany({
+        where: {
+          target: "COMPANY",
+          coach: {
+            coachingActivities: input?.activityName
+              ? {
+                  some: { name: { contains: input.activityName } },
+                }
+              : undefined,
+            AND: [
+              { longitude: { gte: bbox?.[0]?.[0] ?? LONGITUDE } },
+              { longitude: { lte: bbox?.[1]?.[0] ?? LONGITUDE } },
+              { latitude: { gte: bbox?.[1]?.[1] ?? LATITUDE } },
+              { latitude: { lte: bbox?.[0]?.[1] ?? LATITUDE } },
+            ],
+          },
+          AND: [
+            { perHourPhysical: { gte: input.priceMin } },
+            { perHourPhysical: { lte: input.priceMax } },
+          ],
+        },
+      });
+    }),
   getOfferWithDetails: publicProcedure
     .input(z.string().cuid())
     .query(async ({ ctx, input }) => {
@@ -435,6 +471,7 @@ export const coachRouter = router({
           coachId: input.coachId,
           inHouse: input.inHouse,
           physical: input.physical,
+          myPlace: input.myPlace,
           publicPlace: input.publicPlace,
           startDate: input.startDate,
           webcam: input.webcam,
@@ -486,6 +523,7 @@ export const coachRouter = router({
           coachId: input.coachId,
           inHouse: input.inHouse,
           physical: input.physical,
+          myPlace: input.myPlace,
           publicPlace: input.publicPlace,
           startDate: input.startDate,
           webcam: input.webcam,

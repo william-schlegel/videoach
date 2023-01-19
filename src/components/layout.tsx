@@ -27,14 +27,16 @@ export default function Layout({ children, className }: Props) {
       </Head>
       <div
         ref={wrapperRef}
-        className="flex min-h-screen flex-1 flex-col bg-base-200"
+        className="flex min-h-screen flex-col bg-base-200"
         data-theme="cupcake"
       >
         <Navbar
           theme={theme}
           onChangeTheme={(newTheme) => setTheme(newTheme)}
         />
-        <main className={`bg-base-200 pb-4 ${className}`}>{children}</main>
+        <main className={`bg-base-200 pb-4 ${className ?? ""}`}>
+          {children}
+        </main>
         <Footer />
       </div>
     </>

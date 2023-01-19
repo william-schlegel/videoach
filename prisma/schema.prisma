@@ -87,9 +87,12 @@ model UserCoach {
   id                 String             @id @default(cuid())
   userId             String             @unique
   user               User               @relation(fields: [userId], references: [id], onDelete: Cascade, name: "coach-user")
+  publicName         String?
+  description        String?            @db.Text
+  aboutMe            String?            @db.MediumText
   activityGroups     ActivityGroup[]
   coachingPrices     CoachingPrice[]
-  coachingActivities Activity[]
+  coachingActivities CoachingActivity[]
   searchAddress      String?
   latitude           Float              @default(48.8583701)
   longitude          Float              @default(2.2944813)
@@ -322,9 +325,10 @@ model CoachingPrice {
   excludingTaxes  Boolean             @default(false)
   description     String              @db.Text
   startDate       DateTime
-  physical        Boolean
-  inHouse         Boolean
-  publicPlace     Boolean
+  physical        Boolean             @default(false)
+  inHouse         Boolean             @default(false)
+  myPlace         Boolean             @default(false)
+  publicPlace     Boolean             @default(false)
   perHourPhysical Float               @default(0)
   perDayPhysical  Float               @default(0)
   travelFee       Float               @default(0)
@@ -386,12 +390,20 @@ model Activity {
   // for activities with no calendar
   roomId             String?
   room               Room?              @relation(fields: [roomId], references: [id], name: "room-activity")
-  coachs             UserCoach[]
 
   @@index([roomId])
   @@index([groupId])
   @@index([clubId])
   @@index([siteId])
+}
+
+model CoachingActivity {
+  id      String    @id @default(cuid())
+  name    String
+  coachId String
+  coach   UserCoach @relation(fields: [coachId], references: [userId], onDelete: Cascade)
+
+  @@index([coachId])
 }
 
 model OpeningCalendar {

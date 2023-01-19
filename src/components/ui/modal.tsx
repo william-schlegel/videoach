@@ -104,10 +104,12 @@ export default function Modal({
         }}
       />
       <div className={`modal`}>
-        <div className={`modal-box relative overflow-hidden ${className}`}>
+        <div
+          className={`modal-box relative overflow-hidden ${className ?? ""}`}
+        >
           <label
             htmlFor={modalId}
-            className="btn-secondary btn-sm btn-circle btn absolute right-1 top-1"
+            className="btn btn-secondary btn-sm btn-circle absolute right-1 top-1"
           >
             <i className="bx bx-x bx-sm" />
           </label>
@@ -115,7 +117,7 @@ export default function Modal({
           <div className="modal-action">
             {cancelButtonText !== "" ? (
               <button
-                className="btn-outline btn-secondary btn"
+                className="btn-outline btn btn-secondary"
                 onClick={(e) => {
                   e.preventDefault();
                   if (typeof handleCancel === "function") handleCancel();
@@ -127,7 +129,7 @@ export default function Modal({
             ) : null}
             {typeof handleSubmit === "function" ? (
               <button
-                className="btn-primary btn"
+                className="btn btn-primary"
                 onClick={(e) => {
                   e.preventDefault();
                   handleClickSubmit();

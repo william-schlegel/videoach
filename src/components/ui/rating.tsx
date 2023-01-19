@@ -1,8 +1,8 @@
-type Props = { note: number };
+type Props = { note: number; className?: string };
 
-function Rating({ note }: Props) {
+function Rating({ note, className }: Props) {
   return (
-    <div className="flex h-6">
+    <div className={`flex h-6 ${className ?? ""}`}>
       {Array.from({ length: 5 }, (v, k) => k).map((i) => (
         <Star
           key={`STAR-${i}`}

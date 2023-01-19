@@ -46,6 +46,10 @@ type FormValues = {
   latitude: number;
   role: Role;
   range: number;
+  description: string;
+  aboutMe: string;
+  coachingActivities: string[];
+  publicName: string;
 };
 
 export default function Profile() {
@@ -60,6 +64,7 @@ export default function Profile() {
   const [cancelationDate, setCancelationDate] = useState<string | undefined>(
     undefined
   );
+  const [newActivity, setNewActivity] = useState("");
 
   const userQuery = trpc.users.getUserById.useQuery(myUserId, {
     enabled: isCUID(myUserId),
@@ -74,6 +79,12 @@ export default function Profile() {
         latitude: data?.coachData?.latitude || LATITUDE,
         role: data?.role || Role.MEMBER,
         range: data?.coachData?.range || 10,
+        description: data?.coachData?.description || "",
+        aboutMe: data?.coachData?.aboutMe || "",
+        publicName: data?.coachData?.publicName || "",
+        coachingActivities: data?.coachData?.coachingActivities.map(
+          (a) => a.name
+        ),
       });
     },
   });
@@ -90,6 +101,7 @@ export default function Profile() {
     control,
     defaultValue: {
       role: "MEMBER",
+      coachingActivities: [],
     },
   });
 
@@ -131,6 +143,14 @@ export default function Profile() {
     });
   }, [fields.latitude, fields.longitude, fields.range]);
 
+  function handleAddActivity() {
+    setValue(
+      `coachingActivities.${fields.coachingActivities?.length ?? 0}`,
+      newActivity
+    );
+    setNewActivity("");
+  }
+
   return (
     <Layout className="container mx-auto">
       <div className="flex items-center justify-between">
@@ -144,10 +164,10 @@ export default function Profile() {
         </Modal>
       </div>
       <form
-        className={`grid grid-cols-2 items-start gap-2`}
+        className={`flex flex-col gap-4 xl:grid xl:grid-cols-2 xl:items-start`}
         onSubmit={handleSubmit(onSubmit)}
       >
-        <div className={`grid grid-cols-[auto_1fr]  gap-2`}>
+        <section className={`grid grid-cols-[auto_1fr] gap-2`}>
           <label>{t("change-name")}</label>
           <div>
             <input
@@ -202,88 +222,129 @@ export default function Profile() {
               ))}
             </select>
           )}
-        </div>
-        {fields?.role === "COACH" || fields.role === "MANAGER_COACH" ? (
-          <div className={`grid grid-cols-[auto_1fr]  gap-2`}>
-            <AddressSearch
-              label={t("google-address")}
-              defaultAddress={fields.searchAddress ?? ""}
-              onSearch={(adr) => {
-                setValue("searchAddress", adr.address);
-                setValue("latitude", adr.lat);
-                setValue("longitude", adr.lng);
-              }}
-              className="col-span-2"
-            />
-            <div className="col-span-2 flex justify-between">
-              <label>{t("longitude")}</label>
+          {fields?.role === "COACH" || fields.role === "MANAGER_COACH" ? (
+            <>
+              <label>{t("public-name")}</label>
               <input
-                {...register("longitude")}
+                {...register("publicName")}
                 className="input-bordered input w-full"
-                disabled
               />
-              <label>{t("latitude")}</label>
-              <input
-                {...register("latitude")}
-                className="input-bordered input w-full"
-                disabled
-              />
-            </div>
-            <div className="flex gap-2">
-              <label>{t("range")}</label>
-              <div className="form-control">
+              <div className="col-span-2">
+                <label className="self-start">{t("short-presentation")}</label>
+                <textarea {...register("description")} rows={3} />
+                <label className="self-start">{t("about-me")}</label>
+                <textarea {...register("aboutMe")} rows={6} />
+                <label className="self-start">{t("public-activities")}</label>
                 <div className="input-group">
                   <input
-                    type="number"
-                    className="input-bordered input"
-                    {...register("range")}
-                    min={0}
-                    max={100}
+                    className="input-bordered input w-full"
+                    value={newActivity}
+                    onChange={(e) => setNewActivity(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter") {
+                        e.preventDefault();
+                        handleAddActivity();
+                      }
+                    }}
                   />
-                  <span>km</span>
+                  <span>
+                    <i
+                      className="bx bx-plus bx-sm cursor-pointer text-primary hover:text-secondary"
+                      onClick={handleAddActivity}
+                    />
+                  </span>
+                </div>
+                <div className="mt-4 flex flex-wrap gap-2">
+                  {fields.coachingActivities?.map((activity, idx) => (
+                    <span key={`ACT-${idx}`} className="pill w-fit">
+                      {activity}
+                    </span>
+                  ))}
                 </div>
               </div>
-            </div>
-            <div className="col-span-2 border-2 border-primary">
-              <MapComponent
-                initialViewState={{
-                  longitude: LONGITUDE,
-                  latitude: LATITUDE,
-                  zoom: 8,
-                }}
-                style={{ width: "100%", height: "20rem" }}
-                mapStyle="mapbox://styles/mapbox/streets-v9"
-                mapboxAccessToken={env.NEXT_PUBLIC_MAPBOX_TOKEN}
-                attributionControl={false}
-                longitude={fields.longitude}
-                latitude={fields.latitude}
-              >
-                <Source type="geojson" data={circle}>
-                  <Layer
-                    type="fill"
-                    paint={{
-                      "fill-color": hslToHex(theme, "--p"),
-                      "fill-opacity": 0.2,
-                    }}
-                  />
-                  <Layer
-                    type="line"
-                    paint={{
-                      "line-color": hslToHex(theme, "--p"),
-                      "line-opacity": 1,
-                      "line-width": 2,
-                    }}
-                  />
-                </Source>
-              </MapComponent>
-            </div>
-          </div>
-        ) : (
-          <div>&nbsp;</div>
-        )}
+            </>
+          ) : null}
+        </section>
 
-        <section className="col-span-2 flex flex-col gap-2 rounded-md border border-primary p-4">
-          <div className="grid grid-cols-[auto_1fr] gap-4">
+        <section>
+          {fields?.role === "COACH" || fields.role === "MANAGER_COACH" ? (
+            <div className={`mb-2 grid  grid-cols-[auto_1fr] gap-2`}>
+              <AddressSearch
+                label={t("google-address")}
+                defaultAddress={fields.searchAddress ?? ""}
+                onSearch={(adr) => {
+                  setValue("searchAddress", adr.address);
+                  setValue("latitude", adr.lat);
+                  setValue("longitude", adr.lng);
+                }}
+                className="col-span-2"
+              />
+              <div className="col-span-2 flex justify-between">
+                <label>{t("longitude")}</label>
+                <input
+                  {...register("longitude")}
+                  className="input-bordered input w-full"
+                  disabled
+                />
+                <label>{t("latitude")}</label>
+                <input
+                  {...register("latitude")}
+                  className="input-bordered input w-full"
+                  disabled
+                />
+              </div>
+              <div className="flex gap-2">
+                <label>{t("range")}</label>
+                <div className="form-control">
+                  <div className="input-group">
+                    <input
+                      type="number"
+                      className="input-bordered input"
+                      {...register("range")}
+                      min={0}
+                      max={100}
+                    />
+                    <span>km</span>
+                  </div>
+                </div>
+              </div>
+              <div className="col-span-2 border-2 border-primary">
+                <MapComponent
+                  initialViewState={{
+                    longitude: LONGITUDE,
+                    latitude: LATITUDE,
+                    zoom: 8,
+                  }}
+                  style={{ width: "100%", height: "20rem" }}
+                  mapStyle="mapbox://styles/mapbox/streets-v9"
+                  mapboxAccessToken={env.NEXT_PUBLIC_MAPBOX_TOKEN}
+                  attributionControl={false}
+                  longitude={fields.longitude}
+                  latitude={fields.latitude}
+                >
+                  <Source type="geojson" data={circle}>
+                    <Layer
+                      type="fill"
+                      paint={{
+                        "fill-color": hslToHex(theme, "--p"),
+                        "fill-opacity": 0.2,
+                      }}
+                    />
+                    <Layer
+                      type="line"
+                      paint={{
+                        "line-color": hslToHex(theme, "--p"),
+                        "line-opacity": 1,
+                        "line-width": 2,
+                      }}
+                    />
+                  </Source>
+                </MapComponent>
+              </div>
+            </div>
+          ) : null}
+
+          <div className="rounded border border-primary p-4">
             <div className="flex flex-col gap-2">
               <h2>{t("plan")}</h2>
               {userQuery.data?.pricingId &&
@@ -341,7 +402,7 @@ export default function Profile() {
                   </div>
                   <div className="flex-none">
                     <button
-                      className="btn-outline btn-secondary btn-xs btn"
+                      className="btn-outline btn btn-secondary btn-xs"
                       type="button"
                       onClick={() => setCancelationDate(undefined)}
                     >
@@ -351,27 +412,25 @@ export default function Profile() {
                 </div>
               ) : null}
             </div>
-            <div>
-              <label className="self-start">{t("select-plan")}</label>
-              <PricingContainer compact>
-                {pricingQuery.data?.map((pricing) => (
-                  <PricingCard
-                    key={pricing.id}
-                    pricingId={pricing.id}
-                    onSelect={(id, monthly) => {
-                      setPricingId(id);
-                      setMonthlyPayment(monthly);
-                    }}
-                    compact
-                    forceHighlight={pricing.id === userQuery.data?.pricingId}
-                  />
-                ))}
-              </PricingContainer>
-            </div>
+            <label className="self-start">{t("select-plan")}</label>
+            <PricingContainer compact>
+              {pricingQuery.data?.map((pricing) => (
+                <PricingCard
+                  key={pricing.id}
+                  pricingId={pricing.id}
+                  onSelect={(id, monthly) => {
+                    setPricingId(id);
+                    setMonthlyPayment(monthly);
+                  }}
+                  compact
+                  forceHighlight={pricing.id === userQuery.data?.pricingId}
+                />
+              ))}
+            </PricingContainer>
           </div>
         </section>
         <button
-          className="btn-primary btn col-span-2 w-fit"
+          className="btn btn-primary col-span-2 w-fit"
           disabled={updateUser.isLoading}
         >
           {t("save-profile")}

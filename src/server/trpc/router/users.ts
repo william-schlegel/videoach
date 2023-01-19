@@ -28,7 +28,11 @@ export const userRouter = router({
       return ctx.prisma.user.findUnique({
         where: { id: input },
         include: {
-          coachData: true,
+          coachData: {
+            include: {
+              coachingActivities: true,
+            },
+          },
           pricing: true,
           paiements: true,
           accounts: true,
@@ -136,6 +140,10 @@ export const userRouter = router({
         latitude: z.number().optional(),
         searchAddress: z.string().optional(),
         range: z.number().min(0).max(100).optional(),
+        description: z.string().optional(),
+        publicName: z.string().optional(),
+        aboutMe: z.string().optional(),
+        coachingActivities: z.array(z.string()).optional(),
       })
     )
     .mutation(async ({ ctx, input }) => {
@@ -145,6 +153,9 @@ export const userRouter = router({
           message: "Only an admin user can give admin access",
         });
       if (input.role === Role.COACH || input.role === Role.MANAGER_COACH) {
+        await ctx.prisma.coachingActivity.deleteMany({
+          where: { coachId: input.id },
+        });
         await ctx.prisma.userCoach.upsert({
           where: { userId: input.id },
           update: {
@@ -152,6 +163,14 @@ export const userRouter = router({
             latitude: input.latitude,
             searchAddress: input.searchAddress,
             range: input.range,
+            publicName: input.publicName,
+            aboutMe: input.aboutMe,
+            description: input.description,
+            coachingActivities: Array.isArray(input.coachingActivities)
+              ? {
+                  create: input.coachingActivities?.map((a) => ({ name: a })),
+                }
+              : undefined,
           },
           create: {
             userId: input.id,
@@ -159,6 +178,14 @@ export const userRouter = router({
             latitude: input.latitude,
             searchAddress: input.searchAddress,
             range: input.range,
+            publicName: input.publicName,
+            aboutMe: input.aboutMe,
+            description: input.description,
+            coachingActivities: Array.isArray(input.coachingActivities)
+              ? {
+                  create: input.coachingActivities?.map((a) => ({ name: a })),
+                }
+              : undefined,
           },
         });
       }

@@ -56,6 +56,8 @@
     "date-mandatory": "La date est obligatoire",
     "physical": "Face à face",
     "in-house": "A domicile",
+    "your-place": "Chez vous",
+    "my-place": "A mon domicile",
     "public-place": "Dans un lieu public",
     "webcam": "Par webcam",
     "tarif": "Tarif",
@@ -80,7 +82,12 @@
     "updated": "Offre mise à jour",
     "free-hours": "Offre d'essai",
     "including-tax": "TTC",
-    "without-tax": "HT"
+    "without-tax": "HT",
+    "see-public-offer": "Voir mon offre publique",
+    "where": "Lieux pour les cours",
+    "course-description": "Description du cours",
+    "home": "Chez {{name}}",
+    "in-limit": "Dans la limite de {{limit}} km autour de {{address}}"
   },
   "target": {
     "individual": "Particulier",

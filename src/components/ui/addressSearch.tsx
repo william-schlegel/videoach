@@ -1,13 +1,16 @@
 import useDebounce from "@lib/useDebounce";
 import { env } from "@root/src/env/client.mjs";
+import { useTranslation } from "next-i18next";
 import { useEffect, useState } from "react";
 
 type Props = {
-  label: string;
+  label?: string;
   defaultAddress?: string;
   className?: string;
   onSearch: (adr: AddressData) => void;
   required?: boolean;
+  iconSearch?: boolean;
+  error?: string;
 };
 
 export type AddressData = {
@@ -22,10 +25,13 @@ const AddressSearch = ({
   onSearch,
   className,
   required,
+  iconSearch = true,
+  error,
 }: Props) => {
   const [address, setAddress] = useState("");
   const debouncedAddress = useDebounce<string>(address, 500);
   const [addresses, setAddresses] = useState<AddressData[]>([]);
+  const { t } = useTranslation("common");
 
   useEffect(() => {
     if (defaultAddress) setAddress(defaultAddress);
@@ -41,16 +47,45 @@ const AddressSearch = ({
     setAddress(value);
   }
 
+  function handleClickIcon() {
+    if (!navigator.geolocation) return;
+    navigator.geolocation.getCurrentPosition((position) => {
+      const address = t("your-location");
+      setAddress(address);
+      setAddresses([]);
+      onSearch({
+        address,
+        lng: position.coords.longitude,
+        lat: position.coords.latitude,
+      });
+    });
+  }
+
   return (
     <>
-      <label className={`label ${required ? "required" : ""}`}> {label} </label>
-      <div className={`dropdown dropdown-bottom ${className}`}>
-        <input
-          className="input-bordered input w-full"
-          value={address}
-          onChange={(e) => handleSelect(e.currentTarget.value)}
-          list="addresses"
-        />
+      {label ? (
+        <label className={`label ${required ? "required" : ""}`}>{label}</label>
+      ) : null}
+      <div className={`dropdown dropdown-bottom ${className ?? ""}`}>
+        <div className="input-group">
+          {iconSearch ? (
+            <span>
+              <i
+                className="bx bx-map-pin bx-md cursor-pointer text-primary hover:text-secondary"
+                onClick={handleClickIcon}
+              />
+            </span>
+          ) : null}
+          <input
+            className="input-bordered input w-full"
+            value={address}
+            onChange={(e) => handleSelect(e.currentTarget.value)}
+            list="addresses"
+            placeholder={t("location")}
+            required={required}
+          />
+        </div>
+        {error ? <p className="label-text-alt text-error">{error}</p> : null}
         {addresses.length > 0 ? (
           <ul className="dropdown-content menu rounded-box w-full bg-base-100 p-2 shadow">
             {addresses.map((adr, idx) => (

@@ -8,66 +8,26 @@ import type {
 import superjson from "superjson";
 import { createContextInner } from "@trpcserver/context";
 import { appRouter } from "@trpcserver/router/_app";
-import { trpc } from "@trpcclient/trpc";
-import { useTranslation } from "next-i18next";
 import Layout from "@root/src/components/layout";
-import Image from "next/image";
 import { isCUID } from "@lib/checkValidity";
-import Spinner from "@ui/spinner";
-import Link from "next/link";
+import { CoachOfferPage } from "@sections/coachOffer";
 
 function OfferPage(
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   props: InferGetServerSidePropsType<typeof getServerSideProps>
 ) {
-  const offerQuery = trpc.coachs.getOfferWithDetails.useQuery(props.offerId, {
-    enabled: isCUID(props.offerId),
-  });
-  const { data } = offerQuery;
-  const { t } = useTranslation("home");
-
   return (
     <Layout>
-      <section className="container mx-auto flex flex-wrap gap-8 bg-base-200 py-48">
-        {data?.name}
+      <section className="bg-base-100 py-48">
+        <div className="container mx-auto">
+          <CoachOfferPage offerId={props.offerId} />
+        </div>
       </section>
     </Layout>
   );
 }
 
 export default OfferPage;
-
-function OfferCard({ id }: { id: string }) {
-  const { t } = useTranslation("home");
-  const offer = trpc.coachs.getOfferWithDetails.useQuery(id, {
-    enabled: isCUID(id),
-  });
-
-  if (offer.isLoading) return <Spinner />;
-
-  return (
-    <div className="card w-96 bg-base-100 shadow-xl">
-      <figure>
-        <Image
-          src={offer.data?.imageUrl ?? "/images/dummy.jpg"}
-          alt={offer.data?.coach?.user.name ?? ""}
-          width={400}
-          height={200}
-          className="object-cover object-center"
-        />
-      </figure>
-      <div className="card-body">
-        <h2 className="card-title">{offer.data?.name}</h2>
-        <p>{offer.data?.description}</p>
-        <div className="card-actions justify-end">
-          <Link className="btn btn-primary" href={`/company/${id}`}>
-            {t("offer-details")}
-          </Link>
-        </div>
-      </div>
-    </div>
-  );
-}
 
 export const getServerSideProps = async ({
   locale,
@@ -86,7 +46,7 @@ export const getServerSideProps = async ({
     props: {
       ...(await serverSideTranslations(
         locale ?? "fr",
-        ["common", "home"],
+        ["common", "home", "coach"],
         nextI18nConfig
       )),
       trpcState: ssg.dehydrate(),

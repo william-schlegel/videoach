@@ -22,7 +22,7 @@ import {
   useCoachingTarget,
 } from "@modals/manageCoach";
 import { Role } from "@prisma/client";
-import CoachOfferDisplay from "@sections/coachOffer";
+import { CoachOfferDisplay, CoachOfferPage } from "@sections/coachOffer";
 
 function CoachOffer({
   userId,
@@ -89,6 +89,7 @@ type OfferContentProps = {
 };
 
 function OfferContent({ userId, offerId }: OfferContentProps) {
+  const { t } = useTranslation("coach");
   const offerQuery = trpc.coachs.getOfferById.useQuery(offerId, {
     enabled: isCUID(offerId),
   });
@@ -96,8 +97,17 @@ function OfferContent({ userId, offerId }: OfferContentProps) {
   return (
     <div className="flex w-full flex-col gap-4">
       <div className="flex items-center justify-between">
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-4">
           <h2>{offerQuery.data?.name}</h2>
+          <Link
+            className="btn btn-primary flex items-center gap-4"
+            href={`/company/${offerId}`}
+            target="_blank"
+            rel="noreffer"
+          >
+            {t("offer.see-public-offer")}
+            <i className="bx bx-link-external bx-xs" />
+          </Link>
         </div>
         <div className="flex items-center gap-2">
           <UpdateOffer userId={userId} offerId={offerId} />
@@ -105,6 +115,7 @@ function OfferContent({ userId, offerId }: OfferContentProps) {
         </div>
       </div>
       <CoachOfferDisplay offerId={offerId} />
+      <CoachOfferPage offerId={offerId} />
     </div>
   );
 }

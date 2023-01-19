@@ -28,6 +28,8 @@
   "page-club": "Page du club {{name}}",
   "offer-details": "Détails de l'offre",
   "contact-coach": "Contacter le coach",
+  "price-range": "Prix",
+  "distance-range": "Distance",
   "pricing": {
     "usage": "Tarifs d'utilisation",
     "monthly": "Par mois",

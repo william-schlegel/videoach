@@ -24,6 +24,7 @@ type OfferFormValues = {
   startDate: string;
   physical: boolean;
   inHouse: boolean;
+  myPlace: boolean;
   publicPlace: boolean;
   perHourPhysical: number;
   perDayPhysical: number;
@@ -116,6 +117,7 @@ export const UpdateOffer = ({
         inHouse: data?.inHouse ?? false,
         physical: data?.physical ?? false,
         webcam: data?.webcam ?? false,
+        myPlace: data?.myPlace ?? false,
         publicPlace: data?.publicPlace ?? false,
         perHourPhysical: data?.perHourPhysical ?? 0,
         perDayPhysical: data?.perDayPhysical ?? 0,
@@ -134,6 +136,7 @@ export const UpdateOffer = ({
     onSuccess: () => {
       utils.coachs.getCoachOffers.invalidate(userId);
       utils.coachs.getOfferById.invalidate(offerId);
+      utils.coachs.getOfferWithDetails.invalidate(offerId);
       toast.success(t("offer.updated") as string);
     },
     onError(error) {
@@ -233,6 +236,7 @@ function OfferForm({ onSubmit, onCancel, initialData }: OfferFormProps) {
     inHouse: false,
     physical: false,
     webcam: false,
+    myPlace: false,
     publicPlace: false,
     perHourPhysical: 0,
     perDayPhysical: 0,
@@ -325,7 +329,7 @@ function OfferForm({ onSubmit, onCancel, initialData }: OfferFormProps) {
               ) : null}
             </div>
             <label>{t("offer.free-hours")}</label>
-            <label className="input-group">
+            <div className="input-group">
               <input
                 {...register("freeHours", {
                   valueAsNumber: true,
@@ -334,7 +338,7 @@ function OfferForm({ onSubmit, onCancel, initialData }: OfferFormProps) {
                 className="input-bordered input w-full"
               />
               <span>h</span>
-            </label>
+            </div>
 
             <label>{t("offer.target")}</label>
             <select
@@ -419,6 +423,17 @@ function OfferForm({ onSubmit, onCancel, initialData }: OfferFormProps) {
                       <input
                         type="checkbox"
                         className="checkbox-primary checkbox"
+                        {...register("myPlace")}
+                        defaultChecked={false}
+                      />
+                      <span className="label-text">{t("offer.my-place")}</span>
+                    </label>
+                  </div>
+                  <div className="form-control">
+                    <label className="label cursor-pointer justify-start gap-2">
+                      <input
+                        type="checkbox"
+                        className="checkbox-primary checkbox"
                         {...register("publicPlace")}
                         defaultChecked={false}
                       />
@@ -430,7 +445,7 @@ function OfferForm({ onSubmit, onCancel, initialData }: OfferFormProps) {
                 </div>
                 <div>
                   <label>{t("offer.tarif")}</label>
-                  <label className="input-group">
+                  <div className="input-group mb-2">
                     <input
                       {...register("perHourPhysical", {
                         valueAsNumber: true,
@@ -439,8 +454,8 @@ function OfferForm({ onSubmit, onCancel, initialData }: OfferFormProps) {
                       className="input-bordered input w-full"
                     />
                     <span>€{t("offer.per-hour")}</span>
-                  </label>
-                  <label className="input-group">
+                  </div>
+                  <div className="input-group">
                     <input
                       {...register("perDayPhysical", {
                         valueAsNumber: true,
@@ -449,26 +464,26 @@ function OfferForm({ onSubmit, onCancel, initialData }: OfferFormProps) {
                       className="input-bordered input w-full"
                     />
                     <span>€{t("offer.per-day")}</span>
-                  </label>
+                  </div>
                   <label>{t("offer.travel-fee")}</label>
-                  <label className="input-group">
+                  <div className="input-group">
                     <input
                       {...register("travelFee", { valueAsNumber: true })}
                       type={"number"}
                       className="input-bordered input w-full"
                     />
                     <span>€</span>
-                  </label>
+                  </div>
 
                   <label>{t("offer.travel-limit")}</label>
-                  <label className="input-group">
+                  <div className="input-group">
                     <input
                       {...register("travelLimit", { valueAsNumber: true })}
                       type={"number"}
                       className="input-bordered input w-full"
                     />
                     <span>km</span>
-                  </label>
+                  </div>
                 </div>
               </>
             ) : null}
@@ -491,7 +506,7 @@ function OfferForm({ onSubmit, onCancel, initialData }: OfferFormProps) {
               <>
                 <div>
                   <label>{t("offer.tarif")}</label>
-                  <label className="input-group">
+                  <div className="input-group mb-2">
                     <input
                       {...register("perHourWebcam", {
                         valueAsNumber: true,
@@ -500,8 +515,8 @@ function OfferForm({ onSubmit, onCancel, initialData }: OfferFormProps) {
                       className="input-bordered input w-full"
                     />
                     <span>€{t("offer.per-hour")}</span>
-                  </label>
-                  <label className="input-group">
+                  </div>
+                  <div className="input-group">
                     <input
                       {...register("perDayWebcam", {
                         valueAsNumber: true,
@@ -510,7 +525,7 @@ function OfferForm({ onSubmit, onCancel, initialData }: OfferFormProps) {
                       className="input-bordered input w-full"
                     />
                     <span>€{t("offer.per-day")}</span>
-                  </label>
+                  </div>
                 </div>
               </>
             ) : null}
@@ -543,7 +558,7 @@ function OfferForm({ onSubmit, onCancel, initialData }: OfferFormProps) {
           </table>
           <div className="grid grid-cols-[auto_1fr]">
             <label>{t("offer.nb-hour")}</label>
-            <label className="input-group">
+            <div className="input-group my-2">
               <input
                 value={pack.nbHours}
                 onChange={(e) =>
@@ -556,9 +571,9 @@ function OfferForm({ onSubmit, onCancel, initialData }: OfferFormProps) {
                 className="input-bordered input w-full"
               />
               <span>h</span>
-            </label>
+            </div>
             <label>{t("offer.tarif")}</label>
-            <label className="input-group">
+            <div className="input-group mb-2">
               <input
                 value={pack.packPrice}
                 onChange={(e) =>
@@ -571,7 +586,7 @@ function OfferForm({ onSubmit, onCancel, initialData }: OfferFormProps) {
                 className="input-bordered input w-full"
               />
               <span>€</span>
-            </label>
+            </div>
           </div>
           <button
             type="button"

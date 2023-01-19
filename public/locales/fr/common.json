@@ -3,6 +3,10 @@
   "cancel": "Annuler",
   "save": "Enregistrer",
   "continue": "Continuer",
+  "your-location": "Votre position",
+  "location": "Saisissez une adresse ou une ville",
+  "enter-activity": "Quelle activité recherchez-vous ?",
+  "enter-location": "Entrez une adresse ou une ville, ou cliquez sur l'épingle pour déterminer votre emplacement",
   "navigation": {
     "dashboard": "Mon tableau de bord",
     "find-club": "Trouver un club",

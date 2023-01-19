@@ -70,11 +70,11 @@ function FindCoach({ onSelect }: FindCoachProps) {
             <span>Km</span>
           </div>
         </div>
-        <button className="btn-primary btn flex items-center gap-4">
+        <button className="btn btn-primary flex items-center gap-4">
           {t("search-coach")}
           <i className="bx bx-search bx-xs" />
         </button>
-        <div className="mt-8 max-h-60 w-full border border-primary">
+        <div className="mt-8 max-h-60 w-full rounded-lg border border-primary">
           <table className="table-zebra table w-full">
             <thead>
               <tr>
@@ -130,7 +130,7 @@ function FindCoach({ onSelect }: FindCoachProps) {
                   {withSelect ? (
                     <td>
                       <span
-                        className="btn-primary btn-xs btn"
+                        className="btn btn-primary btn-xs"
                         tabIndex={0}
                         onClick={() => onSelect(res.id)}
                       >
