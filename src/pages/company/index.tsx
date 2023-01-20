@@ -91,7 +91,7 @@ function CoachPage(
             className="mx-auto w-fit rounded border border-base-300 bg-base-100 p-4 shadow-xl"
             onSubmit={handleSubmit(onValid)}
           >
-            <div className="mb-2 grid grid-cols-2 gap-2">
+            <div className="mb-2 flex justify-around">
               <CollapsableGroup
                 groupName={`${t("price-range")} (${formatMoney(
                   fields.priceMax
@@ -121,14 +121,14 @@ function CoachPage(
                 />
               </CollapsableGroup>
             </div>
-            <div className="flex items-center gap-4">
+            <div className="flex flex-wrap items-center gap-4">
               <ActivitySearch
                 onSearch={(activity) => {
                   setValue("activity", activity.name);
                   offerQuery.refetch();
                 }}
                 onActivityChange={(value) => setValue("activity", value)}
-                className="w-[25vw]"
+                className="w-[clamp(24rem,25vw,100%)]"
                 required
                 error={errors.location ? t("common:enter-activity") : ""}
               />
@@ -139,7 +139,7 @@ function CoachPage(
                   setValue("latitude", adr.lat);
                   offerQuery.refetch();
                 }}
-                className="w-[25vw]"
+                className="w-[clamp(24rem,25vw,100%)]"
                 required
                 error={errors.location ? t("common:enter-location") : ""}
               />
@@ -166,7 +166,9 @@ function OfferCard({ id }: { id: string }) {
   });
 
   if (offer.isLoading) return <Spinner />;
-  const listFormatter = new Intl.ListFormat(i18n?.language, { style: "short" });
+  const listFormatter = new Intl.ListFormat(i18n?.language, {
+    style: "short",
+  });
   const options: string[] = [];
   const prices: {
     type: "WEBCAM" | "PHYSICAL";
@@ -216,9 +218,10 @@ function OfferCard({ id }: { id: string }) {
           className="object-cover object-center"
         />
         <div className="absolute bottom-0 left-0 w-full bg-black bg-opacity-20 px-4 py-2 text-accent">
-          <h3>{offer.data?.coach?.user.name}</h3>
+          <h3>{offer.data?.coach?.publicName}</h3>
           <p>
-            {offer.data?.coach?.searchAddress} {listFormatter.format(options)}
+            {offer.data?.coach?.searchAddress},{" "}
+            {listFormatter.format(options).toLocaleLowerCase()}
           </p>
         </div>
       </figure>

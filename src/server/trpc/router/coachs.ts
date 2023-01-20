@@ -559,4 +559,13 @@ export const coachRouter = router({
     .mutation(({ ctx, input }) =>
       ctx.prisma.coachingPrice.delete({ where: { id: input } })
     ),
+  getOfferActivityByName: publicProcedure
+    .input(z.string())
+    .query(({ ctx, input }) =>
+      ctx.prisma.coachingActivity.findMany({
+        where: { name: { contains: input } },
+        take: 25,
+        distinct: "name",
+      })
+    ),
 });

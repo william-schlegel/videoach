@@ -308,24 +308,26 @@ export const pageRouter = router({
               certifications: {
                 include: {
                   modules: true,
-                  activityGroups: true,
                 },
               },
+              coachingActivities: true,
             },
           },
         },
       });
-      const activities = new Map<string, { id: string; name: string }>();
-      if (user?.coachData?.certifications)
-        for (const mod of user.coachData.certifications)
-          for (const ag of mod.activityGroups)
-            activities.set(ag.id, { id: ag.id, name: ag.name });
       const certifications =
         user?.coachData?.certifications.map((c) => ({
           id: c.id,
           name: c.name,
         })) ?? [];
-      return { certifications, activities: Array.from(activities.values()) };
+      return {
+        certifications,
+        activities:
+          user?.coachData?.coachingActivities.map((a) => ({
+            id: a.id,
+            name: a.name,
+          })) ?? [],
+      };
     }),
   updatePagePublication: protectedProcedure
     .input(z.object({ pageId: z.string().cuid(), published: z.boolean() }))

@@ -6,7 +6,6 @@ import { trpc } from "@trpcclient/trpc";
 import Rating from "@ui/rating";
 import Spinner from "@ui/spinner";
 import { i18n, useTranslation } from "next-i18next";
-import Image from "next/image";
 
 type Props = { offerId: string };
 
@@ -181,7 +180,7 @@ export function CoachOfferPage({ offerId }: Props) {
 
   if (offerQuery.isLoading) return <Spinner />;
   return (
-    <div className="container mx-auto grid grid-cols-[3fr_1fr]">
+    <div className="container mx-auto flex flex-col-reverse gap-2 px-8 xl:grid xl:grid-cols-[3fr_1fr]">
       <div>
         <section className="flex gap-2">
           {offerQuery.data?.coach?.coachingActivities.map((activity) => (
@@ -257,16 +256,16 @@ export function CoachOfferPage({ offerId }: Props) {
           <p className="my-4">{offerQuery.data?.coach?.aboutMe}</p>
         </section>
       </div>
-      <div className="card place-self-start bg-base-100 shadow-xl">
-        <figure className="relative">
-          <Image
-            src={offerQuery.data?.imageUrl ?? "/images/dummy.jpg"}
-            alt={offerQuery.data?.coach?.publicName ?? ""}
-            width={400}
-            height={200}
-            className="object-cover object-center"
-          />
-          <div className="absolute bottom-0 left-0 w-full bg-black bg-opacity-20 px-4 py-2 text-accent">
+      <div className="card w-full place-self-start bg-base-100 shadow-xl max-xl:card-side">
+        <figure
+          className="w-[40%] max-w-[16rem] shrink-0 xl:h-64 xl:w-full xl:max-w-full"
+          style={{
+            backgroundImage: `url(${offerQuery.data?.imageUrl})`,
+            backgroundSize: "cover",
+            backgroundPosition: "center",
+          }}
+        >
+          <div className="mt-auto h-fit bg-black bg-opacity-20 px-4 py-2 text-accent xl:w-full">
             <h3 className="text-center text-accent">
               {offerQuery.data?.coach?.publicName}
             </h3>

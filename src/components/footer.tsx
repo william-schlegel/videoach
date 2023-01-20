@@ -1,16 +1,22 @@
+import { useTranslation } from "next-i18next";
+import { format } from "date-fns";
+
 export default function Footer() {
+  const { t } = useTranslation("common");
   return (
-    <footer className="footer mt-auto gap-12 bg-neutral p-10 text-neutral-content">
-      <div className="flex w-full justify-end">
+    <footer className="footer mt-auto gap-4 bg-neutral p-10 text-neutral-content">
+      <div className="flex items-center gap-4">
         <i className="bx bxl-slack-old text-[60px]" />
         <p>
           Videoach
           <br />
-          Gestion de clubs de sport
+          {t("tag-line")}
+          <br />
+          &copy; {format(new Date(Date.now()), "yyyy")}
         </p>
       </div>
       <div>
-        <span className="footer-title">Social</span>
+        <span className="footer-title">{t("social")}</span>
         <div className="grid grid-flow-col gap-4">
           <a>
             <i className="bx bxl-twitter bx-sm" />

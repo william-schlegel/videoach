@@ -34,7 +34,7 @@ const ActivitySearch = ({
   const { t } = useTranslation("common");
   const [showList, setShowList] = useState(false);
 
-  const activities = trpc.activities.getActivityByName.useQuery(
+  const activities = trpc.coachs.getOfferActivityByName.useQuery(
     debouncedActivity,
     { enabled: debouncedActivity !== "" }
   );

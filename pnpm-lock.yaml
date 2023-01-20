@@ -28,6 +28,7 @@ specifiers:
   '@typescript-eslint/parser': ^5.48.0
   autoprefixer: ^10.4.13
   daisyui: ^2.46.1
+  date-fns: ^2.29.3
   dayjs: ^1.11.7
   eslint: ^8.31.0
   eslint-config-next: 13.0.2
@@ -71,6 +72,7 @@ dependencies:
   '@turf/helpers': 6.5.0
   '@turf/invariant': 6.5.0
   daisyui: 2.46.1_63gb4bqnxhe4g6pce5lz6sagrm
+  date-fns: 2.29.3
   dayjs: 1.11.7
   mapbox-gl: 2.12.0
   next: 13.0.2_biqbaboplfbrettd7655fr4n2y
@@ -2118,6 +2120,11 @@ packages:
   /damerau-levenshtein/1.0.8:
     resolution: {integrity: sha512-sdQSFB7+llfUcQHUQO3+B8ERRj0Oa4w9POWMI/puGtuf7gFywGmkaLCElnudfTiKZV+NvHqL0ifzdrI8Ro7ESA==}
     dev: true
+
+  /date-fns/2.29.3:
+    resolution: {integrity: sha512-dDCnyH2WnnKusqvZZ6+jA1O51Ibt8ZMRNkDZdyAyK4YfbDwa/cEmuztzG5pk6hqlp9aSBPYcjOlktquahGwGeA==}
+    engines: {node: '>=0.11'}
+    dev: false
 
   /dayjs/1.11.7:
     resolution: {integrity: sha512-+Yw9U6YO5TQohxLcIkrXBeY73WP3ejHWVvx8XCk3gxvQDCTEmS48ZrSZCKciI7Bhl/uCMyxYtE9UqRILmFphkQ==}
