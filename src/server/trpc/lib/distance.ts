@@ -1,4 +1,5 @@
 import destination from "@turf/destination";
+import distance from "@turf/distance";
 import { point } from "@turf/helpers";
 import { getCoord } from "@turf/invariant";
 /**
@@ -20,11 +21,25 @@ export function calculateBBox(
   }
   console.log("originLng :>> ", originLng);
   console.log("originLat :>> ", originLat);
-  const halfDistance = (distance / 2) * Math.sqrt(2);
+  const diagonalDistance = distance * Math.sqrt(2);
   const org = point([originLng, originLat]);
-  const topLeft = destination(org, halfDistance, -45, { units: "kilometers" });
-  const bottomRight = destination(org, halfDistance, 135, {
+  const topLeft = destination(org, diagonalDistance, -45, {
+    units: "kilometers",
+  });
+  const bottomRight = destination(org, diagonalDistance, 135, {
     units: "kilometers",
   });
   return [getCoord(topLeft), getCoord(bottomRight)];
+}
+
+export function calculateDistance(
+  originLng: number,
+  originLat: number,
+  distanceLng: number,
+  distanceLat: number
+) {
+  const from = point([originLng, originLat]);
+  const to = point([distanceLng, distanceLat]);
+
+  return distance(from, to, { units: "kilometers" });
 }

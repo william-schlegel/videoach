@@ -268,6 +268,7 @@ export const pageRouter = router({
         include: {
           coachData: {
             include: {
+              user: true,
               page: {
                 include: {
                   sections: {
@@ -284,9 +285,9 @@ export const pageRouter = router({
               certifications: {
                 include: {
                   modules: true,
-                  activityGroups: true,
                 },
               },
+              coachingActivities: true,
             },
           },
         },

@@ -54,7 +54,7 @@ const ActivitySearch = ({
       {label ? (
         <label className={`label ${required ? "required" : ""}`}>{label}</label>
       ) : null}
-      <div className={`dropdown dropdown-bottom ${className ?? ""}`}>
+      <div className={`dropdown-bottom dropdown ${className ?? ""}`}>
         <div className="input-group">
           {iconActivity ? (
             <span>
@@ -82,7 +82,10 @@ const ActivitySearch = ({
                     setShowList(false);
                   }}
                 >
-                  {activity.name}
+                  <TextHighlighted
+                    text={activity.name}
+                    highlight={debouncedActivity}
+                  />
                 </button>
               </li>
             ))}
@@ -94,3 +97,30 @@ const ActivitySearch = ({
 };
 
 export default ActivitySearch;
+
+function TextHighlighted({
+  text,
+  highlight,
+}: {
+  text: string;
+  highlight: string;
+}) {
+  const regex = new RegExp(`(${highlight})`, "gi");
+  const parts = text.split(regex);
+  return (
+    <span>
+      {parts.map((p, idx) => (
+        <span
+          key={`P-${idx}`}
+          className={
+            p.toLocaleLowerCase() === highlight.toLocaleLowerCase()
+              ? "font-semibold text-accent"
+              : ""
+          }
+        >
+          {p}
+        </span>
+      ))}
+    </span>
+  );
+}

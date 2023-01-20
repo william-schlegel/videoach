@@ -1,6 +1,8 @@
+import { LATITUDE, LONGITUDE } from "@lib/defaultValues";
 import { RoomReservation } from "@prisma/client";
+import { calculateBBox, calculateDistance } from "@trpcserver/lib/distance";
 import { z } from "zod";
-import { router, protectedProcedure } from "../trpc";
+import { router, protectedProcedure, publicProcedure } from "../trpc";
 
 const SiteObject = z.object({
   id: z.string().cuid(),
@@ -46,9 +48,12 @@ export const siteRouter = router({
     .mutation(({ ctx, input }) =>
       ctx.prisma.site.create({
         data: {
-          address: input.address,
-          name: input.name,
           clubId: input.clubId,
+          name: input.name,
+          address: input.address,
+          searchAddress: input.searchAddress,
+          longitude: input.longitude,
+          latitude: input.latitude,
         },
       })
     ),
@@ -60,6 +65,9 @@ export const siteRouter = router({
         data: {
           name: input.name,
           address: input.address,
+          searchAddress: input.searchAddress,
+          longitude: input.longitude,
+          latitude: input.latitude,
         },
       });
     }),
@@ -138,4 +146,45 @@ export const siteRouter = router({
         },
       })
     ),
+  getSitesFromDistance: publicProcedure
+    .input(
+      z.object({
+        locationLng: z.number().default(LONGITUDE),
+        locationLat: z.number().default(LATITUDE),
+        range: z.number().max(100).default(25),
+      })
+    )
+    .query(async ({ input, ctx }) => {
+      const bbox = calculateBBox(
+        input.locationLng,
+        input.locationLat,
+        input.range
+      );
+      const sites = await ctx.prisma.site.findMany({
+        where: {
+          AND: [
+            { longitude: { gte: bbox?.[0]?.[0] ?? LONGITUDE } },
+            { longitude: { lte: bbox?.[1]?.[0] ?? LONGITUDE } },
+            { latitude: { gte: bbox?.[1]?.[1] ?? LATITUDE } },
+            { latitude: { lte: bbox?.[0]?.[1] ?? LATITUDE } },
+          ],
+        },
+        include: {
+          club: {
+            include: { activities: { include: { group: true } }, pages: true },
+          },
+        },
+      });
+      return sites
+        .map((site) => ({
+          ...site,
+          distance: calculateDistance(
+            input.locationLng,
+            input.locationLat,
+            site.longitude,
+            site.latitude
+          ),
+        }))
+        .filter((c) => c.distance <= input.range);
+    }),
 });

@@ -1,6 +1,6 @@
 import { CoachingLevelList, CoachingTarget, Role } from "@prisma/client";
 import { TRPCError } from "@trpc/server";
-import { calculateBBox } from "@trpcserver/lib/distance";
+import { calculateBBox, calculateDistance } from "@trpcserver/lib/distance";
 import { z } from "zod";
 import { router, protectedProcedure, publicProcedure } from "../trpc";
 import { getDocUrl } from "./files";
@@ -91,6 +91,45 @@ export const coachRouter = router({
         imageUrl = await getDocUrl(imgData.userId, imgData.id);
       }
       return { ...coach, imageUrl: imageUrl ?? "/images/dummy.jpg" };
+    }),
+  getCoachsFromDistance: publicProcedure
+    .input(
+      z.object({
+        locationLng: z.number().default(LONGITUDE),
+        locationLat: z.number().default(LATITUDE),
+        range: z.number().max(100).default(25),
+      })
+    )
+    .query(async ({ input, ctx }) => {
+      const bbox = calculateBBox(
+        input.locationLng,
+        input.locationLat,
+        input.range
+      );
+      const coachs = await ctx.prisma.userCoach.findMany({
+        where: {
+          AND: [
+            { longitude: { gte: bbox?.[0]?.[0] ?? LONGITUDE } },
+            { longitude: { lte: bbox?.[1]?.[0] ?? LONGITUDE } },
+            { latitude: { gte: bbox?.[1]?.[1] ?? LATITUDE } },
+            { latitude: { lte: bbox?.[0]?.[1] ?? LATITUDE } },
+          ],
+        },
+        include: { page: true, certifications: true, coachingActivities: true },
+      });
+      console.log("bbox :>> ", bbox);
+      console.log("coachs :>> ", coachs);
+      return coachs
+        .map((coach) => ({
+          ...coach,
+          distance: calculateDistance(
+            input.locationLng,
+            input.locationLat,
+            coach.longitude,
+            coach.latitude
+          ),
+        }))
+        .filter((c) => c.distance <= input.range && c.distance <= c.range);
     }),
   createCertification: protectedProcedure
     .input(CertificationData.omit({ id: true }))

@@ -1,5 +1,7 @@
+// import { LATITUDE, LONGITUDE } from "@lib/defaultValues";
 import { Role } from "@prisma/client";
 import { TRPCError } from "@trpc/server";
+// import { calculateBBox, calculateDistance } from "@trpcserver/lib/distance";
 import { z } from "zod";
 import { router, protectedProcedure, publicProcedure } from "../trpc";
 import { getDocUrl } from "./files";
@@ -44,6 +46,43 @@ export const clubRouter = router({
       include: { activities: { include: { group: true } }, pages: true },
     })
   ),
+  // getClubsFromDistance: publicProcedure
+  //   .input(
+  //     z.object({
+  //       locationLng: z.number().default(LONGITUDE),
+  //       locationLat: z.number().default(LATITUDE),
+  //       range: z.number().max(100).default(25),
+  //     })
+  //   )
+  //   .query(async ({ input, ctx }) => {
+  //     const bbox = calculateBBox(
+  //       input.locationLng,
+  //       input.locationLat,
+  //       input.range
+  //     );
+  //     const clubs = await ctx.prisma.club.findMany({
+  //       where: {
+  //         AND: [
+  //           { longitude: { gte: bbox?.[0]?.[0] ?? LONGITUDE } },
+  //           { longitude: { lte: bbox?.[1]?.[0] ?? LONGITUDE } },
+  //           { latitude: { gte: bbox?.[1]?.[1] ?? LATITUDE } },
+  //           { latitude: { lte: bbox?.[0]?.[1] ?? LATITUDE } },
+  //         ],
+  //       },
+  //       include: { activities: { include: { group: true } }, pages: true },
+  //     });
+  //     return clubs
+  //       .map((club) => ({
+  //         ...club,
+  //         distance: calculateDistance(
+  //           input.locationLng,
+  //           input.locationLat,
+  //           club.longitude,
+  //           club.latitude
+  //         ),
+  //       }))
+  //       .filter((c) => c.distance <= input.range);
+  //   }),
   createClub: protectedProcedure
     .input(
       z.object({

@@ -26,6 +26,7 @@
     "@trpc/server": "^10.7.0",
     "@turf/circle": "^6.5.0",
     "@turf/destination": "^6.5.0",
+    "@turf/distance": "^6.5.0",
     "@turf/helpers": "^6.5.0",
     "@turf/invariant": "^6.5.0",
     "daisyui": "^2.46.1",

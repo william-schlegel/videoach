@@ -105,7 +105,7 @@ export const UpdateSite = ({ siteId, clubId }: UpdateSiteProps) => {
 
   return (
     <Modal
-      title={t("update-name", { siteName: querySite.data?.name })}
+      title={t("site.update", { siteName: querySite.data?.name })}
       buttonIcon={<i className="bx bx-edit bx-sm" />}
       variant={"Icon-Outlined-Primary"}
       className="w-2/3 max-w-5xl"
@@ -264,7 +264,7 @@ function SiteForm({
             latitude={fields.latitude ?? LATITUDE}
             anchor="bottom"
           >
-            <i className="bx bx-x bx-sm text-secondary" />
+            <i className="bx bxs-map bx-md text-primary" />
           </Marker>
         </MapComponent>
       </div>

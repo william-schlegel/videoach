@@ -185,7 +185,7 @@ model Club {
   name          String
   address       String            @db.Text
   managerId     String
-  manager       UserManager       @relation(fields: [managerId], references: [id], onDelete: Cascade, name: "manager-club")
+  manager       UserManager       @relation(fields: [managerId], references: [userId], onDelete: Cascade, name: "manager-club")
   sites         Site[]
   activities    Activity[]
   members       UserMember[]      @relation("member-club")
@@ -193,9 +193,9 @@ model Club {
   calendars     OpeningCalendar[]
   pages         Page[]
   pageStyle     String            @default("light")
-  searchAddress String?
-  latitude      Float             @default(48.8583701)
-  longitude     Float             @default(2.2944813)
+  // searchAddress String?
+  // latitude      Float             @default(48.8583701)
+  // longitude     Float             @default(2.2944813)
   plannings     Planning[]
   logoId        String?           @unique
   logo          UserDocument?     @relation(fields: [logoId], references: [id])

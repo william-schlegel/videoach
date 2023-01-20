@@ -19,6 +19,7 @@ specifiers:
   '@trpc/server': ^10.7.0
   '@turf/circle': ^6.5.0
   '@turf/destination': ^6.5.0
+  '@turf/distance': ^6.5.0
   '@turf/helpers': ^6.5.0
   '@turf/invariant': ^6.5.0
   '@types/node': ^18.11.18
@@ -69,6 +70,7 @@ dependencies:
   '@trpc/server': 10.8.1
   '@turf/circle': 6.5.0
   '@turf/destination': 6.5.0
+  '@turf/distance': 6.5.0
   '@turf/helpers': 6.5.0
   '@turf/invariant': 6.5.0
   daisyui: 2.46.1_63gb4bqnxhe4g6pce5lz6sagrm
@@ -1582,6 +1584,13 @@ packages:
 
   /@turf/destination/6.5.0:
     resolution: {integrity: sha512-4cnWQlNC8d1tItOz9B4pmJdWpXqS0vEvv65bI/Pj/genJnsL7evI0/Xw42RvEGROS481MPiU80xzvwxEvhQiMQ==}
+    dependencies:
+      '@turf/helpers': 6.5.0
+      '@turf/invariant': 6.5.0
+    dev: false
+
+  /@turf/distance/6.5.0:
+    resolution: {integrity: sha512-xzykSLfoURec5qvQJcfifw/1mJa+5UwByZZ5TZ8iaqjGYN0vomhV9aiSLeYdUGtYRESZ+DYC/OzY+4RclZYgMg==}
     dependencies:
       '@turf/helpers': 6.5.0
       '@turf/invariant': 6.5.0

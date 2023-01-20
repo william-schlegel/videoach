@@ -6,6 +6,7 @@ import { ToastContainer } from "react-toastify";
 
 import "../styles/globals.css";
 import "react-toastify/dist/ReactToastify.css";
+import "mapbox-gl/dist/mapbox-gl.css";
 
 import nextI18nConfig from "../../next-i18next.config.mjs";
 import { trpc } from "@trpcclient/trpc";

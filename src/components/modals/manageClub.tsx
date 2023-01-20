@@ -58,9 +58,9 @@ export const CreateClub = () => {
       name: data.name,
       address: data.address,
       isSite: data.isSite ?? true,
-      latitude: data.latitude,
-      longitude: data.longitude,
-      searchAddress: data.searchAddress,
+      latitude: data.latitude ?? LATITUDE,
+      longitude: data.longitude ?? LONGITUDE,
+      searchAddress: data.searchAddress ?? "",
       logoId,
     });
     setCloseModal(true);
@@ -97,10 +97,7 @@ export const UpdateClub = ({ clubId }: PropsWithoutRef<PropsUpdateDelete>) => {
       if (data)
         setInitialData({
           address: data?.address ?? "",
-          latitude: data?.latitude ?? LATITUDE,
-          longitude: data?.longitude ?? LONGITUDE,
           name: data?.name ?? "",
-          searchAddress: data?.searchAddress ?? "",
           logoUrl: data.logoUrl,
           deleteLogo: false,
         });
@@ -166,9 +163,9 @@ type ClubFormValues = {
   name: string;
   address: string;
   isSite?: boolean;
-  searchAddress: string;
-  longitude: number;
-  latitude: number;
+  searchAddress?: string;
+  longitude?: number;
+  latitude?: number;
   logo?: FileList;
   logoUrl?: string;
   deleteLogo: boolean;
@@ -350,7 +347,7 @@ function ClubForm({ onSubmit, onCancel, update, initialData }: ClubFormProps) {
       ) : null}
       <div className="col-span-2 flex items-center justify-end gap-2">
         <button
-          className="btn-outline btn btn-secondary"
+          className="btn-outline btn-secondary btn"
           onClick={(e) => {
             e.preventDefault();
             onCancel();
@@ -358,7 +355,7 @@ function ClubForm({ onSubmit, onCancel, update, initialData }: ClubFormProps) {
         >
           {t("common:cancel")}
         </button>
-        <button className="btn btn-primary" type="submit">
+        <button className="btn-primary btn" type="submit">
           {t("common:save")}
         </button>
       </div>
@@ -496,7 +493,7 @@ export function CoachDataPresentation({
             target="_blank"
             rel="noreferrer"
           >
-            <button className="btn btn-primary flex items-center gap-4">
+            <button className="btn-primary btn flex items-center gap-4">
               <span>{t("coach.view-page")}</span>
               <i className="bx bx-link-external bx-xs" />
             </button>

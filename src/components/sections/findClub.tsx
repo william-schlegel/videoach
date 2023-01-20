@@ -2,21 +2,16 @@ import { LATITUDE, LONGITUDE } from "@lib/defaultValues";
 import { trpc } from "@trpcclient/trpc";
 import AddressSearch, { type AddressData } from "@ui/addressSearch";
 import { useTranslation } from "next-i18next";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import turfCircle from "@turf/circle";
 import Link from "next/link";
 import ButtonIcon from "@ui/buttonIcon";
-import Map, { Layer, Source } from "react-map-gl";
+import Map, { Layer, Marker, Source, useMap } from "react-map-gl";
 import { env } from "@root/src/env/client.mjs";
 import hslToHex from "@lib/hslToHex";
 import useLocalStorage from "@lib/useLocalstorage";
 import { type TThemes } from "../themeSelector";
-
-// type ClubSearchResult = {
-//   name: string;
-//   distance: number;
-//   activities: string[];
-// };
+import { useHover } from "@lib/useHover";
 
 type FindClubProps = {
   address?: string;
@@ -29,27 +24,36 @@ function FindClub({ address = "" }: FindClubProps) {
     lat: LATITUDE,
     lng: LONGITUDE,
   });
-  const [range, setRange] = useState(10);
-  // const [clubSearch, setClubSearch] = useState<ClubSearchResult[]>([]);
-  const clubSearch = trpc.clubs.getAllClubs.useQuery();
-  const [theme] = useLocalStorage<TThemes>("theme", "cupcake");
-
-  useEffect(
-    () =>
-      setMyAddress({
-        address,
-        lat: LATITUDE,
-        lng: LONGITUDE,
-      }),
-    [address]
+  const [range, setRange] = useState(25);
+  const [hoveredId, setHoveredId] = useState("");
+  const clubSearch = trpc.sites.getSitesFromDistance.useQuery(
+    {
+      locationLat: myAddress.lat,
+      locationLng: myAddress.lng,
+      range,
+    },
+    { enabled: false }
   );
+  const [theme] = useLocalStorage<TThemes>("theme", "cupcake");
+  const map = useMap();
+  const handleSearch = () => clubSearch.refetch();
 
-  type clubItem = typeof clubSearch.data extends (infer U)[] | undefined
+  useEffect(() => {
+    setMyAddress({
+      address,
+      lat: LATITUDE,
+      lng: LONGITUDE,
+    });
+    handleSearch();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [address]);
+
+  type TSiteItem = typeof clubSearch.data extends (infer U)[] | undefined
     ? U
     : never;
 
-  function getGroups(club: clubItem) {
-    const grps = club.activities.map((a) => a.group.name).flat();
+  function getGroups(site: TSiteItem) {
+    const grps = site.club.activities.map((a) => a.group.name).flat();
     const set = new Set(grps);
     return Array.from(set).sort((a, b) => a.localeCompare(b));
   }
@@ -62,6 +66,62 @@ function FindClub({ address = "" }: FindClubProps) {
     });
     return c;
   }, [myAddress.lat, myAddress.lng, range]);
+
+  function ClubRow({
+    item,
+    onHover,
+  }: {
+    item: TSiteItem;
+    onHover: (id: string) => void;
+  }) {
+    const ref = useRef<HTMLTableRowElement | null>(null);
+    const isHovered = useHover(ref);
+
+    useEffect(() => {
+      if (isHovered) onHover(item.id);
+    }, [isHovered, onHover, item]);
+
+    return (
+      <tr ref={ref} className="hover">
+        <td>
+          <div className="flex flex-wrap items-center gap-2">
+            <span>{item.club.name}</span>
+            <span className="badge-primary badge">{item.name}</span>
+          </div>
+        </td>
+        <td>{item.distance.toFixed(0)}&nbsp;km</td>
+        <td>
+          <div className="flex flex-wrap gap-1">
+            {getGroups(item).map((g) => (
+              <span key={g} className="pill pill-xs">
+                {g}
+              </span>
+            ))}
+          </div>
+        </td>
+        <td>
+          {item.club.pages.find((p) => p.target === "HOME")?.published ? (
+            <Link
+              href={`/presentation-page/club/${item.id}/${
+                item.club.pages.find((p) => p.target === "HOME")?.id
+              }`}
+              target="_blank"
+              rel="noreferrer"
+            >
+              <ButtonIcon
+                title={t("page-club", { name: item.name })}
+                iconComponent={<i className="bx bx-link-external bx-xs" />}
+                buttonSize="sm"
+                buttonVariant="Icon-Outlined-Primary"
+              />
+            </Link>
+          ) : (
+            <span>&nbsp;</span>
+          )}
+        </td>
+      </tr>
+    );
+  }
 
   return (
     <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
@@ -86,11 +146,14 @@ function FindClub({ address = "" }: FindClubProps) {
             <span>Km</span>
           </div>
         </div>
-        <button className="btn btn-primary flex items-center gap-4">
+        <button
+          className="btn-primary btn flex items-center gap-4"
+          onClick={() => handleSearch()}
+        >
           {t("search-club")}
           <i className="bx bx-search bx-xs" />
         </button>
-        <div className="mt-8 max-h-60 w-full rounded-lg border border-primary">
+        <div className="mt-8 max-h-[40vh] w-full overflow-y-auto">
           <table className="table-zebra table w-full">
             <thead>
               <tr>
@@ -102,48 +165,21 @@ function FindClub({ address = "" }: FindClubProps) {
             </thead>
             <tbody>
               {clubSearch.data?.map((res) => (
-                <tr key={res.name}>
-                  <td>{res.name}</td>
-                  <td>{/*res.distance*/ "(tbd)"}&nbsp;km</td>
-                  <td>
-                    <div className="flex flex-wrap gap-1">
-                      {getGroups(res).map((g) => (
-                        <span key={g} className="pill pill-xs">
-                          {g}
-                        </span>
-                      ))}
-                    </div>
-                  </td>
-                  <td>
-                    {res.pages.find((p) => p.target === "HOME")?.published ? (
-                      <Link
-                        href={`/presentation-page/club/${res.id}/${
-                          res.pages.find((p) => p.target === "HOME")?.id
-                        }`}
-                        target="_blank"
-                        rel="noreferrer"
-                      >
-                        <ButtonIcon
-                          title={t("page-club", { name: res.name })}
-                          iconComponent={
-                            <i className="bx bx-link-external bx-xs" />
-                          }
-                          buttonSize="sm"
-                          buttonVariant="Icon-Outlined-Primary"
-                        />
-                      </Link>
-                    ) : (
-                      <span>&nbsp;</span>
-                    )}
-                  </td>
-                </tr>
+                <ClubRow
+                  key={res.id}
+                  item={res}
+                  onHover={(id) => setHoveredId(id)}
+                />
               ))}
             </tbody>
           </table>
         </div>
       </div>
       <div className="min-h-[30vh]">
-        <div className="h-full border border-primary">
+        <div
+          className="h-full border border-primary"
+          onResize={() => map.current?.resize()}
+        >
           <Map
             initialViewState={{ zoom: 9 }}
             style={{ width: "100%", height: "100%" }}
@@ -170,6 +206,20 @@ function FindClub({ address = "" }: FindClubProps) {
                 }}
               />
             </Source>
+            {clubSearch.data?.map((res) => (
+              <Marker
+                key={res.id}
+                latitude={res.latitude}
+                longitude={res.longitude}
+                anchor="bottom"
+              >
+                <i
+                  className={`bx bxs-map bx-md ${
+                    res.id === hoveredId ? "text-secondary" : "text-primary"
+                  }`}
+                />
+              </Marker>
+            ))}
           </Map>
         </div>
       </div>

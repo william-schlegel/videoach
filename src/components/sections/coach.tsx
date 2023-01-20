@@ -263,7 +263,12 @@ export const CoachCreation = ({ userId, pageId }: CoachCreationProps) => {
             ) : null}
           </div>
           <label>{t("name")}</label>
-          <input defaultValue={sessionData?.user?.name ?? ""} disabled />
+          <div className="flex items-center gap-2">
+            <span>{queryCoach.data?.coachData?.publicName ?? ""}</span>
+            <span className="tooltip" data-tip={t("your-public-name")}>
+              <i className="bx bx-info-circle bx-xs" />
+            </span>
+          </div>
           <label>{t("info")}</label>
           <input
             {...register("subtitle")}
@@ -397,17 +402,17 @@ export const CoachDisplay = ({ pageId }: CoachDisplayProps) => {
       .map((o) => [o.title, o.optionValue])
   );
 
-  const activities = new Map<string, { id: string; name: string }>();
-  if (pageData?.coachData?.certifications)
-    for (const mod of pageData.coachData.certifications)
-      for (const ag of mod.activityGroups)
-        activities.set(ag.id, { id: ag.id, name: ag.name });
+  const activities =
+    pageData?.coachData?.coachingActivities.map((a) => ({
+      id: a.id,
+      name: a.name,
+    })) ?? [];
   const certifications =
     pageData?.coachData?.certifications.map((c) => ({
       id: c.id,
       name: c.name,
     })) ?? [];
-  const ca = { certifications, activities: Array.from(activities.values()) };
+  const ca = { certifications, activities };
 
   return (
     <div
@@ -415,11 +420,11 @@ export const CoachDisplay = ({ pageId }: CoachDisplayProps) => {
       className="flex min-h-screen flex-col items-center justify-center"
     >
       <Head>
-        <title>{pageData?.name}</title>
+        <title>{pageData?.coachData?.publicName}</title>
       </Head>
       <PhotoSection
         imageSrc={queryImage.data?.url}
-        userName={pageData?.name}
+        userName={pageData?.coachData?.publicName}
         info={hero?.subTitle}
         description={hero?.content}
         email={pageData?.email}
