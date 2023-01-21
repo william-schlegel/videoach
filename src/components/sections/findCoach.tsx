@@ -2,7 +2,7 @@ import { LATITUDE, LONGITUDE } from "@lib/defaultValues";
 import { trpc } from "@trpcclient/trpc";
 import AddressSearch, { type AddressData } from "@ui/addressSearch";
 import { useTranslation } from "next-i18next";
-import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import turfCircle from "@turf/circle";
 import Link from "next/link";
 import ButtonIcon from "@ui/buttonIcon";
@@ -42,12 +42,16 @@ function FindCoach({ address = "", onSelect }: FindCoachProps) {
     ? U
     : never;
   const handleSearch = () => coachSearch.refetch();
+  const mapContainerRef = useRef<HTMLDivElement | null>(null);
   const map = useMap();
-
-  useLayoutEffect(() => {
-    console.log("resize");
+  const handleResize = useCallback(() => {
     if (map.current) map.current.resize();
-  }, [coachSearch.data?.length, map]);
+  }, [map]);
+
+  useEffect(() => {
+    if (mapContainerRef.current)
+      new ResizeObserver(handleResize).observe(mapContainerRef.current);
+  }, [handleResize]);
 
   useEffect(() => {
     setMyAddress({
@@ -191,7 +195,7 @@ function FindCoach({ address = "", onSelect }: FindCoachProps) {
         </div>
       </div>
       <div className="min-h-[30vh]">
-        <div className="h-full border border-primary">
+        <div className="h-full border border-primary" ref={mapContainerRef}>
           <Map
             initialViewState={{ zoom: 9 }}
             style={{ width: "100%", height: "100%" }}

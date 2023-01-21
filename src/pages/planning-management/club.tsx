@@ -26,9 +26,7 @@ import {
   DeletePlanning,
   UpdatePlanning,
 } from "@modals/managePlanning";
-import dayjs from "dayjs";
 import { formatDateLocalized } from "@lib/formatDate";
-import { DAYS, useDayName } from "@modals/manageCalendar";
 import {
   type DragEndEvent,
   PointerSensor,
@@ -43,6 +41,8 @@ import Confirmation from "@ui/confirmation";
 import { isCUID } from "@lib/checkValidity";
 import { useRouter } from "next/router";
 import createLink from "@lib/createLink";
+import { DAYS, useDayName } from "@lib/useDayName";
+import { isDate } from "date-fns";
 // import { useHover } from "@lib/useHover";
 
 const HHOUR = "h-12"; // 3rem 48px
@@ -149,15 +149,15 @@ export function PlanningName({ planning }: { planning: Planning }) {
       <span
         className={`${
           planning.name ? "badge-secondary badge" : ""
-        } flex items-center gap-1`}
+        } flex items-center gap-2`}
       >
         {!planning.name && <span>{t("from")}</span>}
         {formatDateLocalized(planning.startDate)}
-        {dayjs(planning.endDate).isValid() ? (
-          <>
+        {isDate(planning.endDate) ? (
+          <span className="space-x-2">
             <i className="bx bx-right-arrow-alt bx-xs" />
             <span>{formatDateLocalized(planning.endDate)}</span>
-          </>
+          </span>
         ) : null}
       </span>
     </div>

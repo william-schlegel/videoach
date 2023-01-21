@@ -11,9 +11,9 @@ import {
 } from "react-hook-form";
 import { trpc } from "@trpcclient/trpc";
 import { formatDateAsYYYYMMDD } from "@lib/formatDate";
-import dayjs from "dayjs";
 import { useState } from "react";
 import { isCUID } from "@lib/checkValidity";
+import { isDate } from "date-fns";
 
 type CreatePlanningProps = {
   clubId: string;
@@ -63,7 +63,7 @@ export const CreatePlanning = ({
       clubId,
       name: data.name ? data.name : undefined,
       startDate: data.startDate,
-      endDate: dayjs(data.endDate).isValid() ? data.endDate : undefined,
+      endDate: isDate(data.endDate) ? data.endDate : undefined,
       siteId: data.forSite && data.siteId ? data.siteId : undefined,
       roomId:
         data.forSite && data.siteId && data.forRoom && data.roomId
@@ -237,18 +237,14 @@ export function UpdatePlanning({
         name: data.name ? data.name : undefined,
         startDate: data.startDate,
         endDate:
-          data.endDate && dayjs(data.endDate).isValid()
-            ? data.endDate
-            : undefined,
+          data.endDate && isDate(data.endDate) ? data.endDate : undefined,
       });
     } else {
       updatePlanning.mutate({
         name: data.name ? data.name : undefined,
         startDate: data.startDate,
         endDate:
-          data.endDate && dayjs(data.endDate).isValid()
-            ? data.endDate
-            : undefined,
+          data.endDate && isDate(data.endDate) ? data.endDate : undefined,
       });
     }
   };

@@ -1,4 +1,4 @@
-import { DAYS } from "@modals/manageCalendar";
+import { DAYS } from "@lib/useDayName";
 import type {
   DayOpeningTime,
   OpeningTime,

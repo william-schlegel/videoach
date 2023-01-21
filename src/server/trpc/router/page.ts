@@ -1,4 +1,6 @@
 import {
+  type CoachingLevel,
+  type CoachingPrice,
   PageSectionElementType,
   PageSectionModel,
   PageTarget,
@@ -38,6 +40,9 @@ const PageSectionElementObject = z.object({
 type GetCoachDataForPageReturn = {
   certifications: { id: string; name: string }[];
   activities: { id: string; name: string }[];
+  offers: (CoachingPrice & {
+    coachingLevel: CoachingLevel[];
+  })[];
 };
 
 export const pageRouter = router({
@@ -288,6 +293,11 @@ export const pageRouter = router({
                 },
               },
               coachingActivities: true,
+              coachingPrices: {
+                include: {
+                  coachingLevel: true,
+                },
+              },
             },
           },
         },
@@ -312,6 +322,11 @@ export const pageRouter = router({
                 },
               },
               coachingActivities: true,
+              coachingPrices: {
+                include: {
+                  coachingLevel: true,
+                },
+              },
             },
           },
         },
@@ -328,6 +343,7 @@ export const pageRouter = router({
             id: a.id,
             name: a.name,
           })) ?? [],
+        offers: user?.coachData?.coachingPrices ?? [],
       };
     }),
   updatePagePublication: protectedProcedure

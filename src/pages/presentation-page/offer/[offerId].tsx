@@ -1,6 +1,8 @@
+import { isCUID } from "@lib/checkValidity";
 import nextI18nConfig from "@root/next-i18next.config.mjs";
-import { CoachDisplay } from "@sections/coach";
+import { CoachOfferPage } from "@sections/coachOffer";
 import { createProxySSGHelpers } from "@trpc/react-query/ssg";
+import { trpc } from "@trpcclient/trpc";
 import { createContextInner } from "@trpcserver/context";
 import { appRouter } from "@trpcserver/router/_app";
 import type {
@@ -8,16 +10,30 @@ import type {
   InferGetServerSidePropsType,
 } from "next";
 import { serverSideTranslations } from "next-i18next/serverSideTranslations";
+import Head from "next/head";
 import superjson from "superjson";
 
-function CoachPresentation(
+function Offer(
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   props: InferGetServerSidePropsType<typeof getServerSideProps>
 ) {
-  return <CoachDisplay pageId={props.pageId} />;
-}
+  const offerData = trpc.coachs.getOfferWithDetails.useQuery(props.offerId, {
+    enabled: isCUID(props.offerId),
+  });
 
-export default CoachPresentation;
+  return (
+    <div
+      data-theme={offerData.data?.coach?.pageStyle ?? "light"}
+      className="flex min-h-screen flex-col items-center justify-center"
+    >
+      <Head>
+        <title>{offerData.data?.coach?.publicName}</title>
+      </Head>
+      <CoachOfferPage offerId={props.offerId} />
+    </div>
+  );
+}
+export default Offer;
 
 export const getServerSideProps = async ({
   locale,
@@ -29,8 +45,8 @@ export const getServerSideProps = async ({
     transformer: superjson,
   });
 
-  const pageId = (params?.pageId as string) ?? "";
-  ssg.pages.getCoachPage.prefetch(pageId);
+  const offerId = (params?.offerId as string) ?? "";
+  ssg.coachs.getOfferWithDetails.prefetch(offerId);
 
   return {
     props: {
@@ -39,7 +55,7 @@ export const getServerSideProps = async ({
         ["pages", "coach"],
         nextI18nConfig
       )),
-      pageId,
+      offerId,
     },
   };
 };

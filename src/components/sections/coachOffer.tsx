@@ -6,10 +6,11 @@ import { trpc } from "@trpcclient/trpc";
 import Rating from "@ui/rating";
 import Spinner from "@ui/spinner";
 import { i18n, useTranslation } from "next-i18next";
+import { useRouter } from "next/router";
 
-type Props = { offerId: string };
+type CoachOfferDisplayProps = { offerId: string };
 
-export function CoachOfferDisplay({ offerId }: Props) {
+export function CoachOfferDisplay({ offerId }: CoachOfferDisplayProps) {
   const { t } = useTranslation("coach");
   const offerQuery = trpc.coachs.getOfferById.useQuery(offerId, {
     enabled: isCUID(offerId),
@@ -42,7 +43,7 @@ export function CoachOfferDisplay({ offerId }: Props) {
           </span>
           <span>{offerQuery.data?.freeHours.toFixed(0)} h</span>
         </div>
-        <p className="badge-secondary badge">
+        <p className="badge badge-secondary">
           {getNameTarget(offerQuery.data?.target)}
         </p>
       </div>
@@ -170,25 +171,45 @@ export function CoachOfferDisplay({ offerId }: Props) {
   );
 }
 
-export function CoachOfferPage({ offerId }: Props) {
+type CoachOfferPageProps = {
+  offerId: string;
+  condensed?: boolean;
+};
+
+export function CoachOfferPage({ offerId, condensed }: CoachOfferPageProps) {
   const { t } = useTranslation("coach");
   const offerQuery = trpc.coachs.getOfferWithDetails.useQuery(offerId, {
     enabled: isCUID(offerId),
   });
   const { getName: getNameLevel } = useCoachingLevel();
   const listFormatter = new Intl.ListFormat(i18n?.language);
+  const router = useRouter();
 
   if (offerQuery.isLoading) return <Spinner />;
   return (
-    <div className="container mx-auto flex flex-col-reverse gap-2 px-8 xl:grid xl:grid-cols-[3fr_1fr]">
-      <div>
-        <section className="flex gap-2">
+    <div
+      className={`container mx-auto flex flex-col-reverse ${
+        condensed ? "gap-2" : "gap-8"
+      } px-8 xl:grid xl:grid-cols-[3fr_1fr]`}
+    >
+      <div className={condensed ? undefined : "space-y-8"}>
+        <section className={`flex ${condensed ? "gap-2" : "gap-8 "}`}>
           {offerQuery.data?.coach?.coachingActivities.map((activity) => (
             <span className="pill" key={activity.id}>
               {activity.name}
             </span>
           ))}
         </section>
+
+        <section>
+          {condensed ? (
+            <h2>{offerQuery.data?.name}</h2>
+          ) : (
+            <h1>{offerQuery.data?.name}</h1>
+          )}
+          <p>{offerQuery.data?.description}</p>
+        </section>
+
         <section>
           <h2>{offerQuery.data?.coach?.description}</h2>
         </section>
@@ -196,49 +217,27 @@ export function CoachOfferPage({ offerId }: Props) {
           <h3>{t("offer.where")}</h3>
           <div className="flex flex-wrap gap-2">
             {offerQuery.data?.physical && offerQuery.data?.myPlace ? (
-              <div className="pill w-fit">
-                <i className="bx bx-map-pin bx-sm" />
-                {t("offer.home", {
-                  name: offerQuery.data.coach?.publicName,
-                })}
-                {" : "}
-                {offerQuery.data.coach?.searchAddress}
-              </div>
+              <OfferBadge
+                variant="My-Place"
+                publicName={offerQuery.data.coach?.publicName}
+                searchAddress={offerQuery.data.coach?.searchAddress}
+              />
             ) : null}
             {offerQuery.data?.physical && offerQuery.data?.inHouse ? (
-              <div className="pill w-fit">
-                <i className="bx bx-home bx-sm" />
-                <span>{t("offer.your-place")}</span>
-                {offerQuery.data.travelLimit ? (
-                  <span className="text-sm text-secondary">
-                    {t("offer.in-limit", {
-                      limit: offerQuery.data.travelLimit,
-                      address: offerQuery.data.coach?.searchAddress,
-                    })}
-                  </span>
-                ) : null}
-              </div>
+              <OfferBadge
+                variant="In-House"
+                travelLimit={offerQuery.data.travelLimit}
+                searchAddress={offerQuery.data.coach?.searchAddress}
+              />
             ) : null}
             {offerQuery.data?.physical && offerQuery.data?.publicPlace ? (
-              <div className="pill w-fit">
-                <i className="bx bx-map-alt bx-sm" />
-                <span>{t("offer.public-place")}</span>
-                {offerQuery.data.travelLimit ? (
-                  <span className="text-sm text-secondary">
-                    {t("offer.in-limit", {
-                      limit: offerQuery.data.travelLimit,
-                      address: offerQuery.data.coach?.user.address,
-                    })}
-                  </span>
-                ) : null}
-              </div>
+              <OfferBadge
+                variant="Public-Place"
+                travelLimit={offerQuery.data.travelLimit}
+                searchAddress={offerQuery.data.coach?.searchAddress}
+              />
             ) : null}
-            {offerQuery.data?.webcam ? (
-              <div className="pill w-fit">
-                <i className="bx bx-webcam bx-sm" />
-                <span>{t("offer.webcam")}</span>
-              </div>
-            ) : null}
+            {offerQuery.data?.webcam ? <OfferBadge variant="Webcam" /> : null}
           </div>
         </section>
         <section>
@@ -298,9 +297,70 @@ export function CoachOfferPage({ offerId }: Props) {
               unit={t("offer.per-day")}
             />
             <Tarif value={offerQuery.data?.travelFee} icon="bx-car" unit="" />
+            {condensed ? null : (
+              <button
+                className="btn btn-primary btn-block col-span-2 mt-8"
+                onClick={() => router.back()}
+              >
+                {t("offer.back-to-my-page")}
+              </button>
+            )}
           </div>
         </div>
       </div>
+    </div>
+  );
+}
+
+type OfferBadgeProps = {
+  variant: "My-Place" | "In-House" | "Public-Place" | "Webcam";
+  publicName?: string | null;
+  searchAddress?: string | null;
+  travelLimit?: number | null;
+};
+
+export function OfferBadge({
+  variant,
+  publicName,
+  searchAddress,
+  travelLimit,
+}: OfferBadgeProps) {
+  const { t } = useTranslation("coach");
+  let icon = "";
+  let name = "";
+  const restriction = travelLimit
+    ? t("offer.in-limit", {
+        limit: travelLimit,
+        address: searchAddress,
+      })
+    : "";
+
+  if (variant === "My-Place") {
+    icon = "bx-map-pin";
+    name = `${t("offer.home", {
+      name: publicName,
+    })} : ${searchAddress}`;
+  }
+  if (variant === "In-House") {
+    icon = "bx-home";
+    name = t("offer.your-place");
+  }
+  if (variant === "Public-Place") {
+    icon = "bx-map-alt";
+    name = t("offer.public-place");
+  }
+  if (variant === "Webcam") {
+    icon = "bx-webcam";
+    name = t("offer.webcam");
+  }
+
+  return (
+    <div className="pill w-fit">
+      {icon ? <i className={`bx ${icon} bx-sm`} /> : null}
+      <span>{name}</span>
+      {restriction ? (
+        <span className="text-sm text-secondary">{restriction}</span>
+      ) : null}
     </div>
   );
 }

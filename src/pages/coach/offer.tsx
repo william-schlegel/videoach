@@ -66,7 +66,7 @@ function CoachOffer({
                   }`}
                 >
                   <span>{offer.name}</span>
-                  <span className="badge-secondary badge">
+                  <span className="badge badge-secondary">
                     {getName(offer.target)}
                   </span>
                 </Link>
@@ -115,7 +115,7 @@ function OfferContent({ userId, offerId }: OfferContentProps) {
         </div>
       </div>
       <CoachOfferDisplay offerId={offerId} />
-      <CoachOfferPage offerId={offerId} />
+      <CoachOfferPage offerId={offerId} condensed />
     </div>
   );
 }

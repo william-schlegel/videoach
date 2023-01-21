@@ -87,7 +87,8 @@
     "where": "Lieux pour les cours",
     "course-description": "Description du cours",
     "home": "Chez {{name}}",
-    "in-limit": "Dans la limite de {{limit}} km autour de {{address}}"
+    "in-limit": "Dans la limite de {{limit}} km autour de {{address}}",
+    "back-to-my-page": "Retour à ma page"
   },
   "target": {
     "individual": "Particulier",

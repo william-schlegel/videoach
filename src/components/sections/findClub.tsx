@@ -2,7 +2,7 @@ import { LATITUDE, LONGITUDE } from "@lib/defaultValues";
 import { trpc } from "@trpcclient/trpc";
 import AddressSearch, { type AddressData } from "@ui/addressSearch";
 import { useTranslation } from "next-i18next";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import turfCircle from "@turf/circle";
 import Link from "next/link";
 import ButtonIcon from "@ui/buttonIcon";
@@ -35,8 +35,17 @@ function FindClub({ address = "" }: FindClubProps) {
     { enabled: false }
   );
   const [theme] = useLocalStorage<TThemes>("theme", "cupcake");
+  const mapContainerRef = useRef<HTMLDivElement | null>(null);
   const map = useMap();
   const handleSearch = () => clubSearch.refetch();
+  const handleResize = useCallback(() => {
+    if (map.current) map.current.resize();
+  }, [map]);
+
+  useEffect(() => {
+    if (mapContainerRef.current)
+      new ResizeObserver(handleResize).observe(mapContainerRef.current);
+  }, [handleResize]);
 
   useEffect(() => {
     setMyAddress({
@@ -176,10 +185,7 @@ function FindClub({ address = "" }: FindClubProps) {
         </div>
       </div>
       <div className="min-h-[30vh]">
-        <div
-          className="h-full border border-primary"
-          onResize={() => map.current?.resize()}
-        >
+        <div className="h-full border border-primary" ref={mapContainerRef}>
           <Map
             initialViewState={{ zoom: 9 }}
             style={{ width: "100%", height: "100%" }}
@@ -188,6 +194,7 @@ function FindClub({ address = "" }: FindClubProps) {
             attributionControl={false}
             longitude={myAddress.lng}
             latitude={myAddress.lat}
+            onRender={(event) => event.target.resize()}
           >
             <Source type="geojson" data={circle}>
               <Layer

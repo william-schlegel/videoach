@@ -1,6 +1,6 @@
 import { authOptions } from "@auth/[...nextauth]";
 import { isCUID } from "@lib/checkValidity";
-import { DAYS } from "@modals/manageCalendar";
+import { useDayName } from "@lib/useDayName";
 import type {
   Activity,
   ActivityGroup,
@@ -17,7 +17,6 @@ import Layout from "@root/src/components/layout";
 import { trpc } from "@trpcclient/trpc";
 import SelectDay from "@ui/selectDay";
 import Spinner from "@ui/spinner";
-import dayjs from "dayjs";
 import {
   type GetServerSidePropsContext,
   type InferGetServerSidePropsType,
@@ -40,7 +39,8 @@ const MemberDashboard = ({
 }: InferGetServerSidePropsType<typeof getServerSideProps>) => {
   const { t } = useTranslation("dashboard");
   const queryUser = trpc.users.getUserSubscriptionsById.useQuery(userId);
-  const [day, setDay] = useState(DAYS[dayjs().day()]?.value ?? "MONDAY");
+  const { getToday } = useDayName();
+  const [day, setDay] = useState(getToday());
 
   return (
     <Layout className="container mx-auto my-2 flex flex-col gap-2">

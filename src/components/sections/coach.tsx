@@ -1,15 +1,11 @@
 /* eslint-disable @next/next/no-img-element */
 import { formatSize } from "@lib/formatNumber";
 import { useWriteFile } from "@lib/useManageFile";
-import { PAGE_SECTION_LIST } from "@modals/managePage";
-import { type PageSectionModel } from "@prisma/client";
 import { trpc } from "@trpcclient/trpc";
 import ButtonIcon from "@ui/buttonIcon";
 import Spinner from "@ui/spinner";
-import { useSession } from "next-auth/react";
 import { useTranslation } from "next-i18next";
 import Image from "next/image";
-import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
 import type { SubmitHandler } from "react-hook-form";
 import { useForm, useWatch } from "react-hook-form";
@@ -22,6 +18,9 @@ import hslToHex from "@lib/hslToHex";
 import Head from "next/head";
 import { LATITUDE, LONGITUDE } from "@lib/defaultValues";
 import { isCUID } from "@lib/checkValidity";
+import type { CoachingLevel, CoachingPrice } from "@prisma/client";
+import Link from "next/link";
+import { OfferBadge } from "./coachOffer";
 
 type CoachCreationProps = {
   userId: string;
@@ -32,8 +31,6 @@ type CoachCreationForm = {
   images?: FileList;
   subtitle: string;
   description: string;
-  cta: string;
-  pageSection: PageSectionModel;
   withCertifications: boolean;
   withActivities: boolean;
 };
@@ -42,7 +39,7 @@ const MAX_SIZE = 1024 * 1024;
 
 export const CoachCreation = ({ userId, pageId }: CoachCreationProps) => {
   const { t } = useTranslation("pages");
-  const { register, handleSubmit, getValues, control, setValue, reset } =
+  const { register, handleSubmit, control, setValue, reset } =
     useForm<CoachCreationForm>();
   const [imagePreview, setImagePreview] = useState("");
   const queryCoach = trpc.users.getUserById.useQuery(userId);
@@ -50,7 +47,6 @@ export const CoachCreation = ({ userId, pageId }: CoachCreationProps) => {
   const fields = useWatch({ control });
   const utils = trpc.useContext();
   const [previewTheme, setPreviewTheme] = useState<TThemes>("cupcake");
-  const { data: sessionData } = useSession();
   const updatePageStyle = trpc.pages.updatePageStyleForCoach.useMutation({
     onSuccess() {
       toast.success(t("style-saved") as string);
@@ -66,7 +62,6 @@ export const CoachCreation = ({ userId, pageId }: CoachCreationProps) => {
         if (!data) return;
 
         const hc = data?.elements.find((e) => e.elementType === "HERO_CONTENT");
-        const cta = data?.elements.find((e) => e.elementType === "CTA");
         const options = data?.elements.filter(
           (e) => e.elementType === "OPTION"
         );
@@ -78,9 +73,7 @@ export const CoachCreation = ({ userId, pageId }: CoachCreationProps) => {
           setImagePreview(url);
         }
         const resetData: CoachCreationForm = {
-          cta: cta?.title ?? "",
           description: hc?.content ?? "",
-          pageSection: cta?.pageSection ?? "HERO",
           subtitle: hc?.subTitle ?? "",
           withActivities:
             options.find((o) => o.title === "activities")?.optionValue ===
@@ -98,16 +91,6 @@ export const CoachCreation = ({ userId, pageId }: CoachCreationProps) => {
     "PAGE_IMAGE",
     MAX_SIZE
   );
-  const deleteSectionElement = trpc.pages.deletePageSectionElement.useMutation({
-    onSuccess(data) {
-      Promise.all(
-        data.images.map((doc) =>
-          deleteUserDocument.mutate({ userId: doc.userId, documentId: doc.id })
-        )
-      );
-    },
-  });
-
   const createSectionElement =
     trpc.pages.createPageSectionElement.useMutation();
   const updateSectionElement = trpc.pages.updatePageSectionElement.useMutation({
@@ -129,9 +112,6 @@ export const CoachCreation = ({ userId, pageId }: CoachCreationProps) => {
       toast.error("error hc");
       return;
     }
-    const cta = querySection?.data?.elements.find(
-      (e) => e.elementType === "CTA"
-    );
     const optionActivities = querySection?.data?.elements.find(
       (e) => e.elementType === "OPTION" && e.title === "activities"
     );
@@ -178,25 +158,6 @@ export const CoachCreation = ({ userId, pageId }: CoachCreationProps) => {
         title: "activities",
         optionValue: data.withActivities ? "yes" : "no",
       });
-    }
-    if (data.cta) {
-      if (cta) {
-        await updateSectionElement.mutateAsync({
-          id: cta.id,
-          title: data.cta,
-          pageSection: data.pageSection,
-        });
-      } else {
-        if (querySection.data?.id)
-          await createSectionElement.mutateAsync({
-            elementType: "CTA",
-            sectionId: querySection.data.id,
-            title: data.cta,
-            pageSection: data.pageSection,
-          });
-      }
-    } else if (cta) {
-      await deleteSectionElement.mutateAsync(cta.id);
     }
   };
 
@@ -277,49 +238,37 @@ export const CoachCreation = ({ userId, pageId }: CoachCreationProps) => {
           />
           <label>{t("description")}</label>
           <textarea {...register("description")} rows={4} />
-          <label>{t("button-cta")}</label>
-          <input
-            {...register("cta")}
-            type="text"
-            className="input-bordered input w-full"
-          />
-          {fields.cta ? (
-            <>
-              <label>{t("linked-section")}</label>
-              <select
-                defaultValue={getValues("pageSection")}
-                {...register("pageSection")}
-              >
-                {PAGE_SECTION_LIST.map((sec) => (
-                  <option key={sec.value} value={sec.value}>
-                    {t(sec.label)}
-                  </option>
-                ))}
-              </select>
-            </>
-          ) : null}
           <div className="form-control col-span-2">
-            <label className="label cursor-pointer justify-start gap-4">
+            <div className="label cursor-pointer justify-start gap-4">
               <input
                 type="checkbox"
                 className="checkbox-primary checkbox"
                 {...register("withCertifications")}
               />
-              <span className="label-text">{t("with-certifications")}</span>
-            </label>
+              <label className="label-text">{t("with-certifications")}</label>
+              <span
+                className="tooltip"
+                data-tip={t("certifications-from-dashboard")}
+              >
+                <i className="bx bx-info-circle bx-xs" />
+              </span>
+            </div>
           </div>
           <div className="form-control col-span-2">
-            <label className="label cursor-pointer justify-start gap-4">
+            <div className="label cursor-pointer justify-start gap-4">
               <input
                 type="checkbox"
                 className="checkbox-primary checkbox"
                 {...register("withActivities")}
               />
-              <span className="label-text">{t("with-activities")}</span>
-            </label>
+              <label className="label-text">{t("with-activities")}</label>
+              <span className="tooltip" data-tip={t("activities-in-profile")}>
+                <i className="bx bx-info-circle bx-xs" />
+              </span>
+            </div>
           </div>
           <div className="col-span-2 flex justify-between">
-            <button className="btn-primary btn" type="submit">
+            <button className="btn btn-primary" type="submit">
               {t("save-section")}
             </button>
           </div>
@@ -337,12 +286,11 @@ export const CoachCreation = ({ userId, pageId }: CoachCreationProps) => {
           <div data-theme={previewTheme} className="pt-4">
             <PhotoSection
               imageSrc={imagePreview}
-              userName={sessionData?.user?.name}
+              userName={queryCoach.data?.coachData?.publicName}
               info={fields.subtitle}
               description={fields.description}
               email={queryCoach.data?.email}
               phone={queryCoach.data?.phone}
-              cta={fields.cta}
               preview
             />
             <CertificationsAndActivities
@@ -350,6 +298,14 @@ export const CoachCreation = ({ userId, pageId }: CoachCreationProps) => {
               withCertifications={!!fields.withCertifications}
               certifications={queryCoachData.data?.certifications ?? []}
               activities={queryCoachData.data?.activities ?? []}
+              preview
+            />
+            <CoachOffers
+              offers={queryCoachData.data?.offers ?? []}
+              coachData={{
+                publicName: queryCoach.data?.coachData?.publicName,
+                searchAddress: queryCoach.data?.coachData?.searchAddress,
+              }}
               preview
             />
             <MapSection
@@ -392,9 +348,6 @@ export const CoachDisplay = ({ pageId }: CoachDisplayProps) => {
   if (queryPage.isLoading) return <Spinner />;
   if (!queryPage.data) return <div>No page defined for this coach</div>;
 
-  const cta = pageData?.coachData?.page?.sections
-    .find((s) => s.model === "HERO")
-    ?.elements.find((e) => e.elementType === "CTA");
   const options = new Map(
     pageData?.coachData?.page?.sections
       .find((s) => s.model === "HERO")
@@ -429,14 +382,19 @@ export const CoachDisplay = ({ pageId }: CoachDisplayProps) => {
         description={hero?.content}
         email={pageData?.email}
         phone={pageData?.phone}
-        cta={cta?.title}
-        ctaSection={cta?.pageSection}
       />
       <CertificationsAndActivities
         withActivities={options.get("activities") === "yes"}
         withCertifications={options.get("certifications") === "yes"}
         certifications={ca.certifications}
         activities={ca.activities}
+      />
+      <CoachOffers
+        offers={pageData?.coachData?.coachingPrices ?? []}
+        coachData={{
+          publicName: pageData?.coachData?.publicName,
+          searchAddress: pageData?.coachData?.searchAddress,
+        }}
       />
       <MapSection
         longitude={
@@ -463,8 +421,6 @@ type PhotoSectionProps = {
   email?: string | null;
   info?: string | null;
   description?: string | null;
-  cta?: string | null;
-  ctaSection?: string | null;
   preview?: boolean;
 };
 
@@ -473,17 +429,14 @@ function PhotoSection({
   userName,
   info,
   description,
-  cta,
-  ctaSection,
   preview = false,
   email,
   phone,
 }: PhotoSectionProps) {
-  const router = useRouter();
   const { t } = useTranslation("pages");
 
   return (
-    <div
+    <section
       className={`grid grid-cols-2 place-content-center ${
         preview ? "gap-6" : "gap-16"
       } p-10`}
@@ -492,10 +445,10 @@ function PhotoSection({
         {imageSrc ? (
           <Image
             src={imageSrc}
-            width={preview ? 300 : 600}
-            height={preview ? 300 : 600}
+            width={preview ? 250 : 600}
+            height={preview ? 250 : 600}
             alt={userName ?? "photo"}
-            className="w-[clamp(300px,40vw,600px)] rounded-md shadow-md"
+            className="w-[clamp(250px,40vw,600px)] rounded-md shadow-md"
           />
         ) : null}
       </div>
@@ -524,12 +477,12 @@ function PhotoSection({
             href={`mailto:${email}`}
             target="_blank"
             rel="noreferrer"
-            className={`btn-primary btn-block btn my-4 ${
-              preview ? "btn-sm" : "btn-lg"
+            className={`btn btn-primary btn-block ${
+              preview ? "btn-sm my-2 text-xs" : "btn-lg my-4 text-base"
             } gap-4`}
           >
             {t("contact-me-email")}
-            <i className={`bx bx-envelope ${preview ? "bx-sm" : "bx-lg"}`} />
+            <i className={`bx bx-envelope ${preview ? "bx-xs" : "bx-lg"}`} />
           </a>
         ) : null}
         {phone ? (
@@ -537,26 +490,16 @@ function PhotoSection({
             href={`tel:${phone}`}
             target="_blank"
             rel="noreferrer"
-            className={`btn-outline btn-secondary btn-block btn my-4 ${
-              preview ? "btn-sm" : "btn-lg"
+            className={`btn-outline btn btn-secondary btn-block ${
+              preview ? "btn-sm my-2 text-xs" : "btn-lg my-4 text-base"
             } gap-4`}
           >
             {t("contact-me-phone")}
-            <i className={`bx bx-phone ${preview ? "bx-sm" : "bx-lg"}`} />
+            <i className={`bx bx-phone ${preview ? "bx-xs" : "bx-lg"}`} />
           </a>
         ) : null}
-        {cta && (
-          <button
-            className="btn-primary btn-sm btn w-fit normal-case"
-            onClick={() => {
-              if (ctaSection) router.push(`/#${ctaSection}`);
-            }}
-          >
-            {cta}
-          </button>
-        )}
       </div>
-    </div>
+    </section>
   );
 }
 
@@ -577,10 +520,10 @@ function CertificationsAndActivities({
 }: CertificationsAndActivitiesProps) {
   const { t } = useTranslation("pages");
   return (
-    <div
+    <section
       className={`grid ${
         withActivities && withCertifications ? "grid-cols-2" : "grid-cols-1"
-      } ${preview ? "gap-6" : "gap-16"} mx-auto w-fit px-10`}
+      } ${preview ? "gap-6 pb-4" : "gap-16 pb-12"} mx-auto w-fit px-10`}
     >
       {withCertifications ? (
         <div>
@@ -622,7 +565,7 @@ function CertificationsAndActivities({
           </div>
         </div>
       ) : null}
-    </div>
+    </section>
   );
 }
 
@@ -653,7 +596,7 @@ function MapSection({
   });
 
   return (
-    <div className={`${preview ? "mt-8" : "mt-24"} w-full bg-base-200`}>
+    <section className={`${preview ? "pt-4" : "pt-24"} w-full bg-base-200`}>
       <div className={`mx-auto max-w-4xl ${preview ? "p-8" : "p-24"}`}>
         <h2
           className={`w-full text-center ${
@@ -698,6 +641,87 @@ function MapSection({
           </MapComponent>
         </div>
       </div>
-    </div>
+    </section>
+  );
+}
+
+type CoachOffersProps = {
+  offers: (CoachingPrice & {
+    coachingLevel: CoachingLevel[];
+  })[];
+  preview?: boolean;
+  coachData: { publicName?: string | null; searchAddress?: string | null };
+};
+
+function CoachOffers({ offers, preview, coachData }: CoachOffersProps) {
+  const { t } = useTranslation("pages");
+  if (!offers.length) return null;
+  return (
+    <section className={`${preview ? "py-4" : "py-12"} w-full bg-base-200`}>
+      <div className={`container mx-auto ${preview ? "py-2 px-8" : "p-8"}`}>
+        <h3>{t("coach-offers")}</h3>
+        <div className="flex flex-wrap gap-2">
+          {offers.map((offer) => (
+            <article
+              key={offer.id}
+              className="card flex-1 bg-base-100 p-4 shadow-xl"
+            >
+              <div className={`card-body ${preview ? "p-0" : ""}`}>
+                <h2 className={`card-title ${preview ? "text-base" : ""}`}>
+                  {offer.name}
+                </h2>
+                {offer?.physical && offer?.myPlace && !preview ? (
+                  <OfferBadge
+                    variant="My-Place"
+                    publicName={coachData.publicName}
+                    searchAddress={coachData.searchAddress}
+                  />
+                ) : null}
+                {offer?.physical && offer?.inHouse && !preview ? (
+                  <OfferBadge
+                    variant="In-House"
+                    travelLimit={offer.travelLimit}
+                    searchAddress={coachData.searchAddress}
+                  />
+                ) : null}
+                {offer?.physical && offer?.publicPlace && !preview ? (
+                  <OfferBadge
+                    variant="Public-Place"
+                    travelLimit={offer.travelLimit}
+                    searchAddress={coachData.searchAddress}
+                  />
+                ) : null}
+                {offer?.webcam && !preview ? (
+                  <OfferBadge variant="Webcam" />
+                ) : null}
+                <p
+                  className={
+                    preview
+                      ? "max-h-10 overflow-hidden text-ellipsis text-xs"
+                      : "text-base"
+                  }
+                >
+                  {offer.description}
+                </p>
+                <div className="card-actions mt-auto justify-end">
+                  {preview ? (
+                    <button className="btn btn-primary btn-sm">
+                      {t("offer-details")}
+                    </button>
+                  ) : (
+                    <Link
+                      className="btn btn-primary"
+                      href={`/presentation-page/offer/${offer.id}`}
+                    >
+                      {t("offer-details")}
+                    </Link>
+                  )}
+                </div>
+              </div>
+            </article>
+          ))}
+        </div>
+      </div>
+    </section>
   );
 }

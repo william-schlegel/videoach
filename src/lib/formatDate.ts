@@ -1,22 +1,14 @@
-import dayjs from "dayjs";
-import "dayjs/locale/fr";
-import localizedFormat from "dayjs/plugin/localizedFormat";
-
-dayjs.extend(localizedFormat);
-
-dayjs.locale("fr");
+import { intervalToDuration, startOfToday, format } from "date-fns";
+import { fr, enUS } from "date-fns/locale";
+import { i18n } from "next-i18next";
 
 /**
  * Convert a date to a compatible format fo date input
  * @param dt date to covert (default = now)
  * @returns date formated as YYYY-MM-DD
  */
-export const formatDateAsYYYYMMDD = (dt: Date = new Date(Date.now())) => {
-  const y = dt.getFullYear();
-  const m = dt.getMonth() + 1;
-  const d = dt.getDate();
-
-  return `${y}-${`0${m}`.slice(-2)}-${`0${d}`.slice(-2)}`;
+export const formatDateAsYYYYMMDD = (dt: Date = startOfToday()) => {
+  return format(dt, "yyyy-MM-dd");
 };
 
 /**
@@ -25,13 +17,16 @@ export const formatDateAsYYYYMMDD = (dt: Date = new Date(Date.now())) => {
  * @returns nimber of days since the start date
  */
 export const remainingDays = (startDate: Date) => {
-  const days = dayjs(startDate).diff(undefined, "days");
+  const days =
+    intervalToDuration({ start: startDate, end: startOfToday() }).days ?? 0;
   return Math.max(days, 0);
 };
 
 export const formatDateLocalized = (
-  dt: Date | null = new Date(Date.now()),
+  dt: Date | null | undefined,
   withTime = false
 ) => {
-  return dayjs(dt).format(`L${withTime ? " LT" : ""}`);
+  return format(dt ?? startOfToday(), withTime ? "Pp" : "P", {
+    locale: i18n?.language === "en" ? enUS : fr,
+  });
 };

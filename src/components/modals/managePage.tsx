@@ -23,29 +23,30 @@ export const PAGE_TARGET_LIST: readonly {
   readonly value: PageTarget;
   readonly label: string;
 }[] = [
-  { value: "HOME", label: "home" },
-  { value: "ACTIVITIES", label: "activities" },
-  { value: "ACTIVITY", label: "activity" },
-  { value: "CONTACT", label: "contact" },
-  { value: "PLANS", label: "plans" },
-  { value: "PRESENTATION", label: "presentation" },
-  { value: "TEAM", label: "team" },
-  { value: "PLANNING", label: "planning" },
-  { value: "VIDEOS", label: "videos" },
+  { value: "HOME", label: "target.home" },
+  { value: "OFFERS", label: "target.offers" },
+  { value: "ACTIVITIES", label: "target.activities" },
+  { value: "ACTIVITY", label: "target.activity" },
+  { value: "CONTACT", label: "target.contact" },
+  { value: "PLANS", label: "target.plans" },
+  { value: "PRESENTATION", label: "target.presentation" },
+  { value: "TEAM", label: "target.team" },
+  { value: "PLANNING", label: "target.planning" },
+  { value: "VIDEOS", label: "target.videos" },
 ] as const;
 
 export const PAGE_SECTION_LIST: readonly {
   readonly value: PageSectionModel;
   readonly label: string;
 }[] = [
-  { value: "HERO", label: "hero" },
-  { value: "ACTIVITY_GROUPS", label: "activity-groups" },
-  { value: "ACTIVITIES", label: "activity-details" },
-  { value: "LOCATION", label: "location" },
-  { value: "CONTACT", label: "contact" },
-  { value: "SOCIAL", label: "social" },
-  { value: "FEATURES", label: "features" },
-  { value: "FOOTER", label: "footer" },
+  { value: "HERO", label: "section.hero" },
+  { value: "ACTIVITY_GROUPS", label: "section.activity-groups" },
+  { value: "ACTIVITIES", label: "section.activity-details" },
+  { value: "LOCATION", label: "section.location" },
+  { value: "CONTACT", label: "section.contact" },
+  { value: "SOCIAL", label: "section.social" },
+  { value: "FEATURES", label: "section.features" },
+  { value: "FOOTER", label: "section.footer" },
 ] as const;
 
 type CreatePageFormValues = {

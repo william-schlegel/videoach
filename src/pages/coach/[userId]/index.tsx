@@ -1,11 +1,12 @@
 import { authOptions } from "@auth/[...nextauth]";
-import { DAYS } from "@modals/manageCalendar";
+import { useDayName } from "@lib/useDayName";
+import type { DayName } from "@prisma/client";
 import { Role } from "@prisma/client";
 import nextI18nConfig from "@root/next-i18next.config.mjs";
 import Layout from "@root/src/components/layout";
 import { trpc } from "@trpcclient/trpc";
+import SelectDay from "@ui/selectDay";
 import Spinner from "@ui/spinner";
-import dayjs from "dayjs";
 import {
   type GetServerSidePropsContext,
   type InferGetServerSidePropsType,
@@ -14,10 +15,14 @@ import { unstable_getServerSession } from "next-auth";
 import { useTranslation } from "next-i18next";
 import { serverSideTranslations } from "next-i18next/serverSideTranslations";
 import Link from "next/link";
+import { useState } from "react";
 
 const CoachDashboard = ({
   userId,
 }: InferGetServerSidePropsType<typeof getServerSideProps>) => {
+  const { getToday } = useDayName();
+  const [day, setDay] = useState(getToday());
+
   const coachQuery = trpc.dashboards.getCoachDataForUserId.useQuery(userId);
   const { t } = useTranslation("dashboard");
   const clubCount = coachQuery.data?.coachData?.clubs?.length ?? 0;
@@ -95,8 +100,11 @@ const CoachDashboard = ({
       </section>
       <section className="grid grid-cols-2 gap-2">
         <article className="rounded-md border border-primary p-2">
-          <h2>{t("planning")}</h2>
-          <DailyPlanning coachId={userId} />
+          <div className="flex items-center justify-between">
+            <h2>{t("planning")}</h2>
+            <SelectDay day={day} onNewDay={(nd) => setDay(nd)} />
+          </div>
+          <DailyPlanning coachId={userId} day={day} />
         </article>
         <article className="rounded-md border border-primary p-2">
           <h2>{t("schedule")}</h2>
@@ -111,9 +119,8 @@ const CoachDashboard = ({
 
 export default CoachDashboard;
 
-function DailyPlanning({ coachId }: { coachId: string }) {
+function DailyPlanning({ coachId, day }: { coachId: string; day: DayName }) {
   const { t } = useTranslation("dashboard");
-  const day = DAYS[dayjs().day()]?.value ?? "MONDAY";
   const planning = trpc.plannings.getCoachDailyPlanning.useQuery({
     coachId,
     day,
@@ -170,7 +177,7 @@ export const getServerSideProps = async ({
     props: {
       ...(await serverSideTranslations(
         locale ?? "fr",
-        ["common", "dashboard", "pages"],
+        ["common", "dashboard", "pages", "calendar"],
         nextI18nConfig
       )),
       userId: session?.user?.id || "",

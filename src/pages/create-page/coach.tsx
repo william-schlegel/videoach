@@ -101,7 +101,7 @@ export const getServerSideProps = async ({
     props: {
       ...(await serverSideTranslations(
         locale ?? "fr",
-        ["common", "pages"],
+        ["common", "pages", "coach"],
         nextI18nConfig
       )),
       userId: session?.user?.id || "",

@@ -13,7 +13,7 @@ import { toast } from "react-toastify";
 import Layout from "@root/src/components/layout";
 import { env } from "@root/src/env/client.mjs";
 import AddressSearch from "@ui/addressSearch";
-import { Layer, Map as MapComponent, Source } from "react-map-gl";
+import { Layer, Map as MapComponent, Marker, Source } from "react-map-gl";
 import turfCircle from "@turf/circle";
 import { useMemo, useState } from "react";
 import useLocalStorage from "@lib/useLocalstorage";
@@ -339,6 +339,13 @@ export default function Profile() {
                       }}
                     />
                   </Source>
+                  <Marker
+                    anchor="bottom"
+                    longitude={fields.longitude}
+                    latitude={fields.latitude}
+                  >
+                    <i className="bx bxs-map bx-sm text-secondary" />
+                  </Marker>
                 </MapComponent>
               </div>
             </div>
@@ -402,7 +409,7 @@ export default function Profile() {
                   </div>
                   <div className="flex-none">
                     <button
-                      className="btn-outline btn btn-secondary btn-xs"
+                      className="btn-outline btn-secondary btn-xs btn"
                       type="button"
                       onClick={() => setCancelationDate(undefined)}
                     >
@@ -430,7 +437,7 @@ export default function Profile() {
           </div>
         </section>
         <button
-          className="btn btn-primary col-span-2 w-fit"
+          className="btn-primary btn col-span-2 w-fit"
           disabled={updateUser.isLoading}
         >
           {t("save-profile")}

@@ -1,11 +1,10 @@
 import { authOptions } from "@auth/[...nextauth]";
-import { DAYS } from "@modals/manageCalendar";
+import { useDayName } from "@lib/useDayName";
 import { Role } from "@prisma/client";
 import nextI18nConfig from "@root/next-i18next.config.mjs";
 import Layout from "@root/src/components/layout";
 import { trpc } from "@trpcclient/trpc";
 import Spinner from "@ui/spinner";
-import dayjs from "dayjs";
 import {
   type GetServerSidePropsContext,
   type InferGetServerSidePropsType,
@@ -152,7 +151,8 @@ export default ManagerClubs;
 
 function DailyPlanning({ clubId }: { clubId: string }) {
   const { t } = useTranslation("dashboard");
-  const day = DAYS[dayjs().day()]?.value ?? "MONDAY";
+  const { getToday } = useDayName();
+  const day = getToday();
   const planning = trpc.plannings.getClubDailyPlanning.useQuery({
     clubId,
     day,
