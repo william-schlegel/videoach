@@ -195,7 +195,7 @@ export function CoachOfferPage({ offerId, condensed }: CoachOfferPageProps) {
       <div className={condensed ? undefined : "space-y-8"}>
         <section className={`flex ${condensed ? "gap-2" : "gap-8 "}`}>
           {offerQuery.data?.coach?.coachingActivities.map((activity) => (
-            <span className="pill" key={activity.id}>
+            <span className="pill px-4" key={activity.id}>
               {activity.name}
             </span>
           ))}
@@ -242,7 +242,7 @@ export function CoachOfferPage({ offerId, condensed }: CoachOfferPageProps) {
         </section>
         <section>
           <h3>{t("offer.course-description")}</h3>
-          <div className="pill w-fit">
+          <div className="pill w-fit px-4">
             <i className="bx bx-rocket bx-sm" />
             {t("offer.levels")}
             {" : "}
@@ -254,6 +254,21 @@ export function CoachOfferPage({ offerId, condensed }: CoachOfferPageProps) {
           </div>
           <p className="my-4">{offerQuery.data?.coach?.aboutMe}</p>
         </section>
+        {offerQuery.data?.packs?.length ? (
+          <section>
+            <h3>{t("offer.packs")}</h3>
+            <div className="flex flex-wrap gap-4">
+              {offerQuery.data.packs.map((pack) => (
+                <div key={pack.id} className="pill px-4">
+                  <span className="font-semibold text-primary">
+                    {pack.nbHours}h
+                  </span>
+                  <span>{formatMoney(pack.packPrice)}</span>
+                </div>
+              ))}
+            </div>
+          </section>
+        ) : null}
       </div>
       <div className="card w-full place-self-start bg-base-100 shadow-xl max-xl:card-side">
         <figure
@@ -275,7 +290,7 @@ export function CoachOfferPage({ offerId, condensed }: CoachOfferPageProps) {
             note={offerQuery.data?.coach?.rating ?? 5}
             className="justify-center"
           />
-          <div className="grid grid-cols-[auto_1fr] items-center gap-x-2">
+          <div className="space-y-2">
             <Tarif
               value={offerQuery.data?.perHourPhysical}
               icon="bx-user"
@@ -297,6 +312,14 @@ export function CoachOfferPage({ offerId, condensed }: CoachOfferPageProps) {
               unit={t("offer.per-day")}
             />
             <Tarif value={offerQuery.data?.travelFee} icon="bx-car" unit="" />
+            <Tarif
+              value={offerQuery.data?.freeHours}
+              icon="bx-gift"
+              unit={"h"}
+              money={false}
+              className="rounded bg-primary/10 outline outline-primary"
+              label={t("offer.free-hours")}
+            />
             {condensed ? null : (
               <button
                 className="btn btn-primary btn-block col-span-2 mt-8"
@@ -355,7 +378,7 @@ export function OfferBadge({
   }
 
   return (
-    <div className="pill w-fit">
+    <div className="pill w-fit px-4">
       {icon ? <i className={`bx ${icon} bx-sm`} /> : null}
       <span>{name}</span>
       {restriction ? (
@@ -365,19 +388,34 @@ export function OfferBadge({
   );
 }
 
-type TarifProps = { value: number | undefined; icon: string; unit: string };
+type TarifProps = {
+  value: number | undefined;
+  icon: string;
+  unit: string;
+  money?: boolean;
+  className?: string;
+  label?: string;
+};
 
-function Tarif({ value, icon, unit }: TarifProps) {
+function Tarif({
+  value,
+  icon,
+  unit,
+  money = true,
+  className = "",
+  label = "",
+}: TarifProps) {
   if (!value) return null;
   return (
-    <>
+    <div className={`flex items-center gap-4 ${className}`}>
       <label>
         <i className={`bx ${icon} bx-sm mr-2`} />
       </label>
+      {label ? <span>{label}</span> : null}
       <span>
-        {formatMoney(value)}
+        {money ? formatMoney(value) : value.toFixed(0)}
         {unit}
       </span>
-    </>
+    </div>
   );
 }

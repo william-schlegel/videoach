@@ -1,4 +1,9 @@
-import { type Pricing, Role, type PricingOption } from "@prisma/client";
+import {
+  type Pricing,
+  Role,
+  type PricingOption,
+  type PricingFeature,
+} from "@prisma/client";
 import { useRouter } from "next/router";
 import { trpc } from "../../utils/trpc";
 import { useForm, useWatch, type SubmitHandler } from "react-hook-form";
@@ -6,7 +11,6 @@ import type { GetServerSidePropsContext } from "next";
 import { useTranslation } from "next-i18next";
 import { serverSideTranslations } from "next-i18next/serverSideTranslations";
 import nextI18nConfig from "@root/next-i18next.config.mjs";
-import { Pricing as PricingCard, PricingContainer } from "@ui/pricing";
 import { formatDateAsYYYYMMDD, remainingDays } from "@lib/formatDate";
 import Confirmation from "@ui/confirmation";
 import { toast } from "react-toastify";
@@ -23,6 +27,7 @@ import { LATITUDE, LONGITUDE } from "@lib/defaultValues";
 import { isCUID } from "@lib/checkValidity";
 import Modal from "@ui/modal";
 import { formatMoney } from "@lib/formatNumber";
+import { SubscriptionForm } from "@modals/manageUser";
 
 export const ROLE_LIST = [
   { label: "user", value: Role.MEMBER },
@@ -57,13 +62,9 @@ export default function Profile() {
   const { userId } = router.query;
   const [theme] = useLocalStorage<TThemes>("theme", "cupcake");
   const myUserId = (Array.isArray(userId) ? userId[0] : userId) || "";
-  const [pricingId, setPricingId] = useState<string | undefined>(undefined);
-  const [monthlyPayment, setMonthlyPayment] = useState<boolean | undefined>(
-    undefined
-  );
-  const [cancelationDate, setCancelationDate] = useState<string | undefined>(
-    undefined
-  );
+  const [pricingId, setPricingId] = useState("");
+  const [monthlyPayment, setMonthlyPayment] = useState(false);
+  const [cancelationDate, setCancelationDate] = useState("");
   const [newActivity, setNewActivity] = useState("");
 
   const userQuery = trpc.users.getUserById.useQuery(myUserId, {
@@ -105,9 +106,14 @@ export default function Profile() {
     },
   });
 
-  const pricingQuery = trpc.pricings.getPricingForRole.useQuery(
-    fields.role ?? "MEMBER"
+  const pricingQuery = trpc.pricings.getPricingById.useQuery(
+    userQuery.data?.pricingId ?? "",
+    { enabled: isCUID(userQuery.data?.pricingId) }
   );
+
+  const newPricing = trpc.pricings.getPricingById.useQuery(pricingId, {
+    enabled: isCUID(pricingId),
+  });
 
   const utils = trpc.useContext();
   const updateUser = trpc.users.updateUser.useMutation({
@@ -129,9 +135,9 @@ export default function Profile() {
       monthlyPayment,
       cancelationDate: cancelationDate ? new Date(cancelationDate) : undefined,
     });
-    setCancelationDate(undefined);
-    setMonthlyPayment(undefined);
-    setPricingId(undefined);
+    setCancelationDate("");
+    setMonthlyPayment(false);
+    setPricingId("");
   };
 
   const circle = useMemo(() => {
@@ -361,7 +367,7 @@ export default function Profile() {
                   <div className="flex gap-2">
                     <div className="rounded bg-primary px-4 py-2 text-primary-content">
                       <PlanDetails
-                        monthlyPayment={userQuery.data.monthlyPayment}
+                        monthlyPayment={userQuery.data.monthlyPayment ?? true}
                         pricing={userQuery.data.pricing}
                       />
                     </div>
@@ -389,15 +395,12 @@ export default function Profile() {
                 <div className="flex flex-1 flex-col border-2 border-warning p-2">
                   <h4>{t("new-plan")}</h4>
                   <div className="rounded bg-warning px-4 py-2 text-center text-warning-content">
-                    <PlanDetails
-                      monthlyPayment={
-                        monthlyPayment ?? userQuery.data?.monthlyPayment ?? true
-                      }
-                      pricing={
-                        pricingQuery.data?.find((p) => p.id === pricingId) ??
-                        null
-                      }
-                    />
+                    {newPricing.data ? (
+                      <PlanDetails
+                        monthlyPayment={monthlyPayment}
+                        pricing={newPricing.data}
+                      />
+                    ) : null}
                   </div>
                 </div>
               ) : null}
@@ -409,35 +412,28 @@ export default function Profile() {
                   </div>
                   <div className="flex-none">
                     <button
-                      className="btn-outline btn-secondary btn-xs btn"
+                      className="btn-outline btn btn-secondary btn-xs"
                       type="button"
-                      onClick={() => setCancelationDate(undefined)}
+                      onClick={() => setCancelationDate("")}
                     >
                       <i className="bx bx-x bx-xs" />
                     </button>
                   </div>
                 </div>
               ) : null}
+              <SubscriptionForm
+                role={fields.role ?? userQuery.data?.role ?? "MEMBER"}
+                subscriptionId={userQuery.data?.pricingId ?? pricingId}
+                onNewPlan={(newPId, monthly) => {
+                  setPricingId(newPId);
+                  setMonthlyPayment(monthly);
+                }}
+              />
             </div>
-            <label className="self-start">{t("select-plan")}</label>
-            <PricingContainer compact>
-              {pricingQuery.data?.map((pricing) => (
-                <PricingCard
-                  key={pricing.id}
-                  pricingId={pricing.id}
-                  onSelect={(id, monthly) => {
-                    setPricingId(id);
-                    setMonthlyPayment(monthly);
-                  }}
-                  compact
-                  forceHighlight={pricing.id === userQuery.data?.pricingId}
-                />
-              ))}
-            </PricingContainer>
           </div>
         </section>
         <button
-          className="btn-primary btn col-span-2 w-fit"
+          className="btn btn-primary col-span-2 w-fit"
           disabled={updateUser.isLoading}
         >
           {t("save-profile")}
@@ -449,7 +445,10 @@ export default function Profile() {
 
 type PlanDetailsProps = {
   monthlyPayment: boolean;
-  pricing: Pricing | (Pricing & { options: PricingOption[] }) | null;
+  pricing:
+    | Pricing
+    | (Pricing & { options: PricingOption[]; features: PricingFeature[] })
+    | null;
 };
 
 function PlanDetails({ monthlyPayment, pricing }: PlanDetailsProps) {

@@ -344,10 +344,16 @@ model CoachingPrice {
   @@index([coachId])
 }
 
+enum PackMode {
+  PHYSICAL
+  WEBCAM
+}
+
 model CoachingPricePack {
   id              String        @id @default(cuid())
   nbHours         Int           @default(1)
   packPrice       Float         @default(0)
+  mode            PackMode      @default(PHYSICAL)
   coachingPriceId String
   coachingPrice   CoachingPrice @relation(fields: [coachingPriceId], references: [id], onDelete: Cascade)
 
@@ -447,17 +453,33 @@ model OpeningTime {
 
 // ----------------------------------------------------------------------------------------------
 
+enum Feature {
+  COACH_OFFER
+  COACH_OFFER_COMPANY
+  COACH_CERTIFICATION
+  COACH_MEETING
+  COACH_MARKET_PLACE
+  MANAGER_ROOM
+  MANAGER_EVENT
+  MANAGER_PLANNING
+  MANAGER_COACH
+  MANAGER_MARKET_PLACE
+  MANAGER_SHOP
+  MANAGER_EMPLOYEES
+}
+
 model Pricing {
-  id           String          @id @default(cuid())
+  id           String           @id @default(cuid())
   roleTarget   Role
   title        String
-  description  String          @db.Text
-  free         Boolean?        @default(false)
-  highlighted  Boolean?        @default(false)
-  monthly      Float?          @default(0)
-  yearly       Float?          @default(0)
+  description  String           @db.Text
+  free         Boolean?         @default(false)
+  highlighted  Boolean?         @default(false)
+  monthly      Float?           @default(0)
+  yearly       Float?           @default(0)
   options      PricingOption[]
-  deleted      Boolean?        @default(false)
+  features     PricingFeature[]
+  deleted      Boolean?         @default(false)
   deletionDate DateTime?
   users        User[]
 }
@@ -466,6 +488,15 @@ model PricingOption {
   id        String  @id @default(cuid())
   name      String  @db.Text
   weight    Int // for sorting
+  pricingId String
+  pricing   Pricing @relation(fields: [pricingId], references: [id], onDelete: Cascade)
+
+  @@index([pricingId])
+}
+
+model PricingFeature {
+  id        String  @id @default(cuid())
+  feature   Feature
   pricingId String
   pricing   Pricing @relation(fields: [pricingId], references: [id], onDelete: Cascade)
 

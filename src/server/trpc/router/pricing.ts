@@ -1,4 +1,4 @@
-import { Role } from "@prisma/client";
+import { Feature, Role } from "@prisma/client";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 import { router, protectedProcedure, publicProcedure } from "../trpc";
@@ -20,7 +20,7 @@ export const pricingRouter = router({
     .query(({ ctx, input }) => {
       return ctx.prisma.pricing.findUnique({
         where: { id: input },
-        include: { options: true },
+        include: { options: true, features: true },
       });
     }),
   getPricingForRole: publicProcedure
@@ -29,6 +29,7 @@ export const pricingRouter = router({
       return ctx.prisma.pricing.findMany({
         where: { roleTarget: input, deleted: false },
         include: { options: true },
+        orderBy: [{ monthly: "asc" }],
       });
     }),
   getAllPricing: protectedProcedure.query(({ ctx }) => {
@@ -38,7 +39,7 @@ export const pricingRouter = router({
         message: "You are not authorized to query pricing",
       });
     return ctx.prisma.pricing.findMany({
-      orderBy: [{ roleTarget: "asc" }],
+      orderBy: [{ roleTarget: "asc" }, { monthly: "asc" }],
     });
   }),
   createPricing: protectedProcedure
@@ -46,6 +47,7 @@ export const pricingRouter = router({
       z.object({
         base: PricingObject.omit({ id: true }),
         options: z.array(z.string()),
+        features: z.array(z.nativeEnum(Feature)),
       })
     )
     .mutation(({ input, ctx }) => {
@@ -62,6 +64,11 @@ export const pricingRouter = router({
               data: input.options.map((o, i) => ({ name: o, weight: i })),
             },
           },
+          features: {
+            createMany: {
+              data: input.features.map((f) => ({ feature: f })),
+            },
+          },
         },
       });
     }),
@@ -70,6 +77,7 @@ export const pricingRouter = router({
       z.object({
         base: PricingObject.partial(),
         options: z.array(z.string()),
+        features: z.array(z.nativeEnum(Feature)),
       })
     )
     .mutation(async ({ input, ctx }) => {
@@ -81,6 +89,9 @@ export const pricingRouter = router({
       await ctx.prisma.pricingOption.deleteMany({
         where: { pricingId: input.base.id },
       });
+      await ctx.prisma.pricingFeature.deleteMany({
+        where: { pricingId: input.base.id },
+      });
       return ctx.prisma.pricing.update({
         where: { id: input.base.id },
         data: {
@@ -88,6 +99,11 @@ export const pricingRouter = router({
           options: {
             createMany: {
               data: input.options.map((o, i) => ({ name: o, weight: i })),
+            },
+          },
+          features: {
+            createMany: {
+              data: input.features.map((f) => ({ feature: f })),
             },
           },
         },

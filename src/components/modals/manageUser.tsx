@@ -8,7 +8,7 @@ import {
 } from "react-hook-form";
 import Modal, { type TModalVariant } from "../ui/modal";
 import SimpleForm from "../ui/simpleform";
-import { type PropsWithoutRef } from "react";
+import { useState, type PropsWithoutRef } from "react";
 import type { Role } from "@prisma/client";
 import Confirmation from "@ui/confirmation";
 import { useTranslation } from "next-i18next";
@@ -16,6 +16,7 @@ import { trpc } from "@trpcclient/trpc";
 import Spinner from "@ui/spinner";
 import { ROLE_LIST } from "@root/src/pages/user/[userId]";
 import { toast } from "react-toastify";
+import { Pricing as PricingCard, PricingContainer } from "@ui/pricing";
 
 type UserFormValues = {
   name: string;
@@ -163,5 +164,46 @@ function UserForm({ errors, register }: UserFormProps): JSX.Element {
         },
       ]}
     />
+  );
+}
+
+type SubscriptionFormProps = {
+  role: Role;
+  subscriptionId: string;
+  onNewPlan: (subscriptionId: string, monthlyPayment: boolean) => void;
+};
+
+export function SubscriptionForm({
+  role,
+  subscriptionId,
+  onNewPlan,
+}: SubscriptionFormProps) {
+  const { t } = useTranslation("auth");
+  const pricingQuery = trpc.pricings.getPricingForRole.useQuery(role);
+  const [closeModal, setCloseModal] = useState(false);
+
+  return (
+    <Modal
+      title={t("select-plan")}
+      className="w-11/12 max-w-7xl overflow-y-auto"
+      cancelButtonText=""
+      closeModal={closeModal}
+      onCloseModal={() => setCloseModal(false)}
+    >
+      <h3>{t("select-plan")}</h3>
+      <PricingContainer>
+        {pricingQuery.data?.map((pricing) => (
+          <PricingCard
+            key={pricing.id}
+            pricingId={pricing.id}
+            onSelect={(id, monthly) => {
+              onNewPlan(id, monthly);
+              setCloseModal(true);
+            }}
+            forceHighlight={pricing.id === subscriptionId}
+          />
+        ))}
+      </PricingContainer>
+    </Modal>
   );
 }

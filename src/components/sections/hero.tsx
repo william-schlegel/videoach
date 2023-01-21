@@ -340,7 +340,7 @@ export const HeroCreation = ({ clubId, pageId }: HeroCreationProps) => {
               </div>
             </>
           ) : null}
-          {fields.linkedPage === "url" ? (
+          {fields.cta && fields.linkedPage === "url" ? (
             <>
               <label className="label">
                 <span>{t("external-url")}</span>
@@ -363,7 +363,7 @@ export const HeroCreation = ({ clubId, pageId }: HeroCreationProps) => {
             </>
           ) : null}
           <div className="col-span-2 flex justify-between">
-            <button className="btn-primary btn" type="submit">
+            <button className="btn btn-primary" type="submit">
               {t("save-section")}
             </button>
             {updating ? (
@@ -495,7 +495,7 @@ function HeroContent({
       <p className="text-gray-100">{description}</p>
       {cta && (
         <button
-          className={`btn-primary btn ${
+          className={`btn btn-primary ${
             preview ? "btn-sm" : "btn-xl"
           } w-fit normal-case`}
           onClick={() => {

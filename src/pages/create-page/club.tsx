@@ -23,22 +23,25 @@ import Layout from "@root/src/components/layout";
 import Link from "next/link";
 import { toast } from "react-toastify";
 import { isCUID } from "@lib/checkValidity";
+import { useRouter } from "next/router";
+import createLink from "@lib/createLink";
 
 function ClubPage({
   userId,
+  clubId,
+  pageId,
 }: InferGetServerSidePropsType<typeof getServerSideProps>) {
   const { t } = useTranslation("pages");
-  const [clubId, setClubId] = useState("");
-  const [pageId, setPageId] = useState("");
+  const router = useRouter();
   const queryClubs = trpc.clubs.getClubsForManager.useQuery(userId, {
     onSuccess(data) {
-      setClubId(data[0]?.id ?? "");
+      if (!clubId) router.push(createLink({ clubId: data[0]?.id, pageId: "" }));
     },
   });
   const queryPages = trpc.pages.getPagesForClub.useQuery(clubId, {
     enabled: isCUID(clubId),
     onSuccess(data) {
-      if (pageId === "") setPageId(data?.[0]?.id ?? "");
+      if (!pageId) router.push(createLink({ clubId, pageId: data[0]?.id }));
     },
   });
 
@@ -51,7 +54,10 @@ function ClubPage({
           <select
             className="w-48 min-w-fit"
             value={clubId}
-            onChange={(e) => setClubId(e.target.value)}
+            onChange={(e) => {
+              const path = `/create-page/club?clubId=${e.target.value}&pageId=`;
+              router.push(path);
+            }}
           >
             {queryClubs.data?.map((club) => (
               <option key={club.id} value={club.id}>
@@ -70,12 +76,15 @@ function ClubPage({
               <li key={page.id}>
                 <div className={`flex ${pageId === page.id ? "active" : ""}`}>
                   <button
-                    onClick={() => setPageId(page.id)}
+                    onClick={() => {
+                      const path = `/create-page/club?clubId=${clubId}&pageId=${page.id}`;
+                      router.push(path);
+                    }}
                     className="flex flex-1 items-center justify-between"
                   >
                     <span>{page.name}</span>
                     <div className="flex items-center gap-2">
-                      <span className="badge-secondary badge">
+                      <span className="badge badge-secondary">
                         {t(
                           PAGE_TARGET_LIST.find((t) => t.value === page.target)
                             ?.label ?? ""
@@ -164,11 +173,11 @@ const PageContent = ({ pageId, clubId }: PageContentProps) => {
           <DeletePage clubId={clubId} pageId={pageId} />
         </div>
       </div>
-      <div className="btn-group">
+      <div className="btn-group flex-wrap">
         {PAGE_SECTION_LIST.map((sec) => (
           <button
             key={sec.value}
-            className={`btn btn-primary ${
+            className={`btn btn-primary flex-1 ${
               sec.value === section ? "" : "btn-outline"
             }`}
             onClick={() => setSection(sec.value)}
@@ -188,6 +197,7 @@ export const getServerSideProps = async ({
   locale,
   req,
   res,
+  query,
 }: GetServerSidePropsContext) => {
   const session = await unstable_getServerSession(req, res, authOptions);
   if (
@@ -199,7 +209,11 @@ export const getServerSideProps = async ({
       redirect: "/",
       permanent: false,
     };
+  console.log("query :>> ", query);
+  const clubId = (query?.clubId ?? "") as string;
+  const pageId = (query?.pageId ?? "") as string;
 
+  console.log("{pageId, clubId}", { pageId, clubId });
   return {
     props: {
       ...(await serverSideTranslations(
@@ -208,6 +222,8 @@ export const getServerSideProps = async ({
         nextI18nConfig
       )),
       userId: session?.user?.id || "",
+      clubId,
+      pageId,
     },
   };
 };

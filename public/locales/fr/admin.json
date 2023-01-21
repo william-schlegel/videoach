@@ -1,10 +1,10 @@
 {
   "admin-only": "Cette page est réservée aux administrateurs",
   "pricing": {
-    "new-pricing": "Nouveau tarif",
+    "new": "Nouveau tarif",
     "manage-my-pricing": "Gérer mes tarifs",
-    "update-pricing": "Modifier le tarif",
-    "delete-pricing": "Supprimer le tarif",
+    "update": "Modifier le tarif",
+    "delete": "Supprimer le tarif",
     "name": "Nom du tarif",
     "name-mandatory": "Nom obligatoire",
     "description": "Description",
@@ -24,10 +24,25 @@
     "add-option": "Ajouter cette option",
     "undelete": "Restaurer le tarif",
     "undelete-message": "Voulez vous restaurer ce tarif ?",
-    "pricing-created": "Tarif créé",
-    "pricing-updated": "Tarif mis à jour",
-    "pricing-deleted": "Tarif supprimé",
-    "pricing-restored": "Tarif restoré"
+    "created": "Tarif créé",
+    "updated": "Tarif mis à jour",
+    "deleted": "Tarif supprimé",
+    "restored": "Tarif restoré",
+    "features": "Fonctionnalités associées à ce tarif"
+  },
+  "feature": {
+    "coach-certification": "Gestion des certifications",
+    "coach-meeting": "Gestion des rendez-vous",
+    "coach-offer": "Gestion des offres pour le grand publique",
+    "coach-offer-company": "Gestion des offres pour les entreprises",
+    "coach-market-place": "Accès aux offres de la market place",
+    "manager-coach": "Gestion des coachs du club",
+    "manager-event": "Gestion des évènements",
+    "manager-planning": "Gestion des plannings d'activités",
+    "manager-room": "Gestion des salles et affectation des activités",
+    "manager-market-place": "Accès à la market place pour trouver des coachs",
+    "manager-shop": "Boutique en ligne",
+    "manager-employees": "Gestion des employés du club"
   },
   "user": {
     "manage-users": "Gérer les utilisateurs",

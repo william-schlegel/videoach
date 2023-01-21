@@ -1,6 +1,9 @@
 import { authOptions } from "@auth/[...nextauth]";
 import { type Pricing, Role } from "@prisma/client";
-import { type GetServerSidePropsContext } from "next";
+import {
+  type InferGetServerSidePropsType,
+  type GetServerSidePropsContext,
+} from "next";
 import { unstable_getServerSession } from "next-auth";
 import { serverSideTranslations } from "next-i18next/serverSideTranslations";
 import nextI18nConfig from "@root/next-i18next.config.mjs";
@@ -18,17 +21,23 @@ import {
 import { Pricing as PricingComponent } from "@ui/pricing";
 import { getRoleName } from "../user/[userId]";
 import Layout from "@root/src/components/layout";
+import { useRouter } from "next/router";
+import createLink from "@lib/createLink";
+import { formatMoney } from "@lib/formatNumber";
 
 type GroupedData = {
   name: string;
   items: Pricing[];
 };
 
-function PricingManagement() {
+function PricingManagement({
+  pricingId,
+}: InferGetServerSidePropsType<typeof getServerSideProps>) {
   const { data: sessionData } = useSession();
+  const router = useRouter();
   const pricingQuery = trpc.pricings.getAllPricing.useQuery(undefined, {
     onSuccess(data) {
-      if (pricingId === "") setPricingId(data[0]?.id || "");
+      if (pricingId === "") router.push(createLink({ pricingId: data[0]?.id }));
       const gd = new Map<string, Pricing[]>();
       for (const p of data) {
         const act = gd.get(p.roleTarget) || [];
@@ -45,7 +54,6 @@ function PricingManagement() {
     },
   });
   const [groupedData, setGroupedData] = useState<GroupedData[]>([]);
-  const [pricingId, setPricingId] = useState("");
   const { t } = useTranslation("admin");
 
   if (sessionData && sessionData.user?.role !== Role.ADMIN)
@@ -72,12 +80,26 @@ function PricingManagement() {
                         className={`flex w-full items-center justify-between text-center ${
                           pricingId === pricing.id ? "active" : ""
                         }`}
-                        onClick={() => setPricingId(pricing.id)}
+                        onClick={() =>
+                          router.push(createLink({ pricingId: pricing.id }))
+                        }
                       >
-                        <span>{pricing.title}</span>
-                        {pricing.deleted ? (
-                          <i className="bx bx-trash bx-sm text-red-600" />
-                        ) : null}
+                        <span>
+                          {pricing.title}&nbsp;
+                          <span className="text-xs">
+                            {pricing.free
+                              ? null
+                              : `(${formatMoney(pricing.monthly)})`}
+                          </span>
+                        </span>
+                        <span className="space-x-2">
+                          {pricing.highlighted ? (
+                            <i className="bx bxs-star bx-xs text-accent" />
+                          ) : null}
+                          {pricing.deleted ? (
+                            <i className="bx bx-trash bx-sm text-red-600" />
+                          ) : null}
+                        </span>
                       </button>
                     </li>
                   ))}
@@ -120,6 +142,7 @@ export const getServerSideProps = async ({
   locale,
   req,
   res,
+  query,
 }: GetServerSidePropsContext) => {
   const session = await unstable_getServerSession(req, res, authOptions);
   if (session?.user?.role !== Role.ADMIN)
@@ -136,6 +159,7 @@ export const getServerSideProps = async ({
         nextI18nConfig
       )),
       userId: session?.user?.id || "",
+      pricingId: (query?.pricingId ?? "") as string,
     },
   };
 };
