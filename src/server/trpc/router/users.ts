@@ -33,7 +33,11 @@ export const userRouter = router({
               coachingActivities: true,
             },
           },
-          pricing: true,
+          pricing: {
+            include: {
+              features: true,
+            },
+          },
           paiements: true,
           accounts: true,
         },

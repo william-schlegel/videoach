@@ -1,5 +1,6 @@
 import { authOptions } from "@auth/[...nextauth]";
 import { useDayName } from "@lib/useDayName";
+import useUserInfo from "@lib/useUserInfo";
 import { Role } from "@prisma/client";
 import nextI18nConfig from "@root/next-i18next.config.mjs";
 import Layout from "@root/src/components/layout";
@@ -26,6 +27,8 @@ const ManagerClubs = ({
 }: InferGetServerSidePropsType<typeof getServerSideProps>) => {
   const managerQuery = trpc.dashboards.getManagerDataForUserId.useQuery(userId);
   const { t } = useTranslation("dashboard");
+  const { features } = useUserInfo(userId);
+
   const siteCount = useMemo(
     () =>
       managerQuery.data?.reduce(
@@ -65,7 +68,7 @@ const ManagerClubs = ({
     <Layout className="container mx-auto my-2 flex flex-col gap-2">
       <h1 className="flex justify-between">
         {t("manager-dashboard")}
-        <Link className="btn-secondary btn" href={`${userId}/clubs`}>
+        <Link className="btn btn-secondary" href={`${userId}/clubs`}>
           {t("manage-club")}
         </Link>
       </h1>
@@ -138,6 +141,13 @@ const ManagerClubs = ({
         </article>
         <article className="rounded-md border border-primary p-2">
           <h2>{t("event")}</h2>
+          {features.includes("MANAGER_EVENT") ? (
+            <div></div>
+          ) : (
+            <div className="alert alert-error">
+              {t("common:navigation.insufficient-plan")}
+            </div>
+          )}
         </article>
         <article className="col-span-2 rounded-md border border-primary p-2">
           <h2>{t("chat-members-coachs")}</h2>

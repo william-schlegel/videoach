@@ -336,10 +336,8 @@ type CoachDisplayProps = {
 
 export const CoachDisplay = ({ pageId }: CoachDisplayProps) => {
   const queryPage = trpc.pages.getCoachPage.useQuery(pageId);
-  const pageData = queryPage.data?.pageData;
-  const hero = pageData?.coachData?.page?.sections
-    .find((s) => s.model === "HERO")
-    ?.elements.find((e) => e.elementType === "HERO_CONTENT");
+  // const pageData = queryPage.data?.pageData;
+  const hero = queryPage.data?.hero;
   const queryImage = trpc.files.getDocumentUrlById.useQuery(
     hero?.images?.[0]?.id ?? "",
     { enabled: isCUID(hero?.images?.[0]?.id) }
@@ -348,40 +346,26 @@ export const CoachDisplay = ({ pageId }: CoachDisplayProps) => {
   if (queryPage.isLoading) return <Spinner />;
   if (!queryPage.data) return <div>No page defined for this coach</div>;
 
-  const options = new Map(
-    pageData?.coachData?.page?.sections
-      .find((s) => s.model === "HERO")
-      ?.elements.filter((e) => e.elementType === "OPTION")
-      .map((o) => [o.title, o.optionValue])
-  );
-
-  const activities =
-    pageData?.coachData?.coachingActivities.map((a) => ({
-      id: a.id,
-      name: a.name,
-    })) ?? [];
-  const certifications =
-    pageData?.coachData?.certifications.map((c) => ({
-      id: c.id,
-      name: c.name,
-    })) ?? [];
+  const options = queryPage.data?.options;
+  const activities = queryPage.data?.activities;
+  const certifications = queryPage.data?.certifications;
   const ca = { certifications, activities };
 
   return (
     <div
-      data-theme={pageData?.coachData?.pageStyle ?? "light"}
+      data-theme={queryPage.data?.pageStyle ?? "light"}
       className="flex min-h-screen flex-col items-center justify-center"
     >
       <Head>
-        <title>{pageData?.coachData?.publicName}</title>
+        <title>{queryPage.data?.publicName}</title>
       </Head>
       <PhotoSection
         imageSrc={queryImage.data?.url}
-        userName={pageData?.coachData?.publicName}
+        userName={queryPage.data?.publicName}
         info={hero?.subTitle}
         description={hero?.content}
-        email={pageData?.email}
-        phone={pageData?.phone}
+        email={queryPage.data?.email}
+        phone={queryPage.data?.phone}
       />
       <CertificationsAndActivities
         withActivities={options.get("activities") === "yes"}
@@ -390,25 +374,21 @@ export const CoachDisplay = ({ pageId }: CoachDisplayProps) => {
         activities={ca.activities}
       />
       <CoachOffers
-        offers={pageData?.coachData?.coachingPrices ?? []}
+        offers={queryPage.data?.offers ?? []}
         coachData={{
-          publicName: pageData?.coachData?.publicName,
-          searchAddress: pageData?.coachData?.searchAddress,
+          publicName: queryPage.data?.publicName,
+          searchAddress: queryPage.data?.searchAddress,
         }}
       />
       <MapSection
         longitude={
-          pageData?.coachData?.searchAddress
-            ? pageData?.coachData?.longitude
-            : undefined
+          queryPage.data?.searchAddress ? queryPage.data?.longitude : undefined
         }
         latitude={
-          pageData?.coachData?.searchAddress
-            ? pageData?.coachData?.latitude
-            : undefined
+          queryPage.data?.searchAddress ? queryPage.data?.latitude : undefined
         }
-        theme={(pageData?.coachData?.pageStyle as TThemes) ?? "light"}
-        range={pageData?.coachData?.range ?? 10}
+        theme={(queryPage.data?.pageStyle as TThemes) ?? "light"}
+        range={queryPage.data?.range ?? 10}
       />
     </div>
   );
@@ -490,7 +470,7 @@ function PhotoSection({
             href={`tel:${phone}`}
             target="_blank"
             rel="noreferrer"
-            className={`btn-outline btn btn-secondary btn-block ${
+            className={`btn btn-outline btn-secondary btn-block ${
               preview ? "btn-sm my-2 text-xs" : "btn-lg my-4 text-base"
             } gap-4`}
           >
@@ -525,7 +505,7 @@ function CertificationsAndActivities({
         withActivities && withCertifications ? "grid-cols-2" : "grid-cols-1"
       } ${preview ? "gap-6 pb-4" : "gap-16 pb-12"} mx-auto w-fit px-10`}
     >
-      {withCertifications ? (
+      {withCertifications && certifications.length ? (
         <div>
           <h3
             className={
@@ -545,7 +525,7 @@ function CertificationsAndActivities({
           </div>
         </div>
       ) : null}
-      {withActivities ? (
+      {withActivities && activities.length ? (
         <div>
           <h3
             className={

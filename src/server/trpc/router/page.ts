@@ -271,9 +271,13 @@ export const pageRouter = router({
           coachData: { page: { id: input, target: "HOME", published: true } },
         },
         include: {
+          pricing: {
+            include: {
+              features: true,
+            },
+          },
           coachData: {
             include: {
-              user: true,
               page: {
                 include: {
                   sections: {
@@ -306,7 +310,57 @@ export const pageRouter = router({
       const image = pageData?.coachData?.page?.sections
         .find((s) => s.model === "HERO")
         ?.elements.find((e) => e.elementType === "HERO_CONTENT")?.images?.[0];
-      return { pageData, image };
+      const hero = pageData?.coachData?.page?.sections
+        .find((s) => s.model === "HERO")
+        ?.elements.find((e) => e.elementType === "HERO_CONTENT");
+      const options = new Map(
+        pageData?.coachData?.page?.sections
+          .find((s) => s.model === "HERO")
+          ?.elements.filter((e) => e.elementType === "OPTION")
+          .map((o) => [o.title, o.optionValue])
+      );
+      const activities =
+        pageData?.coachData?.coachingActivities.map((a) => ({
+          id: a.id,
+          name: a.name,
+        })) ?? [];
+      const features = pageData?.pricing?.features ?? [];
+      const certificationOk = !!features.find(
+        (f) => f.feature === "COACH_CERTIFICATION"
+      );
+
+      const certifications = certificationOk
+        ? pageData?.coachData?.certifications.map((c) => ({
+            id: c.id,
+            name: c.name,
+          })) ?? []
+        : [];
+      const offersOk = !!features.find((f) => f.feature === "COACH_OFFER");
+      const offerCompaniesOk = !!features.find(
+        (f) => f.feature === "COACH_OFFER_COMPANY"
+      );
+      const offers = offersOk
+        ? pageData?.coachData?.coachingPrices.filter((c) =>
+            offerCompaniesOk ? true : c.target === "INDIVIDUAL"
+          ) ?? []
+        : [];
+
+      return {
+        email: pageData?.email,
+        phone: pageData?.phone,
+        searchAddress: pageData?.coachData?.searchAddress,
+        longitude: pageData?.coachData?.longitude,
+        latitude: pageData?.coachData?.latitude,
+        range: pageData?.coachData?.range,
+        hero,
+        options,
+        activities,
+        certifications,
+        pageStyle: pageData?.coachData?.pageStyle,
+        publicName: pageData?.coachData?.publicName,
+        offers,
+        image,
+      };
     }),
   getCoachDataForPage: publicProcedure
     .input(z.string())
@@ -314,6 +368,11 @@ export const pageRouter = router({
       const user = await ctx.prisma.user.findUnique({
         where: { id: input },
         include: {
+          pricing: {
+            include: {
+              features: true,
+            },
+          },
           coachData: {
             include: {
               certifications: {
@@ -331,11 +390,26 @@ export const pageRouter = router({
           },
         },
       });
-      const certifications =
-        user?.coachData?.certifications.map((c) => ({
-          id: c.id,
-          name: c.name,
-        })) ?? [];
+      const features = user?.pricing?.features ?? [];
+      const certificationOk = !!features.find(
+        (f) => f.feature === "COACH_CERTIFICATION"
+      );
+      const certifications = certificationOk
+        ? user?.coachData?.certifications.map((c) => ({
+            id: c.id,
+            name: c.name,
+          })) ?? []
+        : [];
+
+      const offersOk = !!features.find((f) => f.feature === "COACH_OFFER");
+      const offerCompaniesOk = !!features.find(
+        (f) => f.feature === "COACH_OFFER_COMPANY"
+      );
+      const offers = offersOk
+        ? user?.coachData?.coachingPrices.filter((c) =>
+            offerCompaniesOk ? true : c.target === "INDIVIDUAL"
+          ) ?? []
+        : [];
       return {
         certifications,
         activities:
@@ -343,7 +417,7 @@ export const pageRouter = router({
             id: a.id,
             name: a.name,
           })) ?? [],
-        offers: user?.coachData?.coachingPrices ?? [],
+        offers,
       };
     }),
   updatePagePublication: protectedProcedure

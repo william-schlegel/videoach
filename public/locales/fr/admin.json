@@ -36,10 +36,12 @@
     "coach-offer": "Gestion des offres pour le grand publique",
     "coach-offer-company": "Gestion des offres pour les entreprises",
     "coach-market-place": "Accès aux offres de la market place",
+    "manager-multi-club": "Multiples clubs",
+    "manager-multi-site": "Multiples sites d'activités",
+    "manager-room": "Gestion des salles et affectation des activités",
     "manager-coach": "Gestion des coachs du club",
     "manager-event": "Gestion des évènements",
     "manager-planning": "Gestion des plannings d'activités",
-    "manager-room": "Gestion des salles et affectation des activités",
     "manager-market-place": "Accès à la market place pour trouver des coachs",
     "manager-shop": "Boutique en ligne",
     "manager-employees": "Gestion des employés du club"

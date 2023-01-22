@@ -1,15 +1,16 @@
-import { type Role } from "@prisma/client";
+import type { Feature, Role } from "@prisma/client";
 import { signIn, signOut, useSession } from "next-auth/react";
 import Image from "next/image";
 import Link from "next/link";
-import { type FC } from "react";
 import { useTranslation } from "next-i18next";
 import { type TThemes } from "./themeSelector";
+import useUserInfo from "@lib/useUserInfo";
 
 type MenuDefinitionType = {
   label: string;
   page: string;
   access: ("VISITOR" | Role)[];
+  featured?: Feature;
 };
 
 const MENUS: MenuDefinitionType[] = [
@@ -37,16 +38,19 @@ const MENUS: MenuDefinitionType[] = [
     label: "navigation.planning-management",
     page: `/planning-management`,
     access: ["MANAGER", "MANAGER_COACH"],
+    featured: "MANAGER_PLANNING",
   },
   {
     label: "navigation.coach-management",
     page: `/coach-management`,
     access: ["MANAGER", "MANAGER_COACH"],
+    featured: "MANAGER_COACH",
   },
   {
     label: "navigation.coaching-offer",
     page: `/coach/offer`,
     access: ["COACH", "MANAGER_COACH"],
+    featured: "COACH_OFFER",
   },
   {
     label: "navigation.presentation-page",
@@ -125,7 +129,7 @@ export default function Navbar({ theme, onChangeTheme }: NavbarProps) {
       </div>
 
       <div className="navbar-end">
-        <label className="swap swap-rotate">
+        <label className="swap-rotate swap">
           <input
             type="checkbox"
             onChange={(e) =>
@@ -193,9 +197,10 @@ export default function Navbar({ theme, onChangeTheme }: NavbarProps) {
   );
 }
 
-const Menu: FC = () => {
+const Menu = () => {
   const { data: sessionData } = useSession();
   const { t } = useTranslation("common");
+  const { features } = useUserInfo();
 
   return (
     <>
@@ -203,21 +208,34 @@ const Menu: FC = () => {
         if (
           menu.access.includes(sessionData?.user?.role) ||
           (!sessionData && menu.access.includes("VISITOR"))
-        )
+        ) {
+          const locked =
+            (menu.featured && !features.includes(menu.featured)) ?? false;
           return (
             <li key={menu.page}>
-              <Link className="justify-between" href={menu.page}>
-                {t(menu.label)}
-              </Link>
+              {locked ? (
+                <span
+                  className="tooltip tooltip-bottom tooltip-error flex items-center gap-2 text-gray-300"
+                  data-tip={t("navigation.insufficient-plan")}
+                >
+                  <i className="bx bx-lock bx-xs" />
+                  {t(menu.label)}
+                </span>
+              ) : (
+                <Link className="justify-between" href={menu.page}>
+                  {t(menu.label)}
+                </Link>
+              )}
             </li>
           );
+        }
         return null;
       })}
     </>
   );
 };
 
-const Logo: FC = () => {
+const Logo = () => {
   return (
     <div className="flex-1">
       <Link href={"/videoach"} className="btn btn-ghost text-2xl capitalize">

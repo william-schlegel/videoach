@@ -20,6 +20,8 @@ import CalendarWeek from "@root/src/components/calendarWeek";
 import Layout from "@root/src/components/layout";
 import { isCUID } from "@lib/checkValidity";
 import createLink from "@lib/createLink";
+import useUserInfo from "@lib/useUserInfo";
+import LockedButton from "@ui/lockedButton";
 
 const ManageSites = ({
   userId,
@@ -38,6 +40,7 @@ const ManageSites = ({
     enabled: isCUID(clubId),
   });
   const { t } = useTranslation("club");
+  const { features } = useUserInfo(userId);
 
   if (
     sessionData &&
@@ -55,10 +58,15 @@ const ManageSites = ({
             {t("site.manage-my-sites", { count: siteQuery.data?.length ?? 0 })}
             <span className="text-secondary">{clubQuery.data?.name}</span>
           </h1>
-          <CreateSite clubId={clubId} />
+          {features.includes("MANAGER_MULTI_SITE") ||
+          !siteQuery.data?.length ? (
+            <CreateSite clubId={clubId} />
+          ) : (
+            <LockedButton label={t("site.create")} limited />
+          )}
         </div>
         <button
-          className="btn-outline btn-primary btn"
+          className="btn btn-outline btn-primary"
           onClick={() => {
             const path = `/manager/${sessionData?.user?.id}/clubs?clubId=${clubId}`;
             router.push(path);
@@ -119,6 +127,7 @@ export function SiteContent({ clubId, siteId }: SiteContentProps) {
   );
 
   const { t } = useTranslation("club");
+  const { features } = useUserInfo();
   const router = useRouter();
   const [roomId, setRoomId] = useState("");
   const actualRoom = siteQuery.data?.rooms?.find((r) => r.id === roomId);
@@ -152,37 +161,46 @@ export function SiteContent({ clubId, siteId }: SiteContentProps) {
             <h3>
               {t("room.room", { count: siteQuery?.data?.rooms?.length ?? 0 })}
             </h3>
-            <Link className="btn-secondary btn" href={`${path}${siteId}/rooms`}>
-              {t("room.manage")}
-            </Link>
+            {features.includes("MANAGER_ROOM") ? (
+              <Link
+                className="btn btn-secondary"
+                href={`${path}${siteId}/rooms`}
+              >
+                {t("room.manage")}
+              </Link>
+            ) : (
+              <LockedButton label={t("room.manage")} />
+            )}
           </div>
-          <div className="flex gap-4">
-            <ul className="menu w-1/4 overflow-hidden rounded bg-base-100">
-              {siteQuery?.data?.rooms?.map((room) => (
-                <li key={room.id}>
-                  <button
-                    className={`flex w-full items-center justify-between text-center ${
-                      roomId === room.id ? "active" : ""
-                    }`}
-                    onClick={() => setRoomId(room.id)}
-                  >
-                    <span>{room.name}</span>
-                    {room.reservation !== "NONE" && (
-                      <i className="bx bx-calendar bx-sm text-secondary" />
-                    )}
-                  </button>
-                </li>
-              ))}
-            </ul>
-            <div className="flex-1 rounded border border-primary p-4 ">
-              Planning des activités
-            </div>
-            {actualRoom?.reservation !== "NONE" ? (
+          {features.includes("MANAGER_ROOM") ? (
+            <div className="flex gap-4">
+              <ul className="menu w-1/4 overflow-hidden rounded bg-base-100">
+                {siteQuery?.data?.rooms?.map((room) => (
+                  <li key={room.id}>
+                    <button
+                      className={`flex w-full items-center justify-between text-center ${
+                        roomId === room.id ? "active" : ""
+                      }`}
+                      onClick={() => setRoomId(room.id)}
+                    >
+                      <span>{room.name}</span>
+                      {room.reservation !== "NONE" && (
+                        <i className="bx bx-calendar bx-sm text-secondary" />
+                      )}
+                    </button>
+                  </li>
+                ))}
+              </ul>
               <div className="flex-1 rounded border border-primary p-4 ">
-                Planning de réservation
+                Planning des activités
               </div>
-            ) : null}
-          </div>
+              {actualRoom?.reservation !== "NONE" ? (
+                <div className="flex-1 rounded border border-primary p-4 ">
+                  Planning de réservation
+                </div>
+              ) : null}
+            </div>
+          ) : null}
         </div>
       </div>
     </div>

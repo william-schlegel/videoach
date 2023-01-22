@@ -21,6 +21,7 @@ import ButtonIcon from "@ui/buttonIcon";
 import { toast } from "react-toastify";
 import Layout from "@root/src/components/layout";
 import { isCUID } from "@lib/checkValidity";
+import useUserInfo from "@lib/useUserInfo";
 
 const ManageCertifications = ({
   userId,
@@ -37,6 +38,7 @@ const ManageCertifications = ({
   );
   const [certificationId, setCertificationId] = useState("");
   const [docId, setDocId] = useState("");
+  const { features } = useUserInfo(userId);
 
   const { t } = useTranslation("coach");
   trpc.files.getDocumentUrlById.useQuery(docId, {
@@ -58,7 +60,13 @@ const ManageCertifications = ({
       sessionData.user?.role
     )
   )
-    return <div>{t("coach-only")}</div>;
+    return <div className="alert alert-error">{t("coach-only")}</div>;
+  if (!features.includes("COACH_CERTIFICATION"))
+    return (
+      <div className="alert alert-error">
+        {t("common:navigation.insufficient-plan")}
+      </div>
+    );
 
   return (
     <Layout className="container mx-auto">

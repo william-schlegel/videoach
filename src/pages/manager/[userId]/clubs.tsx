@@ -34,6 +34,8 @@ import Image from "next/image";
 import ButtonIcon from "@ui/buttonIcon";
 import { isCUID } from "@lib/checkValidity";
 import createLink from "@lib/createLink";
+import useUserInfo from "@lib/useUserInfo";
+import LockedButton from "@ui/lockedButton";
 
 const ManageClubs = ({
   userId,
@@ -46,7 +48,7 @@ const ManageClubs = ({
       if (!clubId) router.push(createLink({ clubId: data[0]?.id }));
     },
   });
-
+  const { features } = useUserInfo(userId);
   const { t } = useTranslation("club");
 
   if (
@@ -63,7 +65,11 @@ const ManageClubs = ({
         <h1>
           {t("club.manage-my-club", { count: clubQuery.data?.length ?? 0 })}
         </h1>
-        <CreateClub />
+        {features.includes("MANAGER_MULTI_CLUB") || !clubQuery.data?.length ? (
+          <CreateClub />
+        ) : (
+          <LockedButton label={t("club.create-new")} limited />
+        )}
       </div>
       <div className="flex gap-4">
         {clubQuery.isLoading ? (
@@ -192,7 +198,7 @@ export function ClubContent({ userId, clubId }: ClubContentProps) {
                 {t("site.site", { count: clubQuery?.data?.sites?.length ?? 0 })}
               </h3>
               <Link
-                className="btn-secondary btn"
+                className="btn btn-secondary"
                 href={`/manager/${userId}/${clubId}/sites`}
               >
                 {t("site.manage")}

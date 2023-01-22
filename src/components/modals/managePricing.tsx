@@ -596,6 +596,16 @@ const PRICING_FEATURES: readonly TFeature[] = [
     role: [Role.COACH, Role.MANAGER_COACH],
   },
   {
+    value: Feature.MANAGER_MULTI_CLUB,
+    label: "feature.manager-multi-club",
+    role: [Role.MANAGER, Role.MANAGER_COACH],
+  },
+  {
+    value: Feature.MANAGER_MULTI_SITE,
+    label: "feature.manager-multi-site",
+    role: [Role.MANAGER, Role.MANAGER_COACH],
+  },
+  {
     value: Feature.MANAGER_COACH,
     label: "feature.manager-coach",
     role: [Role.MANAGER, Role.MANAGER_COACH],

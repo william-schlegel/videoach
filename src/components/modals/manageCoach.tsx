@@ -1,6 +1,7 @@
 import { isCUID } from "@lib/checkValidity";
 import { formatDateAsYYYYMMDD } from "@lib/formatDate";
 import { formatMoney } from "@lib/formatNumber";
+import useUserInfo from "@lib/useUserInfo";
 import { CoachingTarget, type CoachingLevelList } from "@prisma/client";
 import Confirmation from "@ui/confirmation";
 import Modal from "@ui/modal";
@@ -263,13 +264,16 @@ function OfferForm({ onSubmit, onCancel, initialData }: OfferFormProps) {
   const fields = useWatch({
     control,
   });
-
   const { getName } = useCoachingLevel();
+  const { getLabel } = useCoachingTarget();
+  const { features } = useUserInfo();
+
   useEffect(() => {
     reset(initialData);
   }, [initialData, reset]);
 
   const onSubmitForm: SubmitHandler<OfferFormValues> = (data) => {
+    if (!features.includes("COACH_OFFER_COMPANY")) data.target = "INDIVIDUAL";
     onSubmit(data);
     reset();
   };
@@ -341,17 +345,29 @@ function OfferForm({ onSubmit, onCancel, initialData }: OfferFormProps) {
             </div>
 
             <label>{t("offer.target")}</label>
-            <select
-              className="flex-1"
-              defaultValue={getValues("target")}
-              {...register("target")}
-            >
-              {COACHING_TARGET.map((target) => (
-                <option key={target.value} value={target.value}>
-                  {t(target.label)}
-                </option>
-              ))}
-            </select>
+            {features.includes("COACH_OFFER_COMPANY") ? (
+              <select
+                className="flex-1"
+                defaultValue={getValues("target")}
+                {...register("target")}
+              >
+                {COACHING_TARGET.map((target) => (
+                  <option key={target.value} value={target.value}>
+                    {t(target.label)}
+                  </option>
+                ))}
+              </select>
+            ) : (
+              <span>
+                {t(getLabel("INDIVIDUAL"))}
+                <span
+                  className="tooltip tooltip-error"
+                  data-tip={t("common:navigation.limited-plan")}
+                >
+                  <i className="bx bx-lock bx-xs ml-2" />
+                </span>
+              </span>
+            )}
           </div>
           {fields.target === "COMPANY" ? (
             <div className="form-control col-span-2">
@@ -599,7 +615,7 @@ function OfferForm({ onSubmit, onCancel, initialData }: OfferFormProps) {
       </div>
       <div className="col-span-2 flex items-center justify-end gap-2">
         <button
-          className="btn-outline btn btn-secondary"
+          className="btn btn-outline btn-secondary"
           onClick={(e) => {
             e.preventDefault();
             reset();

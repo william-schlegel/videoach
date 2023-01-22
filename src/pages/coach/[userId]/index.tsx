@@ -1,10 +1,12 @@
 import { authOptions } from "@auth/[...nextauth]";
 import { useDayName } from "@lib/useDayName";
+import useUserInfo from "@lib/useUserInfo";
 import type { DayName } from "@prisma/client";
 import { Role } from "@prisma/client";
 import nextI18nConfig from "@root/next-i18next.config.mjs";
 import Layout from "@root/src/components/layout";
 import { trpc } from "@trpcclient/trpc";
+import LockedButton from "@ui/lockedButton";
 import SelectDay from "@ui/selectDay";
 import Spinner from "@ui/spinner";
 import {
@@ -30,6 +32,7 @@ const CoachDashboard = ({
     coachQuery.data?.coachData?.certifications?.length ?? 0;
   const activityCount = coachQuery.data?.coachData?.activityGroups?.length ?? 0;
   const offerCount = coachQuery.data?.coachData?.coachingPrices?.length ?? 0;
+  const { features } = useUserInfo(userId);
 
   if (coachQuery.isLoading) return <Spinner />;
 
@@ -50,9 +53,16 @@ const CoachDashboard = ({
           </span>
         </div>
         <div className="flex items-center gap-4">
-          <Link className="btn btn-secondary" href={`${userId}/certifications`}>
-            {t("manage-certifications")}
-          </Link>
+          {features.includes("COACH_CERTIFICATION") ? (
+            <Link
+              className="btn btn-secondary"
+              href={`${userId}/certifications`}
+            >
+              {t("manage-certifications")}
+            </Link>
+          ) : (
+            <LockedButton label={t("manage-certifications")} />
+          )}{" "}
         </div>
       </h1>
       <section className="stats shadow">
@@ -108,6 +118,13 @@ const CoachDashboard = ({
         </article>
         <article className="rounded-md border border-primary p-2">
           <h2>{t("schedule")}</h2>
+          {features.includes("COACH_MEETING") ? (
+            <div></div>
+          ) : (
+            <div className="alert alert-error">
+              {t("common:navigation.insufficient-plan")}
+            </div>
+          )}
         </article>
         <article className="col-span-2 rounded-md border border-primary p-2">
           <h2>{t("chat-members")}</h2>

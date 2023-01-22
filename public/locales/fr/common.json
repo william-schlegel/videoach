@@ -33,6 +33,8 @@
     "coach-management": "Gestion des coachs",
     "planning-management": "Gestion des plannings",
     "coaching-offer": "Offres de coaching",
-    "company-offer": "Offres pour les entreprises"
+    "company-offer": "Offres pour les entreprises",
+    "insufficient-plan": "Votre abonnement ne vous donne pas accès à cette fonctionnalité",
+    "limited-plan": "Votre abonnement ne vous donne qu'un accès limité à cette fonctionnalité"
   }
 }

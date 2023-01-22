@@ -24,6 +24,7 @@ import {
 import Layout from "@root/src/components/layout";
 import { isCUID } from "@lib/checkValidity";
 import createLink from "@lib/createLink";
+import useUserInfo from "@lib/useUserInfo";
 
 const ManageRooms = ({
   clubId,
@@ -33,6 +34,7 @@ const ManageRooms = ({
   const router = useRouter();
   const roomId = router.query.roomId as string;
   const siteQuery = trpc.sites.getSiteById.useQuery(siteId);
+  const { features } = useUserInfo();
   const roomQuery = trpc.sites.getRoomsForSite.useQuery(siteId, {
     onSuccess(data) {
       if (!roomId) router.push(createLink({ roomId: data[0]?.id }));
@@ -47,6 +49,12 @@ const ManageRooms = ({
     )
   )
     return <div>{t("manager-only")}</div>;
+  if (!features.includes("COACH_CERTIFICATION"))
+    return (
+      <div className="alert alert-error">
+        {t("common:navigation.insufficient-plan")}
+      </div>
+    );
 
   return (
     <Layout className="container mx-auto">
@@ -59,7 +67,7 @@ const ManageRooms = ({
           <CreateRoom siteId={siteId} variant={"Primary"} />
         </div>
         <button
-          className="btn-outline btn-primary btn"
+          className="btn btn-outline btn-primary"
           onClick={() => {
             const path = `/manager/${sessionData?.user?.id}/${clubId}/sites?siteId=${siteId}`;
             router.push(path);
@@ -83,7 +91,7 @@ const ManageRooms = ({
                 >
                   <span>{room.name}</span>
                   {room.unavailable ? (
-                    <span className="badge-error badge">
+                    <span className="badge badge-error">
                       {t("room.closed")}
                     </span>
                   ) : null}

@@ -106,11 +106,6 @@ export default function Profile() {
     },
   });
 
-  const pricingQuery = trpc.pricings.getPricingById.useQuery(
-    userQuery.data?.pricingId ?? "",
-    { enabled: isCUID(userQuery.data?.pricingId) }
-  );
-
   const newPricing = trpc.pricings.getPricingById.useQuery(pricingId, {
     enabled: isCUID(pricingId),
   });

@@ -36,11 +36,28 @@ export const siteRouter = router({
     }),
   getSitesForClub: protectedProcedure
     .input(z.string())
-    .query(({ ctx, input }) => {
+    .query(async ({ ctx, input }) => {
+      const user = await ctx.prisma.user.findUnique({
+        where: { id: input },
+        include: {
+          pricing: {
+            include: {
+              features: true,
+            },
+          },
+        },
+      });
+      const take = user?.pricing?.features.find(
+        (f) => f.feature === "MANAGER_MULTI_SITE"
+      )
+        ? undefined
+        : 1;
+
       return ctx.prisma.site.findMany({
         where: { clubId: input },
         include: { rooms: true },
         orderBy: { name: "asc" },
+        take,
       });
     }),
   createSite: protectedProcedure
@@ -101,7 +118,20 @@ export const siteRouter = router({
     }),
   getRoomsForSite: protectedProcedure
     .input(z.string())
-    .query(({ ctx, input }) => {
+    .query(async ({ ctx, input }) => {
+      const user = await ctx.prisma.user.findUnique({
+        where: { id: input },
+        include: {
+          pricing: {
+            include: {
+              features: true,
+            },
+          },
+        },
+      });
+      if (!user?.pricing?.features.find((f) => f.feature === "MANAGER_ROOM"))
+        return [];
+
       return ctx.prisma.room.findMany({
         where: { siteId: input },
         orderBy: { name: "asc" },

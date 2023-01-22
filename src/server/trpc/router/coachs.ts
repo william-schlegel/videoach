@@ -501,11 +501,28 @@ export const coachRouter = router({
   createCoachOffer: protectedProcedure
     .input(OfferData.omit({ id: true }))
     .mutation(async ({ ctx, input }) => {
+      const pricing = await ctx.prisma.pricing.findFirst({
+        where: {
+          users: {
+            some: {
+              id: input.coachId,
+            },
+          },
+        },
+        include: {
+          features: true,
+        },
+      });
+      const target: CoachingTarget = pricing?.features.find(
+        (f) => f.feature === "COACH_OFFER_COMPANY"
+      )
+        ? input.target
+        : "INDIVIDUAL";
       return ctx.prisma.coachingPrice.create({
         data: {
           name: input.name,
           description: input.description,
-          target: input.target,
+          target,
           excludingTaxes: input.excludingTaxes,
           coachId: input.coachId,
           inHouse: input.inHouse,
@@ -542,6 +559,23 @@ export const coachRouter = router({
   updateCoachOffer: protectedProcedure
     .input(OfferData.partial())
     .mutation(async ({ ctx, input }) => {
+      const pricing = await ctx.prisma.pricing.findFirst({
+        where: {
+          users: {
+            some: {
+              id: input.coachId,
+            },
+          },
+        },
+        include: {
+          features: true,
+        },
+      });
+      const target: CoachingTarget = pricing?.features.find(
+        (f) => f.feature === "COACH_OFFER_COMPANY"
+      )
+        ? input.target ?? "INDIVIDUAL"
+        : "INDIVIDUAL";
       await ctx.prisma.coachingPricePack.deleteMany({
         where: {
           coachingPriceId: input.id,
@@ -557,7 +591,7 @@ export const coachRouter = router({
         data: {
           name: input.name,
           description: input.description,
-          target: input.target,
+          target,
           excludingTaxes: input.excludingTaxes,
           coachId: input.coachId,
           inHouse: input.inHouse,
