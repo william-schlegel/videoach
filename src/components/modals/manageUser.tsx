@@ -169,13 +169,13 @@ function UserForm({ errors, register }: UserFormProps): JSX.Element {
 
 type SubscriptionFormProps = {
   role: Role;
-  subscriptionId: string;
+  subscriptionId?: string;
   onNewPlan: (subscriptionId: string, monthlyPayment: boolean) => void;
 };
 
 export function SubscriptionForm({
   role,
-  subscriptionId,
+  subscriptionId = "",
   onNewPlan,
 }: SubscriptionFormProps) {
   const { t } = useTranslation("auth");

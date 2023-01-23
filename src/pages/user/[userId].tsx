@@ -1,9 +1,4 @@
-import {
-  type Pricing,
-  Role,
-  type PricingOption,
-  type PricingFeature,
-} from "@prisma/client";
+import { Role } from "@prisma/client";
 import { useRouter } from "next/router";
 import { trpc } from "../../utils/trpc";
 import { useForm, useWatch, type SubmitHandler } from "react-hook-form";
@@ -11,7 +6,7 @@ import type { GetServerSidePropsContext } from "next";
 import { useTranslation } from "next-i18next";
 import { serverSideTranslations } from "next-i18next/serverSideTranslations";
 import nextI18nConfig from "@root/next-i18next.config.mjs";
-import { formatDateAsYYYYMMDD, remainingDays } from "@lib/formatDate";
+import { remainingDays } from "@lib/formatDate";
 import Confirmation from "@ui/confirmation";
 import { toast } from "react-toastify";
 import Layout from "@root/src/components/layout";
@@ -28,6 +23,7 @@ import { isCUID } from "@lib/checkValidity";
 import Modal from "@ui/modal";
 import { formatMoney } from "@lib/formatNumber";
 import { SubscriptionForm } from "@modals/manageUser";
+import { isDate, startOfToday } from "date-fns";
 
 export const ROLE_LIST = [
   { label: "user", value: Role.MEMBER },
@@ -55,6 +51,9 @@ type FormValues = {
   aboutMe: string;
   coachingActivities: string[];
   publicName: string;
+  pricingId: string;
+  monthlyPayment: boolean;
+  cancelationDate: Date | null;
 };
 
 export default function Profile() {
@@ -62,30 +61,30 @@ export default function Profile() {
   const { userId } = router.query;
   const [theme] = useLocalStorage<TThemes>("theme", "cupcake");
   const myUserId = (Array.isArray(userId) ? userId[0] : userId) || "";
-  const [pricingId, setPricingId] = useState("");
-  const [monthlyPayment, setMonthlyPayment] = useState(false);
-  const [cancelationDate, setCancelationDate] = useState("");
   const [newActivity, setNewActivity] = useState("");
 
   const userQuery = trpc.users.getUserById.useQuery(myUserId, {
     enabled: isCUID(myUserId),
     onSuccess: (data) => {
       reset({
-        name: data?.name || "",
-        email: data?.email || "",
-        phone: data?.phone || "",
-        address: data?.address || "",
-        searchAddress: data?.coachData?.searchAddress || "",
-        longitude: data?.coachData?.longitude || LONGITUDE,
-        latitude: data?.coachData?.latitude || LATITUDE,
-        role: data?.role || Role.MEMBER,
-        range: data?.coachData?.range || 10,
-        description: data?.coachData?.description || "",
-        aboutMe: data?.coachData?.aboutMe || "",
-        publicName: data?.coachData?.publicName || "",
+        name: data?.name ?? "",
+        email: data?.email ?? "",
+        phone: data?.phone ?? "",
+        address: data?.address ?? "",
+        searchAddress: data?.coachData?.searchAddress ?? "",
+        longitude: data?.coachData?.longitude ?? LONGITUDE,
+        latitude: data?.coachData?.latitude ?? LATITUDE,
+        role: data?.role ?? Role.MEMBER,
+        range: data?.coachData?.range ?? 10,
+        description: data?.coachData?.description ?? "",
+        aboutMe: data?.coachData?.aboutMe ?? "",
+        publicName: data?.coachData?.publicName ?? "",
         coachingActivities: data?.coachData?.coachingActivities.map(
           (a) => a.name
         ),
+        pricingId: "",
+        monthlyPayment: true,
+        cancelationDate: null,
       });
     },
   });
@@ -97,6 +96,8 @@ export default function Profile() {
     reset,
     control,
     setValue,
+    setError,
+    clearErrors,
   } = useForm<FormValues>();
   const fields = useWatch({
     control,
@@ -106,9 +107,12 @@ export default function Profile() {
     },
   });
 
-  const newPricing = trpc.pricings.getPricingById.useQuery(pricingId, {
-    enabled: isCUID(pricingId),
-  });
+  const newPricing = trpc.pricings.getPricingById.useQuery(
+    fields?.pricingId ?? "",
+    {
+      enabled: isCUID(fields.pricingId),
+    }
+  );
 
   const utils = trpc.useContext();
   const updateUser = trpc.users.updateUser.useMutation({
@@ -122,17 +126,32 @@ export default function Profile() {
   });
   const { t } = useTranslation("auth");
   const onSubmit: SubmitHandler<FormValues> = (data) => {
+    if (!isCUID(data.pricingId)) {
+      setError("pricingId", {
+        type: "required",
+        message: t("pricing-mandatory"),
+      });
+      return;
+    } else clearErrors("pricingId");
     updateUser.mutate({
       id: myUserId,
-      ...data,
+      name: data.name,
+      email: data.email,
+      phone: data.phone,
+      address: data.address,
+      searchAddress: data.searchAddress,
+      longitude: data.longitude,
+      latitude: data.latitude,
+      role: data.role,
       range: Number(data.range),
-      pricingId,
-      monthlyPayment,
-      cancelationDate: cancelationDate ? new Date(cancelationDate) : undefined,
+      description: data.description,
+      aboutMe: data.aboutMe,
+      coachingActivities: data.coachingActivities,
+      publicName: data.publicName,
+      pricingId: data.pricingId,
+      monthlyPayment: data.monthlyPayment,
+      cancelationDate: data.cancelationDate ?? undefined,
     });
-    setCancelationDate("");
-    setMonthlyPayment(false);
-    setPricingId("");
   };
 
   const circle = useMemo(() => {
@@ -362,11 +381,16 @@ export default function Profile() {
                   <div className="flex gap-2">
                     <div className="rounded bg-primary px-4 py-2 text-primary-content">
                       <PlanDetails
+                        // Actual pricing
                         monthlyPayment={userQuery.data.monthlyPayment ?? true}
-                        pricing={userQuery.data.pricing}
+                        name={userQuery.data.pricing?.title ?? null}
+                        monthly={userQuery.data.pricing?.monthly ?? null}
+                        yearly={userQuery.data.pricing?.yearly ?? null}
+                        free={userQuery.data.pricing?.free ?? null}
                       />
                     </div>
-                    {userQuery.data.trialUntil ? (
+                    {userQuery.data.trialUntil &&
+                    !userQuery.data.pricing?.free ? (
                       <div className="rounded bg-secondary px-4 py-2 text-secondary-content">
                         {t("trial-remaining", {
                           count: remainingDays(userQuery.data.trialUntil),
@@ -374,57 +398,67 @@ export default function Profile() {
                       </div>
                     ) : null}
                   </div>
-                  <Confirmation
-                    message={t("cancel-plan-message")}
-                    title={t("cancel-plan")}
-                    variant="Outlined-Secondary"
-                    buttonIcon={<i className="bx bx-x bx-sm" />}
-                    textConfirmation={t("cancel-plan-confirm")}
-                    onConfirm={() => setCancelationDate(formatDateAsYYYYMMDD())}
-                  />
                 </>
               ) : (
                 <div>{t("no-plan-yet")}</div>
               )}
-              {pricingId ? (
+              {fields.pricingId ? ( // new pricing
                 <div className="flex flex-1 flex-col border-2 border-warning p-2">
                   <h4>{t("new-plan")}</h4>
                   <div className="rounded bg-warning px-4 py-2 text-center text-warning-content">
                     {newPricing.data ? (
                       <PlanDetails
-                        monthlyPayment={monthlyPayment}
-                        pricing={newPricing.data}
+                        monthlyPayment={fields.monthlyPayment ?? true}
+                        name={newPricing.data?.title}
+                        monthly={newPricing.data?.monthly}
+                        yearly={newPricing.data?.yearly}
+                        free={newPricing.data?.free}
                       />
                     ) : null}
                   </div>
                 </div>
               ) : null}
-              {cancelationDate ? (
-                <div className="alert alert-warning">
-                  <div>
-                    <i className="bx bx-error-circle bx-xs" />
-                    <span>{t("cancelation-requested")}</span>
-                  </div>
-                  <div className="flex-none">
-                    <button
-                      className="btn-outline btn btn-secondary btn-xs"
-                      type="button"
-                      onClick={() => setCancelationDate("")}
-                    >
-                      <i className="bx bx-x bx-xs" />
-                    </button>
-                  </div>
-                </div>
-              ) : null}
+
               <SubscriptionForm
                 role={fields.role ?? userQuery.data?.role ?? "MEMBER"}
-                subscriptionId={userQuery.data?.pricingId ?? pricingId}
+                subscriptionId={userQuery.data?.pricingId ?? fields.pricingId}
                 onNewPlan={(newPId, monthly) => {
-                  setPricingId(newPId);
-                  setMonthlyPayment(monthly);
+                  setValue("pricingId", newPId);
+                  setValue("monthlyPayment", monthly);
+                  clearErrors("pricingId");
                 }}
               />
+              {errors.pricingId ? (
+                <p className="text-sm text-error">{errors.pricingId.message}</p>
+              ) : null}
             </div>
+          </div>
+          <div className="mt-4 rounded border border-error p-4 text-center">
+            <Confirmation
+              message={t("cancel-plan-message")}
+              title={t("cancel-plan")}
+              variant="Outlined-Secondary"
+              buttonIcon={<i className="bx bx-x bx-sm" />}
+              textConfirmation={t("cancel-plan-confirm")}
+              onConfirm={() => setValue("cancelationDate", startOfToday())}
+            />
+            {isDate(fields.cancelationDate) ? (
+              <div className="alert alert-error mt-4">
+                <div>
+                  <i className="bx bx-error-circle bx-xs" />
+                  <span>{t("cancelation-requested")}</span>
+                </div>
+                <div className="flex-none">
+                  <button
+                    className="btn btn-warning btn-xs"
+                    type="button"
+                    onClick={() => setValue("cancelationDate", null)}
+                  >
+                    <i className="bx bx-x bx-xs" />
+                  </button>
+                </div>
+              </div>
+            ) : null}
           </div>
         </section>
         <button
@@ -440,21 +474,29 @@ export default function Profile() {
 
 type PlanDetailsProps = {
   monthlyPayment: boolean;
-  pricing:
-    | Pricing
-    | (Pricing & { options: PricingOption[]; features: PricingFeature[] })
-    | null;
+  name: string | null;
+  monthly: number | null;
+  yearly: number | null;
+  free: boolean | null;
 };
 
-function PlanDetails({ monthlyPayment, pricing }: PlanDetailsProps) {
+function PlanDetails({
+  monthlyPayment,
+  name,
+  monthly,
+  yearly,
+  free,
+}: PlanDetailsProps) {
   const { t } = useTranslation("auth");
-  if (!pricing) return null;
+  if (!name) return null;
   return (
     <>
-      {pricing?.title} (
-      {monthlyPayment
-        ? `${formatMoney(pricing.monthly)} ${t("per-month")}`
-        : `${formatMoney(pricing.yearly)} ${t("per-year")}`}
+      {name} (
+      {free
+        ? t("free")
+        : monthlyPayment
+        ? `${formatMoney(monthly)} ${t("per-month")}`
+        : `${formatMoney(yearly)} ${t("per-year")}`}
       )
     </>
   );
