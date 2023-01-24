@@ -1,22 +1,28 @@
 import { authOptions } from "@auth/[...nextauth]";
 import { isCUID } from "@lib/checkValidity";
+import { formatDateLocalized } from "@lib/formatDate";
 import { useDayName } from "@lib/useDayName";
 import type {
   Activity,
   ActivityGroup,
   Club,
-  DayName,
   DayOpeningTime,
   OpeningTime,
+  PlanningActivity,
+  Reservation,
   Room,
+  RoomReservation,
   Site,
+  UserCoach,
 } from "@prisma/client";
 import { Role, Subscription } from "@prisma/client";
 import nextI18nConfig from "@root/next-i18next.config.mjs";
 import Layout from "@root/src/components/layout";
 import { trpc } from "@trpcclient/trpc";
-import SelectDay from "@ui/selectDay";
+import Confirmation from "@ui/confirmation";
+import { SelectDate } from "@ui/selectDay";
 import Spinner from "@ui/spinner";
+import { isBefore, isEqual, startOfToday } from "date-fns";
 import {
   type GetServerSidePropsContext,
   type InferGetServerSidePropsType,
@@ -39,22 +45,25 @@ const MemberDashboard = ({
 }: InferGetServerSidePropsType<typeof getServerSideProps>) => {
   const { t } = useTranslation("dashboard");
   const queryUser = trpc.users.getUserSubscriptionsById.useQuery(userId);
-  const { getToday } = useDayName();
-  const [day, setDay] = useState(getToday());
+  const [day, setDay] = useState(startOfToday());
+  const queryReservations = trpc.users.getReservationsByUserId.useQuery({
+    userId,
+    after: startOfToday(),
+  });
 
   return (
     <Layout className="container mx-auto my-2 flex flex-col gap-2">
       <h1 className="flex justify-between">
-        {t("member-dashboard")}
+        {t("member.dashboard")}
         <Link
-          className="btn-secondary btn"
+          className="btn btn-secondary"
           href={`/member/${userId}/subscribe`}
         >
-          {t("new-subscription")}
+          {t("member.new-subscription")}
         </Link>
       </h1>
       <h2>
-        {t("my-subscription", {
+        {t("member.my-subscription", {
           count: queryUser.data?.memberData?.subscriptions.length ?? 0,
         })}
       </h2>
@@ -66,16 +75,26 @@ const MemberDashboard = ({
       <section className="grid grid-cols-2 gap-2">
         <article className="rounded-md border border-primary p-2">
           <div className="flex items-center justify-between">
-            <h2>{t("my-planning")}</h2>
-            <SelectDay day={day} onNewDay={(newDay) => setDay(newDay)} />
+            <h2>{t("member.my-planning")}</h2>
+            <SelectDate day={day} onNewDay={(newDay) => setDay(newDay)} />
           </div>
           <DailyPlanning day={day} memberId={userId} />
         </article>
         <article className="rounded-md border border-primary p-2">
-          <h2>{t("my-reservations")}</h2>
+          <h2>{t("member.my-reservations")}</h2>
+          <div className="flex flex-wrap gap-2">
+            {queryReservations.data?.map((reservation) => (
+              <MyReservation
+                key={reservation.id}
+                reservation={reservation}
+                memberId={userId}
+                day={day}
+              />
+            ))}
+          </div>
         </article>
         <article className="col-span-2 rounded-md border border-primary p-2">
-          <h2>{t("my-chat")}</h2>
+          <h2>{t("member.my-chat")}</h2>
         </article>
       </section>
     </Layout>
@@ -84,19 +103,89 @@ const MemberDashboard = ({
 
 export default MemberDashboard;
 
+type MyReservationProps = {
+  memberId: string;
+  day: Date;
+  reservation: Reservation & {
+    activity: Activity | null;
+    planningActivity:
+      | (PlanningActivity & {
+          activity: Activity;
+          coach: UserCoach | null;
+          room: Room | null;
+        })
+      | null;
+  };
+};
+
+function MyReservation({ reservation, memberId, day }: MyReservationProps) {
+  const { t } = useTranslation("dashboard");
+  const utils = trpc.useContext();
+  const deleteReservation = trpc.plannings.deleteReservation.useMutation({
+    onSuccess() {
+      utils.users.getReservationsByUserId.invalidate({
+        userId: memberId,
+        after: day,
+      });
+      utils.users.getReservationsByUserId.invalidate({
+        userId: memberId,
+        after: day,
+      });
+    },
+  });
+
+  function handleDeleteReservation() {
+    deleteReservation.mutate(reservation.id);
+  }
+
+  return (
+    <div className="rounded border border-primary bg-base-100">
+      <div className="flex items-center justify-between gap-4 bg-primary px-3 py-1 text-center text-primary-content">
+        <span>{formatDateLocalized(reservation.date, { withDay: true })}</span>
+        <Confirmation
+          message={t("member.reservation-delete-message")}
+          title={t("member.delete-reservation")}
+          buttonIcon={<i className="bx bx-trash bx-xs" />}
+          onConfirm={() => handleDeleteReservation()}
+          buttonSize="xs"
+          variant="Icon-Only-Secondary"
+        />
+      </div>
+      <div className="p-2">
+        <div className="space-x-2 text-center">
+          <span className="font-semibold">
+            {reservation?.planningActivity?.activity?.name}
+          </span>
+          {reservation?.planningActivity?.coach?.publicName ? (
+            <span className="text-xs">
+              {"("}
+              {reservation?.planningActivity?.coach?.publicName}
+              {")"}
+            </span>
+          ) : null}
+        </div>
+        <div className="flex justify-between">
+          <span>{reservation?.planningActivity?.startTime}</span>
+          <span>{reservation?.planningActivity?.room?.name}</span>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 type DailyPlanningProps = {
   memberId: string;
-  day: DayName;
+  day: Date;
 };
 
 function DailyPlanning({ memberId, day }: DailyPlanningProps) {
   const { t } = useTranslation("dashboard");
   const planning = trpc.plannings.getMemberDailyPlanning.useQuery({
-    day,
+    date: day,
     memberId,
   });
   if (planning.isInitialLoading) return <Spinner />;
-  if (!planning.data) return <div>{t("no-planning")}</div>;
+  if (!planning.data) return <div>{t("member.no-planning")}</div>;
   return (
     <div className="flex flex-col gap-2">
       {planning.data.map((plan) => (
@@ -125,10 +214,23 @@ function DailyPlanning({ memberId, day }: DailyPlanningProps) {
                   {" - "}
                   <span>{activity.room?.name}</span>
                 </p>
+                <MakeReservation
+                  room={activity.room}
+                  reservations={activity.reservations}
+                  memberId={memberId}
+                  planningActivityId={activity.id}
+                  day={day}
+                />
               </div>
             ))}
             {plan.withNoCalendar.map((activity) => (
-              <Wnc key={activity.id} activity={activity} day={day} />
+              <Wnc
+                key={activity.id}
+                activity={activity}
+                day={day}
+                memberId={memberId}
+                reservations={activity.reservations}
+              />
             ))}
           </div>
         </div>
@@ -137,35 +239,116 @@ function DailyPlanning({ memberId, day }: DailyPlanningProps) {
   );
 }
 
-type WncProps = {
-  activity: Activity & {
-    site: {
-      name: string;
-    } | null;
-    room: {
-      name: string;
-    } | null;
-  };
-  day: DayName;
+type MakeReservationProps = {
+  room: Room | null;
+  reservations: { id: string; date: Date }[];
+  planningActivityId: string;
+  memberId: string;
+  day: Date;
+};
+function MakeReservation({
+  room,
+  reservations,
+  planningActivityId,
+  memberId,
+  day,
+}: MakeReservationProps) {
+  const { t } = useTranslation("dashboard");
+  const utils = trpc.useContext();
+  const createReservation =
+    trpc.plannings.createPlanningReservation.useMutation({
+      onSuccess() {
+        utils.users.getReservationsByUserId.invalidate({
+          userId: memberId,
+          after: day,
+        });
+        utils.users.getReservationsByUserId.invalidate({
+          userId: memberId,
+          after: day,
+        });
+      },
+    });
+
+  if (!room) return null;
+  if (isBefore(day, startOfToday())) return null;
+
+  const free =
+    room.capacity > reservations.length
+      ? room.capacity - reservations.length
+      : 0;
+  if (room.reservation === "NONE")
+    return (
+      <div className="text-center">
+        <p className="btn-outline btn-disabled btn btn-xs">
+          {t("member.free-access")}
+        </p>
+      </div>
+    );
+
+  return (
+    <div className="flex items-center justify-between gap-2">
+      <p className="text-xs">
+        {free
+          ? t("member.remain", { free, capacity: room.capacity })
+          : t("member.waiting-list")}
+      </p>
+      {reservations.find(
+        (r) => r.id === planningActivityId && isEqual(day, r.date)
+      ) ? (
+        <span className="btn btn-accent btn-xs">{t("member.reserved")}</span>
+      ) : (
+        <button
+          className="btn btn-primary btn-xs"
+          onClick={() =>
+            createReservation.mutate({
+              planningActivityId,
+              memberId,
+              date: day,
+            })
+          }
+        >
+          {t("member.reserve")}
+        </button>
+      )}
+    </div>
+  );
+}
+
+type WncRoom = {
+  name: string;
+  capacity: number;
+  reservation: RoomReservation;
 };
 
-function Wnc({ activity, day }: WncProps) {
+type WncProps = {
+  activity: Activity & {
+    rooms: WncRoom[];
+  };
+  day: Date;
+  memberId: string;
+  reservations: { id: string; date: Date }[];
+};
+
+function Wnc({ activity, day, memberId, reservations }: WncProps) {
   const { t } = useTranslation("dashboard");
-  const calRoom = trpc.calendars.getCalendarForRoom.useQuery(
-    {
-      clubId: activity.clubId,
-      siteId: activity.siteId ?? "",
-      roomId: activity.roomId ?? "",
-    },
-    { enabled: isCUID(activity.roomId) && isCUID(activity.siteId) }
-  );
-  const calSite = trpc.calendars.getCalendarForSite.useQuery(
-    {
-      clubId: activity.clubId,
-      siteId: activity.siteId ?? "",
-    },
-    { enabled: isCUID(activity.siteId) }
-  );
+  const { getDayForDate } = useDayName();
+  const dayName = getDayForDate(day);
+  console.log("memberId", memberId);
+  // const calRoom = trpc.calendars.getCalendarForRoom.useQuery(
+  //   {
+  //     clubId: activity.clubId,
+  //     siteId: activity.siteId ?? "",
+  //     roomId: activity.roomId ?? "",
+  //   },
+  //   { enabled: isCUID(activity.roomId) && isCUID(activity.siteId) }
+  // );
+  // const calSite = trpc.calendars.getCalendarForSite.useQuery(
+  //   {
+  //     clubId: activity.clubId,
+  //     siteId: activity.siteId ?? "",
+  //   },
+  //   { enabled: isCUID(activity.siteId) }
+  // );
   const calClub = trpc.calendars.getCalendarForClub.useQuery(
     activity.clubId,
 
@@ -178,15 +361,16 @@ function Wnc({ activity, day }: WncProps) {
         workingHours: OpeningTime[];
       })
     | null = null;
-  if (calRoom.data)
-    OT = calRoom.data.openingTime.find((d) => d.name === day) ?? null;
-  else if (calSite.data)
-    OT = calSite.data.openingTime.find((d) => d.name === day) ?? null;
-  else if (calClub.data)
-    OT = calClub.data.openingTime.find((d) => d.name === day) ?? null;
+  // if (calRoom.data)
+  //   OT = calRoom.data.openingTime.find((d) => d.name === dayName) ?? null;
+  // else if (calSite.data)
+  //   OT = calSite.data.openingTime.find((d) => d.name === dayName) ?? null;
+  // else if (calClub.data)
+  if (calClub.data)
+    OT = calClub.data.openingTime.find((d) => d.name === dayName) ?? null;
 
-  if (OT?.wholeDay) openingText = t("all-day");
-  else if (OT?.closed) openingText = t("closed");
+  if (OT?.wholeDay) openingText = t("member.all-day");
+  else if (OT?.closed) openingText = t("member.closed");
   else {
     openingText =
       OT?.workingHours.map((wh) => `${wh.opening}-${wh.closing}`).join(" | ") ??
@@ -194,18 +378,86 @@ function Wnc({ activity, day }: WncProps) {
   }
 
   return (
-    <div key={activity.id} className="border border-base-300 bg-base-100 p-2">
-      <p>
-        <span className="text-xs">{openingText}</span>&nbsp;
-        <span>{activity.name}</span>
-      </p>
+    <>
+      {activity.rooms.map((room) => (
+        <div
+          key={`${room?.name}-${activity.id}`}
+          className="border border-base-300 bg-base-100 p-2"
+        >
+          <p>
+            <span className="text-xs">{openingText}</span>&nbsp;
+            <span>{activity.name}</span>
+          </p>
+          <p className="text-xs">
+            {room?.name ? <span>{room.name}</span> : null}
+          </p>
+          <ReserveDuration
+            activity={activity}
+            room={room}
+            reservations={reservations}
+            day={day}
+          />
+        </div>
+      ))}
+    </>
+  );
+}
+
+type ReserveDurationProps = {
+  activity: Activity;
+  room: WncRoom;
+  reservations: { id: string; date: Date }[];
+  day: Date;
+};
+
+function ReserveDuration({
+  room,
+  activity,
+  reservations,
+  day,
+}: ReserveDurationProps) {
+  const { t } = useTranslation("dashboard");
+  // console.log("activity,room", activity, room);
+  if (isBefore(day, startOfToday())) return null;
+
+  if (room?.reservation === "NONE")
+    return (
+      <div className="text-center">
+        <p className="btn-outline btn-disabled btn btn-xs">
+          {t("member.free-access")}
+        </p>
+      </div>
+    );
+  const free =
+    room.capacity > reservations.length
+      ? room.capacity - reservations.length
+      : 0;
+
+  return (
+    <div className="flex items-center justify-between gap-2">
       <p className="text-xs">
-        {activity.site?.name ? <span>{activity.site?.name}</span> : null}
-        {activity.room?.name ? <span>{activity.room?.name}</span> : null}
-        {!activity.site?.name && !activity.room?.name ? (
-          <span>{t("whole-club")}</span>
-        ) : null}
+        {free
+          ? t("member.remain", { free, capacity: room.capacity })
+          : t("member.waiting-list")}
       </p>
+      {reservations.find(
+        (r) => r.id === activity.id && isEqual(day, r.date)
+      ) ? (
+        <span className="btn btn-accent btn-xs">{t("member.reserved")}</span>
+      ) : (
+        <button
+          className="btn btn-primary btn-xs"
+          // onClick={() =>
+          //   createReservation.mutate({
+          //     planningActivityId,
+          //     memberId,
+          //     date: day,
+          //   })
+          // }
+        >
+          {t("member.reserve")}
+        </button>
+      )}
     </div>
   );
 }

@@ -22,11 +22,21 @@ export const remainingDays = (startDate: Date) => {
   return Math.max(days, 0);
 };
 
+type TformatDateLocalizedOptions = {
+  withTime?: boolean;
+  withDay?: boolean;
+};
+
 export const formatDateLocalized = (
   dt: Date | null | undefined,
-  withTime = false
+  options?: TformatDateLocalizedOptions
 ) => {
-  return format(dt ?? startOfToday(), withTime ? "Pp" : "P", {
+  const { withTime, withDay } = options ?? { withTime: false, withDay: false };
+  let frmt = "";
+  if (withDay) frmt = "E ";
+  frmt = frmt.concat("P");
+  if (withTime) frmt = frmt.concat("p");
+  return format(dt ?? startOfToday(), frmt, {
     locale: i18n?.language === "en" ? enUS : fr,
   });
 };

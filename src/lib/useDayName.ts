@@ -44,11 +44,17 @@ export function useDayName() {
     return next;
   }
 
+  function getDayForDate(dt: Date) {
+    const day = getDay(dt);
+    return DAYS.find((d) => d.number === day)?.value ?? "MONDAY";
+  }
+
   return {
     getName,
     getLabel,
     getNextDay,
     getPreviousDay,
     getToday,
+    getDayForDate,
   };
 }

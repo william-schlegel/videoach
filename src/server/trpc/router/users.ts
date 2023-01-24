@@ -65,6 +65,23 @@ export const userRouter = router({
         },
       });
     }),
+  getReservationsByUserId: protectedProcedure
+    .input(z.object({ userId: z.string().cuid(), after: z.date() }))
+    .query(({ ctx, input }) => {
+      return ctx.prisma.reservation.findMany({
+        where: { userId: input.userId, date: { gte: input.after } },
+        include: {
+          activity: true,
+          planningActivity: {
+            include: {
+              activity: true,
+              coach: true,
+              room: true,
+            },
+          },
+        },
+      });
+    }),
   getUserFullById: protectedProcedure
     .input(z.string().cuid())
     .query(({ ctx, input }) => {

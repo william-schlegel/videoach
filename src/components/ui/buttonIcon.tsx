@@ -1,6 +1,8 @@
 import { type ReactNode, useId } from "react";
 
 export type TIconButtonVariant =
+  | "Icon-Only-Primary"
+  | "Icon-Only-Secondary"
   | "Icon-Primary"
   | "Icon-Secondary"
   | "Icon-Outlined-Primary"
@@ -25,18 +27,30 @@ function ButtonIcon({
 }: Props) {
   const btnId = useId();
 
+  const noBorder =
+    buttonVariant === "Icon-Only-Primary" ||
+    buttonVariant === "Icon-Only-Secondary";
   const primary =
+    buttonVariant === "Icon-Only-Primary" ||
     buttonVariant === "Icon-Outlined-Primary" ||
     buttonVariant === "Icon-Primary";
   const outlined =
     buttonVariant === "Icon-Outlined-Primary" ||
-    buttonVariant === "Icon-Outlined-Secondary";
+    buttonVariant === "Icon-Outlined-Secondary"
+      ? "btn-outlined"
+      : "";
+
+  const color = noBorder
+    ? primary
+      ? "txt-primary"
+      : "txt-secondary"
+    : primary
+    ? "btn btn-primary"
+    : "btn btn-secondary";
 
   return fullButton ? (
     <label
-      className={`btn ${outlined ? "btn-outline" : ""} ${
-        primary ? "btn-primary" : "btn-secondary"
-      } flex items-center gap-2 btn-${buttonSize}`}
+      className={`${color} ${outlined} flex items-center gap-2 btn-${buttonSize}`}
       tabIndex={0}
     >
       {iconComponent}
@@ -46,9 +60,7 @@ function ButtonIcon({
     <div className={"tooltip z-50"} data-tip={title}>
       <label
         htmlFor={btnId}
-        className={`${primary ? "btn-primary" : "btn-secondary"} ${
-          outlined ? "btn-outline" : ""
-        } btn gap-2 btn-${buttonSize} `}
+        className={`${color} ${outlined} gap-2 btn-${buttonSize} `}
         tabIndex={0}
       >
         {iconComponent}

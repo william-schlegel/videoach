@@ -3,6 +3,15 @@ import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 import { router, protectedProcedure, publicProcedure } from "../trpc";
 
+const activityObject = z.object({
+  id: z.string().cuid(),
+  name: z.string(),
+  noCalendar: z.boolean().default(false),
+  maxDuration: z.number().default(0),
+  clubId: z.string().cuid(),
+  groupId: z.string().cuid(),
+});
+
 export const activityRouter = router({
   getActivityById: protectedProcedure
     .input(z.string().cuid())
@@ -99,39 +108,18 @@ export const activityRouter = router({
       });
     }),
   createActivity: protectedProcedure
-    .input(
-      z.object({
-        name: z.string(),
-        groupId: z.string().cuid(),
-        clubId: z.string().cuid(),
-      })
-    )
+    .input(activityObject.omit({ id: true }))
     .mutation(({ ctx, input }) =>
       ctx.prisma.activity.create({
-        data: {
-          name: input.name,
-          groupId: input.groupId,
-          clubId: input.clubId,
-        },
+        data: input,
       })
     ),
   updateActivity: protectedProcedure
-    .input(
-      z.object({
-        id: z.string().cuid(),
-        name: z.string(),
-        clubId: z.string().cuid(),
-        groupId: z.string().cuid(),
-      })
-    )
+    .input(activityObject.partial())
     .mutation(({ ctx, input }) =>
       ctx.prisma.activity.update({
         where: { id: input.id },
-        data: {
-          name: input.name,
-          groupId: input.groupId,
-          clubId: input.clubId,
-        },
+        data: input,
       })
     ),
   deleteActivity: protectedProcedure

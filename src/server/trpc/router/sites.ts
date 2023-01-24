@@ -119,8 +119,9 @@ export const siteRouter = router({
   getRoomsForSite: protectedProcedure
     .input(z.string())
     .query(async ({ ctx, input }) => {
+      // check user rights
       const user = await ctx.prisma.user.findUnique({
-        where: { id: input },
+        where: { id: ctx.session.user.id },
         include: {
           pricing: {
             include: {

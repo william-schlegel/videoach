@@ -79,6 +79,7 @@ model User {
   memberData      UserMember?    @relation("member-user")
   coachData       UserCoach?     @relation("coach-user")
   managerData     UserManager?   @relation("manager-user")
+  reservations    Reservation[]
 
   @@index([pricingId])
 }
@@ -220,7 +221,6 @@ model Site {
   plannings          Planning[]
   planningActivities PlanningActivity[]
   subscriptions      Subscription[]
-  activity           Activity[]
 
   @@index([clubId])
 }
@@ -247,8 +247,6 @@ model Room {
   plannings          Planning[]
   planningActivities PlanningActivity[]
   subscriptions      Subscription[]
-  // room for activities with no calendar
-  activity           Activity[]         @relation("room-activity") // room for activity 
 
   @@index([siteId])
 }
@@ -391,16 +389,11 @@ model Activity {
   planningActivities PlanningActivity[]
   subscriptions      Subscription[]
   noCalendar         Boolean            @default(false)
-  siteId             String?
-  site               Site?              @relation(fields: [siteId], references: [id])
-  // for activities with no calendar
-  roomId             String?
-  room               Room?              @relation(fields: [roomId], references: [id], name: "room-activity")
+  maxDuration        Int                @default(0)
+  reservations       Reservation[]
 
-  @@index([roomId])
   @@index([groupId])
   @@index([clubId])
-  @@index([siteId])
 }
 
 model CoachingActivity {
@@ -655,24 +648,42 @@ model Planning {
 }
 
 model PlanningActivity {
-  id         String     @id @default(cuid())
-  planningId String
-  planning   Planning   @relation(fields: [planningId], references: [id], onDelete: Cascade)
-  activityId String
-  activity   Activity   @relation(fields: [activityId], references: [id], onDelete: Cascade)
-  siteId     String
-  site       Site       @relation(fields: [siteId], references: [id])
-  roomId     String?
-  room       Room?      @relation(fields: [roomId], references: [id])
-  day        DayName
-  startTime  String
-  duration   Int
-  coachId    String?
-  coach      UserCoach? @relation(fields: [coachId], references: [userId])
+  id           String        @id @default(cuid())
+  planningId   String
+  planning     Planning      @relation(fields: [planningId], references: [id], onDelete: Cascade)
+  activityId   String
+  activity     Activity      @relation(fields: [activityId], references: [id], onDelete: Cascade)
+  siteId       String
+  site         Site          @relation(fields: [siteId], references: [id])
+  roomId       String?
+  room         Room?         @relation(fields: [roomId], references: [id])
+  day          DayName
+  startTime    String
+  duration     Int
+  coachId      String?
+  coach        UserCoach?    @relation(fields: [coachId], references: [userId])
+  reservations Reservation[]
 
   @@index([planningId])
   @@index([activityId])
   @@index([siteId])
   @@index([roomId])
   @@index([coachId])
+}
+
+model Reservation {
+  id                 String            @id @default(cuid())
+  planningActivityId String?
+  planningActivity   PlanningActivity? @relation(fields: [planningActivityId], references: [id], onDelete: Cascade)
+  activityId         String?
+  activity           Activity?         @relation(fields: [activityId], references: [id], onDelete: Cascade)
+  date               DateTime
+  duration           Float             @default(0)
+  userId             String
+  user               User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  reservationDate    DateTime          @default(now())
+
+  @@index([activityId])
+  @@index([planningActivityId])
+  @@index([userId])
 }

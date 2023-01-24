@@ -1,12 +1,13 @@
 import { trpc } from "../../utils/trpc";
 import Modal, { type TModalVariant } from "../ui/modal";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Confirmation from "../ui/confirmation";
 import { useTranslation } from "next-i18next";
 import { type ButtonSize } from "@ui/buttonIcon";
 import Spinner from "@ui/spinner";
 import { toast } from "react-toastify";
 import { isCUID } from "@lib/checkValidity";
+import { type SubmitHandler, useForm, useWatch } from "react-hook-form";
 
 type AddActivityProps = {
   userId: string;
@@ -64,44 +65,51 @@ const AddActivity = ({
       className="w-11/12 max-w-5xl"
     >
       <h3>{t("activity.select-club-activities")}</h3>
-      <div className="flex flex-1 gap-4">
-        <aside className="flex flex-col gap-2">
+      <div className="flex gap-4">
+        <aside className="space-y-4">
           <h4>{t("group.group")}</h4>
-          <ul className="menu overflow-hidden rounded border border-secondary bg-base-100">
+          <div className="flex max-h-[70vh] flex-col flex-wrap rounded border border-secondary bg-base-100">
             {queryGroups.data?.map((group) => (
-              <li key={group.id}>
-                <div className={`flex ${groupId === group.id ? "active" : ""}`}>
-                  <button onClick={() => setGroupId(group.id)}>
-                    {group.name}
-                  </button>
-                  {withUpdate && !group.default && (
-                    <>
-                      <UpdateGroup groupId={group.id} userId={userId} />
-                      <DeleteGroup groupId={group.id} userId={userId} />
-                    </>
-                  )}
-                </div>
-              </li>
+              <div
+                key={group.id}
+                className={`inline-flex cursor-pointer py-4 px-8 ${
+                  groupId === group.id
+                    ? "bg-primary text-primary-content"
+                    : "bg-base-100 text-base-content hover:bg-base-200"
+                }`}
+              >
+                <span tabIndex={0} onClick={() => setGroupId(group.id)}>
+                  {group.name}
+                </span>
+                {withUpdate && !group.default && (
+                  <>
+                    <UpdateGroup groupId={group.id} userId={userId} />
+                    <DeleteGroup groupId={group.id} userId={userId} />
+                  </>
+                )}
+              </div>
             ))}
-          </ul>
+          </div>
           {withAdd ? <NewGroup userId={userId} /> : null}
         </aside>
-        <div className="flex flex-grow flex-col gap-2">
+        <div className="flex-1 space-y-4">
           <h4>{t("activity.activities")}</h4>
           <div className="flex flex-wrap gap-2">
             {queryClubActivities.data?.activities
               .filter((a) => a.groupId === groupId)
               .map((activity) => (
                 <div key={activity.id} className="flex items-center gap-2">
-                  <span className="flex items-center gap-1 rounded-full border border-primary px-4 py-2 text-primary-content">
-                    {activity.name}
+                  <span className="flex items-center gap-2 rounded-full border border-primary px-4 py-2 text-primary-content">
+                    <span>{activity.name}</span>
+                    {activity.noCalendar ? (
+                      <i className="bx bx-calendar-x bx-xs text-accent" />
+                    ) : null}
                     {withUpdate && (
                       <>
                         <UpdateActivity
                           clubId={clubId}
                           groupId={groupId}
                           id={activity.id}
-                          initialName={activity.name}
                         />
                         <DeleteActivity
                           clubId={clubId}
@@ -127,11 +135,100 @@ type NewActivityProps = {
   groupId: string;
 };
 
+type ActivityFormValues = {
+  name: string;
+  noCalendar: boolean;
+  maxDuration: number;
+};
+
+type ActivityFormProps = {
+  onSubmit: (data: ActivityFormValues) => void;
+  initialValues?: ActivityFormValues;
+  onCancel: () => void;
+};
+
+function ActivityForm({
+  onSubmit,
+  initialValues,
+  onCancel,
+}: ActivityFormProps) {
+  const {
+    handleSubmit,
+    register,
+    formState: { errors },
+    control,
+    reset,
+  } = useForm<ActivityFormValues>();
+  const fields = useWatch({ control });
+  const { t } = useTranslation("club");
+
+  useEffect(() => {
+    reset(initialValues);
+  }, [initialValues, reset]);
+
+  const onSuccess: SubmitHandler<ActivityFormValues> = (data) => {
+    onSubmit(data);
+    reset();
+  };
+
+  return (
+    <form onSubmit={handleSubmit(onSuccess)} className="space-y-2">
+      <input
+        className="input-bordered input w-full"
+        {...register("name", { required: t("name-mandatory") })}
+      />
+      {errors.name && (
+        <p className="text-sm text-error">{errors.name.message}</p>
+      )}
+      <div className="form-control">
+        <label className="label cursor-pointer justify-start gap-4">
+          <input
+            type="checkbox"
+            className="checkbox-primary checkbox"
+            {...register("noCalendar")}
+          />
+          <span className="label-text">{t("activity.no-calendar")}</span>
+        </label>
+      </div>
+      {fields.noCalendar ? (
+        <div className="form-control">
+          <label>{t("activity.max-duration")}</label>
+          <div className="input-group">
+            <input
+              type="text"
+              className="input-bordered input w-full"
+              {...register("maxDuration", { valueAsNumber: true })}
+            />
+            <span>{t("activity.minutes")}</span>
+          </div>
+        </div>
+      ) : null}
+      <div className="col-span-2 flex items-center justify-end gap-2">
+        <button
+          type="button"
+          className="btn-outline btn btn-secondary"
+          onClick={(e) => {
+            e.preventDefault();
+            reset();
+            onCancel();
+          }}
+        >
+          {t("common:cancel")}
+        </button>
+        <button className="btn btn-primary" type="submit">
+          {t("common:save")}
+        </button>
+      </div>
+    </form>
+  );
+}
+
 const NewActivity = ({ clubId, groupId }: NewActivityProps) => {
   const utils = trpc.useContext();
   const groupQuery = trpc.activities.getActivityGroupById.useQuery(groupId, {
     enabled: isCUID(groupId),
   });
+  const [close, setClose] = useState(false);
   const createActivity = trpc.activities.createActivity.useMutation({
     onSuccess: () => {
       utils.activities.getActivitiesForClub.invalidate();
@@ -141,35 +238,28 @@ const NewActivity = ({ clubId, groupId }: NewActivityProps) => {
       toast.error(error.message);
     },
   });
-  const [name, setName] = useState("");
-  const [error, setError] = useState(false);
   const { t } = useTranslation("club");
 
-  function addNewActivity() {
-    if (name === "") {
-      setError(true);
-      return;
-    }
-    setError(false);
-    createActivity.mutate({
-      name,
-      clubId,
-      groupId,
-    });
+  function handleSubmit(data: ActivityFormValues) {
+    createActivity.mutate({ clubId, groupId, ...data });
+    setClose(true);
   }
 
   return (
-    <Modal title={t("activity.new")} handleSubmit={addNewActivity}>
-      <h3>
-        {t("activity.create-group")}
+    <Modal
+      title={t("activity.new")}
+      onCloseModal={() => setClose(false)}
+      closeModal={close}
+      cancelButtonText=""
+    >
+      <h3 className="space-x-2">
+        <span>{t("activity.create-group")}</span>
         <span className="text-primary">{groupQuery.data?.name}</span>
       </h3>
-      <input
-        className="input-bordered input w-full"
-        value={name}
-        onChange={(e) => setName(e.target.value)}
+      <ActivityForm
+        onSubmit={(data) => handleSubmit(data)}
+        onCancel={() => setClose(true)}
       />
-      {error && <p className="text-sm text-error">{t("name-mandatory")}</p>}
     </Modal>
   );
 };
@@ -178,16 +268,14 @@ type UpdateActivityProps = {
   clubId: string;
   groupId: string;
   id: string;
-  initialName: string;
 };
 
-function UpdateActivity({
-  clubId,
-  groupId,
-  id,
-  initialName,
-}: UpdateActivityProps) {
+function UpdateActivity({ clubId, groupId, id }: UpdateActivityProps) {
+  const [close, setClose] = useState(false);
   const utils = trpc.useContext();
+  const queryActivity = trpc.activities.getActivityById.useQuery(id, {
+    enabled: isCUID(id),
+  });
   const updateActivity = trpc.activities.updateActivity.useMutation({
     onSuccess: () => {
       utils.activities.getActivitiesForClub.invalidate();
@@ -197,44 +285,41 @@ function UpdateActivity({
       toast.error(error.message);
     },
   });
-  const [name, setName] = useState(initialName);
-  const [error, setError] = useState(false);
   const { t } = useTranslation("club");
 
-  function update() {
-    if (name === "") {
-      setError(true);
-      return;
-    }
-    setError(false);
+  function handleSubmit(data: ActivityFormValues) {
     updateActivity.mutate({
       id,
-      name,
       clubId,
       groupId,
+      ...data,
     });
+    setClose(true);
   }
 
   return (
     <Modal
       title={t("activity.update")}
-      handleSubmit={update}
       buttonIcon={<i className="bx bx-edit bx-xs" />}
-      variant={"Icon-Outlined-Primary"}
-      buttonSize="sm"
+      variant={"Icon-Only-Primary"}
+      buttonSize="xs"
+      onCloseModal={() => setClose(false)}
+      closeModal={close}
+      cancelButtonText=""
     >
       <h3>
         {t("activity.update")}
-        <span className="text-primary">{initialName}</span>
+        <span className="text-primary">{queryActivity.data?.name}</span>
       </h3>
-      <input
-        className="input-bordered input w-full"
-        value={name}
-        onChange={(e) => setName(e.target.value)}
+      <ActivityForm
+        initialValues={{
+          name: queryActivity.data?.name ?? "",
+          noCalendar: !!queryActivity.data?.noCalendar,
+          maxDuration: queryActivity.data?.maxDuration ?? 0,
+        }}
+        onSubmit={(data) => handleSubmit(data)}
+        onCancel={() => setClose(true)}
       />
-      {error && (
-        <p className="text-sm text-error">{t("activity-name-mandatory")}</p>
-      )}
     </Modal>
   );
 }
@@ -263,9 +348,9 @@ function DeleteActivity({ clubId, activityId }: DeleteActivityProps) {
       message={t("activity.deletion-message")}
       onConfirm={() => deleteActivity.mutate({ clubId, activityId })}
       buttonIcon={<i className="bx bx-trash bx-xs" />}
-      variant={"Icon-Outlined-Secondary"}
+      variant={"Icon-Only-Secondary"}
       textConfirmation={t("activity.deletion-confirmation")}
-      buttonSize="sm"
+      buttonSize="xs"
     />
   );
 }

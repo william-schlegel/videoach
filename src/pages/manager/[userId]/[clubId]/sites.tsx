@@ -66,7 +66,7 @@ const ManageSites = ({
           )}
         </div>
         <button
-          className="btn btn-outline btn-primary"
+          className="btn-outline btn btn-primary ml-4"
           onClick={() => {
             const path = `/manager/${sessionData?.user?.id}/clubs?clubId=${clubId}`;
             router.push(path);
@@ -184,8 +184,11 @@ export function SiteContent({ clubId, siteId }: SiteContentProps) {
                       onClick={() => setRoomId(room.id)}
                     >
                       <span>{room.name}</span>
-                      {room.reservation !== "NONE" && (
-                        <i className="bx bx-calendar bx-sm text-secondary" />
+                      {room.reservation === "MANDATORY" && (
+                        <i className="bx bx-calendar-exclamation bx-sm text-secondary" />
+                      )}
+                      {room.reservation === "POSSIBLE" && (
+                        <i className="bx bx-calendar-alt bx-sm text-secondary" />
                       )}
                     </button>
                   </li>

@@ -433,7 +433,7 @@ export default function Profile() {
               ) : null}
             </div>
           </div>
-          <div className="mt-4 rounded border border-error p-4 text-center">
+          <div className="mt-4 rounded border border-secondary p-4 text-center">
             <Confirmation
               message={t("cancel-plan-message")}
               title={t("cancel-plan")}
@@ -450,7 +450,7 @@ export default function Profile() {
                 </div>
                 <div className="flex-none">
                   <button
-                    className="btn btn-warning btn-xs"
+                    className="btn-warning btn-xs btn"
                     type="button"
                     onClick={() => setValue("cancelationDate", null)}
                   >
@@ -462,7 +462,7 @@ export default function Profile() {
           </div>
         </section>
         <button
-          className="btn btn-primary col-span-2 w-fit"
+          className="btn-primary btn col-span-2 w-fit"
           disabled={updateUser.isLoading}
         >
           {t("save-profile")}

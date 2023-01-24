@@ -1,13 +1,16 @@
+import { isCUID } from "@lib/checkValidity";
 import type {
   Activity,
   Club,
   Planning,
   PlanningActivity,
   Room,
+  RoomReservation,
   Site,
   UserCoach,
 } from "@prisma/client";
 import { DayName } from "@prisma/client";
+import { getDayName } from "@trpcserver/lib/days";
 import { z } from "zod";
 import { router, protectedProcedure, publicProcedure } from "../trpc";
 
@@ -226,7 +229,7 @@ export const planningRouter = router({
     .input(
       z.object({
         memberId: z.string().cuid(),
-        day: z.nativeEnum(DayName),
+        date: z.date(),
       })
     )
     .query(async ({ ctx, input }) => {
@@ -270,16 +273,19 @@ export const planningRouter = router({
           room: Room | null;
           activity: Activity;
           coach: UserCoach | null;
+          reservations: { id: string; date: Date }[];
         })[];
         withNoCalendar: (Activity & {
-          site: {
+          rooms: {
             name: string;
-          } | null;
-          room: {
-            name: string;
-          } | null;
+            capacity: number;
+            reservation: RoomReservation;
+          }[];
+          reservations: { id: string; date: Date }[];
         })[];
       })[] = [];
+
+      const dayName = getDayName(input.date);
 
       for (const planningClub of planningClubs) {
         const sub = user?.memberData?.subscriptions.filter(
@@ -298,7 +304,7 @@ export const planningRouter = router({
           planningId: string;
           OR?: TFilter[];
         } = {
-          day: input.day,
+          day: dayName,
           planningId: planningClub.id,
         };
         type TFilterNC = {
@@ -354,8 +360,6 @@ export const planningRouter = router({
             whereNoCal.OR.push(filterNC);
           }
         }
-        console.log("where", where);
-
         const pa = await ctx.prisma.planningActivity.findMany({
           where,
           include: {
@@ -363,20 +367,87 @@ export const planningRouter = router({
             coach: true,
             room: true,
             site: true,
+            reservations: {
+              where: {
+                date: { gte: input.date },
+              },
+            },
           },
         });
         const withNoCalendar = await ctx.prisma.activity.findMany({
           where: whereNoCal,
           include: {
-            site: { select: { name: true } },
-            room: { select: { name: true } },
+            // sites: { select: { name: true } },
+            rooms: {
+              select: { name: true, capacity: true, reservation: true },
+            },
+            reservations: {
+              where: {
+                date: { gte: input.date },
+              },
+            },
           },
         });
-
-        planning.push({ ...planningClub, activities: pa, withNoCalendar });
+        planning.push({
+          ...planningClub,
+          activities: pa.map((p) => ({
+            ...p,
+            reservations: p.reservations
+              .filter((r) => isCUID(r.planningActivityId))
+              .map((r) => ({ id: r.planningActivityId ?? "", date: r.date })),
+          })),
+          withNoCalendar: withNoCalendar.map((wnc) => ({
+            ...wnc,
+            rooms: wnc.rooms ?? [],
+            reservations: wnc.reservations
+              .filter((r) => isCUID(r.activityId))
+              .map((r) => ({ id: r.activityId ?? "", date: r.date })),
+          })),
+        });
       }
 
       // TODO: manage exception days
       return planning;
     }),
+  createPlanningReservation: protectedProcedure
+    .input(
+      z.object({
+        memberId: z.string().cuid(),
+        planningActivityId: z.string().cuid(),
+        date: z.date(),
+      })
+    )
+    .mutation(({ ctx, input }) =>
+      ctx.prisma.reservation.create({
+        data: {
+          date: input.date,
+          planningActivityId: input.planningActivityId,
+          userId: input.memberId,
+        },
+      })
+    ),
+  deleteReservation: protectedProcedure
+    .input(z.string().cuid())
+    .mutation(({ ctx, input }) =>
+      ctx.prisma.reservation.delete({ where: { id: input } })
+    ),
+  createActivityReservation: protectedProcedure
+    .input(
+      z.object({
+        memberId: z.string().cuid(),
+        activityId: z.string().cuid(),
+        date: z.date(),
+        duration: z.number(),
+      })
+    )
+    .mutation(({ ctx, input }) =>
+      ctx.prisma.reservation.create({
+        data: {
+          date: input.date,
+          activityId: input.activityId,
+          userId: input.memberId,
+          duration: input.duration,
+        },
+      })
+    ),
 });

@@ -67,26 +67,39 @@ export default function Modal({
     variant === "Primary" ||
     variant === "Outlined-Primary" ||
     variant === "Icon-Primary" ||
-    variant === "Icon-Outlined-Primary";
+    variant === "Icon-Outlined-Primary" ||
+    variant === "Icon-Only-Primary";
   const outlined =
     variant === "Outlined-Primary" ||
     variant === "Outlined-Secondary" ||
     variant === "Icon-Outlined-Primary" ||
-    variant === "Icon-Outlined-Secondary";
+    variant === "Icon-Outlined-Secondary"
+      ? "btn-outlined"
+      : "";
   const iconOnly =
     variant === "Icon-Outlined-Primary" ||
     variant === "Icon-Outlined-Secondary" ||
     variant === "Icon-Primary" ||
-    variant === "Icon-Secondary";
+    variant === "Icon-Secondary" ||
+    variant === "Icon-Only-Primary" ||
+    variant === "Icon-Only-Secondary";
+  const noBorder =
+    variant === "Icon-Only-Primary" || variant === "Icon-Only-Secondary";
+
+  const color = noBorder
+    ? `hover:outline hover:outline-offset-2 rounded-full hover:outline-secondary cursor-pointer ${
+        primary ? "text-primary" : "text-secondary"
+      }`
+    : primary
+    ? "btn btn-primary"
+    : "btn btn-secondary";
 
   return (
     <>
       <div className={iconOnly ? "tooltip" : ""} data-tip={title}>
         <label
           htmlFor={modalId}
-          className={`${primary ? "btn-primary" : "btn-secondary"} ${
-            outlined ? "btn-outline" : ""
-          } btn gap-2 ${buttonSize} `}
+          className={`${color} ${outlined}  gap-2 ${buttonSize} `}
           tabIndex={0}
         >
           {buttonIcon ? buttonIcon : null}

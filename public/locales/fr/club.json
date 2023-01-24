@@ -64,7 +64,10 @@
     "updated": "Activité mise à jour",
     "deleted": "Activité supprimée",
     "save-activity": "Enregistrer",
-    "save-activities": "Enregistrer"
+    "save-activities": "Enregistrer",
+    "no-calendar": "Toute la journée (hors calendrier)",
+    "max-duration": "Durée maximum de réservation (0 si pas de limite)",
+    "minutes": "minutes"
   },
   "room": {
     "room_zero": "Aucune salle",

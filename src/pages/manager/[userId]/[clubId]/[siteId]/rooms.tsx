@@ -49,7 +49,8 @@ const ManageRooms = ({
     )
   )
     return <div>{t("manager-only")}</div>;
-  if (!features.includes("COACH_CERTIFICATION"))
+
+  if (!features.includes("MANAGER_ROOM"))
     return (
       <div className="alert alert-error">
         {t("common:navigation.insufficient-plan")}
@@ -67,7 +68,7 @@ const ManageRooms = ({
           <CreateRoom siteId={siteId} variant={"Primary"} />
         </div>
         <button
-          className="btn btn-outline btn-primary"
+          className="btn-outline btn btn-primary"
           onClick={() => {
             const path = `/manager/${sessionData?.user?.id}/${clubId}/sites?siteId=${siteId}`;
             router.push(path);
@@ -85,16 +86,24 @@ const ManageRooms = ({
               <li key={room.id}>
                 <Link
                   href={createLink({ roomId: room.id })}
-                  className={`w-full text-center ${
+                  className={`flex items-center justify-between ${
                     roomId === room.id ? "active" : ""
                   }`}
                 >
                   <span>{room.name}</span>
-                  {room.unavailable ? (
-                    <span className="badge badge-error">
-                      {t("room.closed")}
-                    </span>
-                  ) : null}
+                  <span>
+                    {room.reservation === "MANDATORY" && (
+                      <i className="bx bx-calendar-exclamation bx-sm text-secondary" />
+                    )}
+                    {room.reservation === "POSSIBLE" && (
+                      <i className="bx bx-calendar-alt bx-sm text-secondary" />
+                    )}
+                    {room.unavailable ? (
+                      <span className="badge-error badge">
+                        {t("room.closed")}
+                      </span>
+                    ) : null}
+                  </span>
                 </Link>
               </li>
             ))}

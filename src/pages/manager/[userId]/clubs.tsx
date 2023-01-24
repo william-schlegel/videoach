@@ -169,7 +169,7 @@ export function ClubContent({ userId, clubId }: ClubContentProps) {
             </div>
           ) : null}
           <h2>{clubQuery.data?.name}</h2>
-          <p>({clubQuery.data?.address})</p>
+          {/* <p>({clubQuery.data?.address})</p> */}
         </div>
         <div className="flex items-center gap-2">
           <Link href={`/manager/${userId}/${clubId}/subscription`}>
@@ -246,7 +246,12 @@ export function ClubContent({ userId, clubId }: ClubContentProps) {
                         elementId={a.id}
                         data={{ activityId: a.id, roomId: "" }}
                       >
-                        {a.name}
+                        <span>
+                          {a.name}
+                          {a.noCalendar ? (
+                            <i className="bx bx-calendar-x bx-xs ml-2 text-primary" />
+                          ) : null}
+                        </span>
                       </DraggableElement>
                     ))}
                 </CollapsableGroup>
@@ -281,8 +286,11 @@ export function ClubContent({ userId, clubId }: ClubContentProps) {
                           data={{ activityId: a.id, roomId: room.id }}
                         >
                           {a.name}
+                          {a.noCalendar ? (
+                            <i className="bx bx-calendar-x bx-xs text-primary" />
+                          ) : null}
                           <div
-                            className="tooltip flex items-center"
+                            className="tooltip"
                             data-tip={t("activity.remove")}
                           >
                             <i
