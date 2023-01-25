@@ -67,6 +67,9 @@
     "save-activities": "Enregistrer",
     "no-calendar": "Toute la journée (hors calendrier)",
     "max-duration": "Durée maximum de réservation (0 si pas de limite)",
+    "start-time": "A partir de",
+    "duration_zero": "Durée de réservation",
+    "duration_other": "Durée de réservation (maximum : {{count}} minutes)",
     "minutes": "minutes"
   },
   "room": {

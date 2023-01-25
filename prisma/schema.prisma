@@ -247,6 +247,7 @@ model Room {
   plannings          Planning[]
   planningActivities PlanningActivity[]
   subscriptions      Subscription[]
+  reservations       Reservation[]
 
   @@index([siteId])
 }
@@ -679,10 +680,13 @@ model Reservation {
   activity           Activity?         @relation(fields: [activityId], references: [id], onDelete: Cascade)
   date               DateTime
   duration           Float             @default(0)
+  roomId             String?
+  room               Room?             @relation(fields: [roomId], references: [id], onDelete: Cascade)
   userId             String
   user               User              @relation(fields: [userId], references: [id], onDelete: Cascade)
   reservationDate    DateTime          @default(now())
 
+  @@index([roomId])
   @@index([activityId])
   @@index([planningActivityId])
   @@index([userId])

@@ -71,6 +71,7 @@ export const userRouter = router({
       return ctx.prisma.reservation.findMany({
         where: { userId: input.userId, date: { gte: input.after } },
         include: {
+          room: true,
           activity: true,
           planningActivity: {
             include: {

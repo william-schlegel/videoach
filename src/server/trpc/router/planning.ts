@@ -277,11 +277,12 @@ export const planningRouter = router({
         })[];
         withNoCalendar: (Activity & {
           rooms: {
+            id: string;
             name: string;
             capacity: number;
             reservation: RoomReservation;
           }[];
-          reservations: { id: string; date: Date }[];
+          reservations: { id: string; date: Date; roomName: string }[];
         })[];
       })[] = [];
 
@@ -379,11 +380,19 @@ export const planningRouter = router({
           include: {
             // sites: { select: { name: true } },
             rooms: {
-              select: { name: true, capacity: true, reservation: true },
+              select: {
+                id: true,
+                name: true,
+                capacity: true,
+                reservation: true,
+              },
             },
             reservations: {
               where: {
                 date: { gte: input.date },
+              },
+              include: {
+                room: true,
               },
             },
           },
@@ -401,7 +410,11 @@ export const planningRouter = router({
             rooms: wnc.rooms ?? [],
             reservations: wnc.reservations
               .filter((r) => isCUID(r.activityId))
-              .map((r) => ({ id: r.activityId ?? "", date: r.date })),
+              .map((r) => ({
+                id: r.activityId ?? "",
+                date: r.date,
+                roomName: r.room?.name ?? "",
+              })),
           })),
         });
       }
@@ -438,6 +451,7 @@ export const planningRouter = router({
         activityId: z.string().cuid(),
         date: z.date(),
         duration: z.number(),
+        roomId: z.string().cuid(),
       })
     )
     .mutation(({ ctx, input }) =>
@@ -447,6 +461,7 @@ export const planningRouter = router({
           activityId: input.activityId,
           userId: input.memberId,
           duration: input.duration,
+          roomId: input.roomId,
         },
       })
     ),

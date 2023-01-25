@@ -20,9 +20,19 @@ import nextI18nConfig from "@root/next-i18next.config.mjs";
 import Layout from "@root/src/components/layout";
 import { trpc } from "@trpcclient/trpc";
 import Confirmation from "@ui/confirmation";
+import Modal from "@ui/modal";
 import { SelectDate } from "@ui/selectDay";
 import Spinner from "@ui/spinner";
-import { isBefore, isEqual, startOfToday } from "date-fns";
+import {
+  add,
+  format,
+  getHours,
+  getMinutes,
+  isBefore,
+  isEqual,
+  startOfDay,
+  startOfToday,
+} from "date-fns";
 import {
   type GetServerSidePropsContext,
   type InferGetServerSidePropsType,
@@ -32,6 +42,7 @@ import { useTranslation } from "next-i18next";
 import { serverSideTranslations } from "next-i18next/serverSideTranslations";
 import Link from "next/link";
 import { useState } from "react";
+import { type SubmitHandler, useForm } from "react-hook-form";
 import { useDisplaySubscriptionInfo } from "../../manager/[userId]/[clubId]/subscription";
 
 /***
@@ -56,7 +67,7 @@ const MemberDashboard = ({
       <h1 className="flex justify-between">
         {t("member.dashboard")}
         <Link
-          className="btn btn-secondary"
+          className="btn-secondary btn"
           href={`/member/${userId}/subscribe`}
         >
           {t("member.new-subscription")}
@@ -107,6 +118,7 @@ type MyReservationProps = {
   memberId: string;
   day: Date;
   reservation: Reservation & {
+    room: Room | null;
     activity: Activity | null;
     planningActivity:
       | (PlanningActivity & {
@@ -127,9 +139,9 @@ function MyReservation({ reservation, memberId, day }: MyReservationProps) {
         userId: memberId,
         after: day,
       });
-      utils.users.getReservationsByUserId.invalidate({
-        userId: memberId,
-        after: day,
+      utils.plannings.getMemberDailyPlanning.invalidate({
+        memberId,
+        date: day,
       });
     },
   });
@@ -151,24 +163,44 @@ function MyReservation({ reservation, memberId, day }: MyReservationProps) {
           variant="Icon-Only-Secondary"
         />
       </div>
-      <div className="p-2">
-        <div className="space-x-2 text-center">
-          <span className="font-semibold">
-            {reservation?.planningActivity?.activity?.name}
-          </span>
-          {reservation?.planningActivity?.coach?.publicName ? (
-            <span className="text-xs">
-              {"("}
-              {reservation?.planningActivity?.coach?.publicName}
-              {")"}
+      {reservation?.planningActivity ? (
+        <div className="p-2">
+          <div className="space-x-2 text-center">
+            <span className="font-semibold">
+              {reservation.planningActivity?.activity?.name}
             </span>
-          ) : null}
+            {reservation.planningActivity?.coach?.publicName ? (
+              <span className="text-xs">
+                {"("}
+                {reservation.planningActivity?.coach?.publicName}
+                {")"}
+              </span>
+            ) : null}
+          </div>
+          <div className="flex justify-between">
+            <span>{reservation.planningActivity?.startTime}</span>
+            <span>{reservation.planningActivity?.room?.name}</span>
+          </div>
         </div>
-        <div className="flex justify-between">
-          <span>{reservation?.planningActivity?.startTime}</span>
-          <span>{reservation?.planningActivity?.room?.name}</span>
+      ) : null}
+      {reservation?.activity ? (
+        <div className="p-2">
+          <div className="space-x-2 text-center">
+            <span className="font-semibold">{reservation.activity?.name}</span>
+          </div>
+          <div className="flex justify-between">
+            <span className="space-x-2">
+              <span>{format(reservation?.date, "hh:mm")}</span>
+              <span className="text-xs">
+                {"("}
+                {reservation.duration}
+                {"')"}
+              </span>
+            </span>
+            <span>{reservation.room?.name}</span>
+          </div>
         </div>
-      </div>
+      ) : null}
     </div>
   );
 }
@@ -262,9 +294,9 @@ function MakeReservation({
           userId: memberId,
           after: day,
         });
-        utils.users.getReservationsByUserId.invalidate({
-          userId: memberId,
-          after: day,
+        utils.plannings.getMemberDailyPlanning.invalidate({
+          memberId,
+          date: day,
         });
       },
     });
@@ -279,7 +311,7 @@ function MakeReservation({
   if (room.reservation === "NONE")
     return (
       <div className="text-center">
-        <p className="btn-outline btn-disabled btn btn-xs">
+        <p className="btn-outline btn-disabled btn-xs btn">
           {t("member.free-access")}
         </p>
       </div>
@@ -295,10 +327,10 @@ function MakeReservation({
       {reservations.find(
         (r) => r.id === planningActivityId && isEqual(day, r.date)
       ) ? (
-        <span className="btn btn-accent btn-xs">{t("member.reserved")}</span>
+        <span className="btn-accent btn-xs btn">{t("member.reserved")}</span>
       ) : (
         <button
-          className="btn btn-primary btn-xs"
+          className="btn-primary btn-xs btn"
           onClick={() =>
             createReservation.mutate({
               planningActivityId,
@@ -315,6 +347,7 @@ function MakeReservation({
 }
 
 type WncRoom = {
+  id: string;
   name: string;
   capacity: number;
   reservation: RoomReservation;
@@ -333,7 +366,7 @@ function Wnc({ activity, day, memberId, reservations }: WncProps) {
   const { t } = useTranslation("dashboard");
   const { getDayForDate } = useDayName();
   const dayName = getDayForDate(day);
-  console.log("memberId", memberId);
+  // console.log("memberId", memberId);
   // const calRoom = trpc.calendars.getCalendarForRoom.useQuery(
   //   {
   //     clubId: activity.clubId,
@@ -396,6 +429,7 @@ function Wnc({ activity, day, memberId, reservations }: WncProps) {
             room={room}
             reservations={reservations}
             day={day}
+            memberId={memberId}
           />
         </div>
       ))}
@@ -408,6 +442,12 @@ type ReserveDurationProps = {
   room: WncRoom;
   reservations: { id: string; date: Date }[];
   day: Date;
+  memberId: string;
+};
+
+type ReserveDurationFormValues = {
+  time: Date;
+  duration: number;
 };
 
 function ReserveDuration({
@@ -415,15 +455,48 @@ function ReserveDuration({
   activity,
   reservations,
   day,
+  memberId,
 }: ReserveDurationProps) {
   const { t } = useTranslation("dashboard");
-  // console.log("activity,room", activity, room);
+  const { register, handleSubmit } = useForm<ReserveDurationFormValues>({
+    defaultValues: { duration: Math.min(60, activity.maxDuration) },
+  });
+  const utils = trpc.useContext();
+  const createReservation =
+    trpc.plannings.createActivityReservation.useMutation({
+      onSuccess() {
+        utils.users.getReservationsByUserId.invalidate({
+          userId: memberId,
+          after: day,
+        });
+        utils.plannings.getMemberDailyPlanning.invalidate({
+          memberId,
+          date: day,
+        });
+      },
+    });
+
   if (isBefore(day, startOfToday())) return null;
+
+  const onSubmit: SubmitHandler<ReserveDurationFormValues> = (data) => {
+    const date = add(startOfDay(day), {
+      hours: getHours(data.time),
+      minutes: getMinutes(data.time),
+    });
+    console.log("date", date);
+    createReservation.mutate({
+      date,
+      memberId,
+      activityId: activity.id,
+      roomId: room.id,
+      duration: data.duration,
+    });
+  };
 
   if (room?.reservation === "NONE")
     return (
       <div className="text-center">
-        <p className="btn-outline btn-disabled btn btn-xs">
+        <p className="btn-outline btn-disabled btn-xs btn">
           {t("member.free-access")}
         </p>
       </div>
@@ -443,20 +516,40 @@ function ReserveDuration({
       {reservations.find(
         (r) => r.id === activity.id && isEqual(day, r.date)
       ) ? (
-        <span className="btn btn-accent btn-xs">{t("member.reserved")}</span>
+        <span className="btn-accent btn-xs btn">{t("member.reserved")}</span>
       ) : (
-        <button
-          className="btn btn-primary btn-xs"
-          // onClick={() =>
-          //   createReservation.mutate({
-          //     planningActivityId,
-          //     memberId,
-          //     date: day,
-          //   })
-          // }
+        <Modal
+          title={t("member.reserve")}
+          variant="Primary"
+          buttonSize="xs"
+          handleSubmit={handleSubmit(onSubmit)}
         >
-          {t("member.reserve")}
-        </button>
+          <h3>{t("member.reserve")}</h3>
+          <div className="form-control">
+            <label>
+              {t("club:activity.start-time", { count: activity.maxDuration })}
+            </label>
+            <input
+              type="time"
+              {...register("time", { valueAsDate: true })}
+              className="input-bordered input w-full"
+            />
+
+            <label>
+              {t("club:activity.duration", { count: activity.maxDuration })}
+            </label>
+            <div className="input-group">
+              <input
+                type="number"
+                min={0}
+                max={activity.maxDuration}
+                {...register("duration", { valueAsNumber: true })}
+                className="input-bordered input w-full"
+              />
+              <span>{t("club:activity.minutes")}</span>
+            </div>
+          </div>
+        </Modal>
       )}
     </div>
   );

@@ -99,7 +99,7 @@ export default function Modal({
       <div className={iconOnly ? "tooltip" : ""} data-tip={title}>
         <label
           htmlFor={modalId}
-          className={`${color} ${outlined}  gap-2 ${buttonSize} `}
+          className={`${color} ${outlined} gap-2 py-0 btn-${buttonSize} `}
           tabIndex={0}
         >
           {buttonIcon ? buttonIcon : null}
@@ -122,7 +122,7 @@ export default function Modal({
         >
           <label
             htmlFor={modalId}
-            className="btn btn-secondary btn-sm btn-circle absolute right-1 top-1"
+            className="btn-secondary btn-sm btn-circle btn absolute right-1 top-1"
           >
             <i className="bx bx-x bx-sm" />
           </label>
@@ -130,7 +130,7 @@ export default function Modal({
           <div className="modal-action">
             {cancelButtonText !== "" ? (
               <button
-                className="btn-outline btn btn-secondary"
+                className="btn-outline btn-secondary btn"
                 onClick={(e) => {
                   e.preventDefault();
                   if (typeof handleCancel === "function") handleCancel();
@@ -142,7 +142,7 @@ export default function Modal({
             ) : null}
             {typeof handleSubmit === "function" ? (
               <button
-                className="btn btn-primary"
+                className="btn-primary btn"
                 onClick={(e) => {
                   e.preventDefault();
                   handleClickSubmit();
