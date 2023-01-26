@@ -235,7 +235,7 @@ function FindCoach({ address = "", onSelect }: FindCoachProps) {
                   }`}
                 />
               </Marker>
-            ))}{" "}
+            ))}
           </Map>
         </div>
       </div>

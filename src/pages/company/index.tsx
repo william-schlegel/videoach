@@ -143,7 +143,7 @@ function CoachPage(
                 required
                 error={errors.location ? t("common:enter-location") : ""}
               />
-              <button className="btn btn-primary">{t("search-coach")}</button>
+              <button className="btn-primary btn">{t("search-coach")}</button>
             </div>
           </form>
           <div className="flex flex-wrap gap-8 py-12">
@@ -219,8 +219,8 @@ function OfferCard({ id }: { id: string }) {
         />
         <div className="absolute bottom-0 left-0 w-full bg-black bg-opacity-20 px-4 py-2 text-accent">
           <h3>{offer.data?.coach?.publicName}</h3>
-          <p>
-            {offer.data?.coach?.searchAddress},{" "}
+          <p className="space-x-2">
+            {offer.data?.coach?.searchAddress},
             {listFormatter.format(options).toLocaleLowerCase()}
           </p>
         </div>
@@ -256,7 +256,7 @@ function OfferCard({ id }: { id: string }) {
           ) : null}
         </div>
         <div className="card-actions justify-end">
-          <Link className="btn btn-primary" href={`/company/${id}`}>
+          <Link className="btn-primary btn" href={`/company/${id}`}>
             {t("offer-details")}
           </Link>
         </div>

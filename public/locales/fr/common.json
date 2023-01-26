@@ -12,10 +12,9 @@
   "navigation": {
     "dashboard": "Mon tableau de bord",
     "find-club": "Trouver un club",
-    "activity": "Activités",
-    "planning": "Planning",
+    "chat": "Messagerie",
+    "clubs": "Clubs",
     "find-coach": "Trouver un coach",
-    "reservation": "Réserver",
     "my-info": "Mes informations",
     "disconnect": "Se déconnecter",
     "connect": "Se connecter",

@@ -12,11 +12,12 @@ import {
 } from "react";
 import Spinner from "./spinner";
 import { useTranslation } from "next-i18next";
+import { type DefaultTFuncReturn } from "i18next";
 
 type SimpleFormField<T> = {
-  label?: string;
+  label?: DefaultTFuncReturn;
   name: keyof T;
-  required?: boolean | string;
+  required?: boolean | DefaultTFuncReturn;
   component?: ReactNode;
   type?: HTMLInputTypeAttribute;
   disabled?: boolean;

@@ -80,6 +80,7 @@ model User {
   coachData       UserCoach?     @relation("coach-user")
   managerData     UserManager?   @relation("manager-user")
   reservations    Reservation[]
+  chatToken       String?
 
   @@index([pricingId])
 }

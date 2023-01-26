@@ -22,10 +22,10 @@ export default function Footer() {
             <i className="bx bxl-twitter bx-sm" />
           </a>
           <a>
-            <i className="bx bxl-youtube bx-sm" />{" "}
+            <i className="bx bxl-youtube bx-sm" />
           </a>
           <a>
-            <i className="bx bxl-facebook bx-sm" />{" "}
+            <i className="bx bxl-facebook bx-sm" />
           </a>
         </div>
       </div>

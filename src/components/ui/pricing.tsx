@@ -68,7 +68,7 @@ export function Pricing({
           <>
             <div className="flex items-center gap-2">
               <button
-                className={`btn btn-primary btn-sm ${
+                className={`btn-primary btn-sm btn ${
                   monthlyPrice ? "" : "btn-outline"
                 }`}
                 onClick={() => setMonthlyPrice(true)}
@@ -77,7 +77,7 @@ export function Pricing({
                 {t("pricing.monthly")}
               </button>
               <button
-                className={`btn btn-primary btn-sm ${
+                className={`btn-primary btn-sm btn ${
                   monthlyPrice ? "btn-outline" : ""
                 }`}
                 onClick={() => setMonthlyPrice(false)}
@@ -104,7 +104,7 @@ export function Pricing({
         {typeof onSelect === "function" && (
           <div className="card-actions">
             <button
-              className="btn btn-primary btn-block"
+              className="btn-primary btn-block btn"
               type="button"
               onClick={() =>
                 onSelect(pricingQuery.data?.id ?? "", monthlyPrice)
@@ -113,7 +113,7 @@ export function Pricing({
               {t("pricing.select")}
             </button>
           </div>
-        )}{" "}
+        )}
       </div>
     </div>
   );

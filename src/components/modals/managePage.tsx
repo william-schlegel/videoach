@@ -91,7 +91,7 @@ export const CreatePage = ({
 
   return (
     <Modal
-      title={t("create-new-page")}
+      title={t("create-new-page") as string}
       variant={variant}
       handleSubmit={handleSubmit(onSubmit, onError)}
     >
@@ -182,14 +182,14 @@ export function UpdatePage({
 
   return (
     <Modal
-      title={t("update-page")}
+      title={t("update-page") as string}
       handleSubmit={handleSubmit(onSubmit, onError)}
       buttonIcon={<i className={`bx bx-edit bx-${size}`} />}
       variant={variant}
       buttonSize={size}
     >
-      <h3>
-        {t("update-page")}{" "}
+      <h3 className="space-x-2">
+        {t("update-page")}
         <span className="text-primary">{pageQuery.data?.name}</span>
       </h3>
       {pageQuery.isLoading ? (

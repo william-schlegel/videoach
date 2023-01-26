@@ -24,8 +24,8 @@ const MENUS: MenuDefinitionType[] = [
     page: "/videoach#find-club",
     access: ["VISITOR"],
   },
-  { label: "navigation.activity", page: "/activites", access: ["MEMBER"] },
-  { label: "navigation.planning", page: "/planning", access: ["MEMBER"] },
+  { label: "navigation.chat", page: "/chat", access: ["MEMBER"] },
+  { label: "navigation.clubs", page: "/clubs", access: ["MEMBER"] },
   {
     label: "navigation.find-coach",
     page: "/videoach#find-coach",
@@ -77,11 +77,6 @@ const MENUS: MenuDefinitionType[] = [
     page: "/admin/activitygroups",
     access: ["ADMIN"],
   },
-  {
-    label: "navigation.reservation",
-    page: "/reservation",
-    access: ["MEMBER"],
-  },
 ];
 
 type NavbarProps = {
@@ -97,7 +92,7 @@ export default function Navbar({ theme, onChangeTheme }: NavbarProps) {
     <div className="navbar bg-base-100">
       <div className="navbar-start">
         <div className="dropdown">
-          <label tabIndex={0} className="btn btn-ghost lg:hidden">
+          <label tabIndex={0} className="btn-ghost btn lg:hidden">
             <svg
               xmlns="http://www.w3.org/2000/svg"
               className="h-5 w-5"
@@ -129,7 +124,7 @@ export default function Navbar({ theme, onChangeTheme }: NavbarProps) {
       </div>
 
       <div className="navbar-end">
-        <label className="swap-rotate swap">
+        <label className="swap swap-rotate">
           <input
             type="checkbox"
             onChange={(e) =>
@@ -156,7 +151,7 @@ export default function Navbar({ theme, onChangeTheme }: NavbarProps) {
         </label>
         {sessionData?.user?.id ? (
           <div className="dropdown dropdown-end">
-            <label tabIndex={0} className="btn btn-ghost btn-circle avatar">
+            <label tabIndex={0} className="btn-ghost btn-circle avatar btn">
               <div className="w-10 rounded-full">
                 <Image
                   src={sessionData.user?.image || "/images/dummy.jpg"}
@@ -238,7 +233,7 @@ const Menu = () => {
 const Logo = () => {
   return (
     <div className="flex-1">
-      <Link href={"/videoach"} className="btn btn-ghost text-2xl capitalize">
+      <Link href={"/videoach"} className="btn-ghost btn text-2xl capitalize">
         Videoach
       </Link>
     </div>

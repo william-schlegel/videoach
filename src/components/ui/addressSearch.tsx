@@ -2,15 +2,16 @@ import useDebounce from "@lib/useDebounce";
 import { env } from "@root/src/env/client.mjs";
 import { useTranslation } from "next-i18next";
 import { useEffect, useState } from "react";
+import { type DefaultTFuncReturn } from "i18next";
 
 type Props = {
-  label?: string;
+  label?: DefaultTFuncReturn;
   defaultAddress?: string;
-  className?: string;
   onSearch: (adr: AddressData) => void;
   required?: boolean;
   iconSearch?: boolean;
-  error?: string;
+  error?: DefaultTFuncReturn;
+  className?: string;
 };
 
 export type AddressData = {
@@ -23,10 +24,10 @@ const AddressSearch = ({
   defaultAddress,
   label,
   onSearch,
-  className,
   required,
   iconSearch = true,
   error,
+  className,
 }: Props) => {
   const [address, setAddress] = useState("");
   const debouncedAddress = useDebounce<string>(address, 500);
@@ -66,7 +67,7 @@ const AddressSearch = ({
       {label ? (
         <label className={`label ${required ? "required" : ""}`}>{label}</label>
       ) : null}
-      <div className={`dropdown dropdown-bottom ${className ?? ""}`}>
+      <div className={`dropdown-bottom dropdown ${className ?? ""}`}>
         <div className="input-group">
           {iconSearch ? (
             <span>
@@ -81,7 +82,7 @@ const AddressSearch = ({
             value={address}
             onChange={(e) => handleSelect(e.currentTarget.value)}
             list="addresses"
-            placeholder={t("location")}
+            placeholder={t("location") as string}
             required={required}
           />
         </div>

@@ -1,8 +1,7 @@
-// import { LATITUDE, LONGITUDE } from "@lib/defaultValues";
 import { Role } from "@prisma/client";
 import { TRPCError } from "@trpc/server";
-// import { calculateBBox, calculateDistance } from "@trpcserver/lib/distance";
 import { z } from "zod";
+import { createToken, streamchatClient } from "../../streamchat";
 import { router, protectedProcedure, publicProcedure } from "../trpc";
 import { getDocUrl } from "./files";
 
@@ -84,6 +83,7 @@ export const clubRouter = router({
           code: "UNAUTHORIZED",
           message: "You are not authorized to create a club for this user",
         });
+
       const club = await ctx.prisma.club.create({
         data: {
           name: input.name,
@@ -103,6 +103,15 @@ export const clubRouter = router({
           logoId: input.logoId ? input.logoId : undefined,
         },
       });
+
+      // create the channel for the club
+
+      const channel = streamchatClient.channel("messaging", club.id, {
+        name: input.name,
+        created_by_id: input.userId,
+      });
+      await channel.create();
+
       return club;
     }),
   updateClub: protectedProcedure
@@ -117,6 +126,13 @@ export const clubRouter = router({
     .mutation(async ({ ctx, input }) => {
       const club = await ctx.prisma.club.findFirst({
         where: { id: input.id },
+        include: {
+          manager: {
+            include: {
+              user: true,
+            },
+          },
+        },
       });
       if (
         ctx.session.user.role !== Role.ADMIN &&
@@ -143,6 +159,24 @@ export const clubRouter = router({
       });
       if (initialLogoId && !input.logoId) {
         ctx.prisma.userDocument.delete({ where: { id: initialLogoId } });
+      }
+
+      if (club) {
+        // create the channel for the club
+        let token = club.manager.user.chatToken;
+        if (!token) {
+          token = createToken(club.managerId);
+          await ctx.prisma.user.update({
+            where: { id: club.managerId },
+            data: { chatToken: token },
+          });
+        }
+        await streamchatClient.connectUser({ id: club.managerId }, token);
+        const channel = streamchatClient.channel("messaging", club.id, {
+          name: input.name,
+          created_by_id: club.managerId,
+        });
+        await channel.create();
       }
       return updated;
     }),
@@ -223,6 +257,21 @@ export const clubRouter = router({
           code: "UNAUTHORIZED",
           message: "You are not authorized to modify this club",
         });
+      const userCoach = await ctx.prisma.userCoach.findUnique({
+        where: { userId: input.coachId },
+      });
+      if (!userCoach) {
+        return await ctx.prisma.userCoach.create({
+          data: {
+            userId: input.coachId,
+            clubs: {
+              connect: {
+                id: input.clubId,
+              },
+            },
+          },
+        });
+      }
 
       return ctx.prisma.userCoach.update({
         where: { userId: input.coachId },

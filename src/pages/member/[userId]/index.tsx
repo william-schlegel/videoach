@@ -104,9 +104,6 @@ const MemberDashboard = ({
             ))}
           </div>
         </article>
-        <article className="col-span-2 rounded-md border border-primary p-2">
-          <h2>{t("member.my-chat")}</h2>
-        </article>
       </section>
     </Layout>
   );

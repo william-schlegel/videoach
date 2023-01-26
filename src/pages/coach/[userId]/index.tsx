@@ -55,14 +55,14 @@ const CoachDashboard = ({
         <div className="flex items-center gap-4">
           {features.includes("COACH_CERTIFICATION") ? (
             <Link
-              className="btn btn-secondary"
+              className="btn-secondary btn"
               href={`${userId}/certifications`}
             >
               {t("manage-certifications")}
             </Link>
           ) : (
             <LockedButton label={t("manage-certifications")} />
-          )}{" "}
+          )}
         </div>
       </h1>
       <section className="stats shadow">

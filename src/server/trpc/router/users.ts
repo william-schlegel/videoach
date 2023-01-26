@@ -2,6 +2,7 @@ import { TRPCError } from "@trpc/server";
 import { Role } from "@prisma/client";
 import { z } from "zod";
 import { router, publicProcedure, protectedProcedure } from "../trpc";
+import { createToken, streamchatClient } from "../../streamchat";
 
 const UserFilter = z
   .object({
@@ -24,8 +25,8 @@ type Filter = {
 export const userRouter = router({
   getUserById: publicProcedure
     .input(z.string().cuid())
-    .query(({ ctx, input }) => {
-      return ctx.prisma.user.findUnique({
+    .query(async ({ ctx, input }) => {
+      const user = await ctx.prisma.user.findUnique({
         where: { id: input },
         include: {
           coachData: {
@@ -42,6 +43,15 @@ export const userRouter = router({
           accounts: true,
         },
       });
+      if (user?.id && !user?.chatToken) {
+        const token = createToken(user.id);
+        user.chatToken = token;
+        await ctx.prisma.user.update({
+          where: { id: input },
+          data: { chatToken: token },
+        });
+      }
+      return user;
     }),
   getUserSubscriptionsById: protectedProcedure
     .input(z.string().cuid())
@@ -209,6 +219,14 @@ export const userRouter = router({
                 }
               : undefined,
           },
+        });
+      }
+
+      // update role in stream chat if admin
+      if (input.role === "ADMIN") {
+        await streamchatClient.partialUpdateUser({
+          id: input.id,
+          set: { role: "admin" },
         });
       }
 

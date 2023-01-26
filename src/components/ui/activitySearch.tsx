@@ -2,16 +2,17 @@ import useDebounce from "@lib/useDebounce";
 import { trpc } from "@trpcclient/trpc";
 import { useTranslation } from "next-i18next";
 import { useEffect, useState } from "react";
+import { type DefaultTFuncReturn } from "i18next";
 
 type Props = {
-  label?: string;
+  label?: DefaultTFuncReturn;
   initialActivity?: string;
-  className?: string;
   onSearch: (activity: ActivityData) => void;
   onActivityChange: (value: string) => void;
   required?: boolean;
   iconActivity?: boolean;
-  error?: string;
+  error?: DefaultTFuncReturn;
+  className?: string;
 };
 
 type ActivityData = {
@@ -23,11 +24,11 @@ const ActivitySearch = ({
   initialActivity,
   label,
   onSearch,
-  className,
   required,
   iconActivity = true,
   error,
   onActivityChange,
+  className,
 }: Props) => {
   const [activity, setActivity] = useState("");
   const debouncedActivity = useDebounce<string>(activity, 500);
@@ -66,7 +67,7 @@ const ActivitySearch = ({
             value={debouncedActivity}
             onChange={(e) => setActivity(e.currentTarget.value)}
             list="activities"
-            placeholder={t("enter-activity")}
+            placeholder={t("enter-activity") as string}
           />
         </div>
         {error ? <p className="label-text-alt text-error">{error}</p> : null}

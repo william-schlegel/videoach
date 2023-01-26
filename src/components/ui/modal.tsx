@@ -1,3 +1,4 @@
+import { type DefaultTFuncReturn } from "i18next";
 import { useTranslation } from "next-i18next";
 import { type ReactNode, useRef, useId, useEffect, useCallback } from "react";
 import { type FieldErrors } from "react-hook-form";
@@ -11,12 +12,12 @@ export type TModalVariant =
   | "Outlined-Secondary";
 
 type Props = {
-  title: string | undefined;
+  title: DefaultTFuncReturn | undefined;
   handleSubmit?: () => void;
   handleCancel?: () => void;
   children: ReactNode;
-  submitButtonText?: string;
-  cancelButtonText?: string;
+  submitButtonText?: DefaultTFuncReturn;
+  cancelButtonText?: DefaultTFuncReturn;
   errors?: FieldErrors;
   buttonIcon?: ReactNode;
   onOpenModal?: () => void;
