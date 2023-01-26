@@ -24,9 +24,7 @@ function CoachPage({
   const publishPage = trpc.pages.updatePagePublication.useMutation({
     onSuccess(data) {
       utils.pages.getPageForCoach.invalidate(userId);
-      toast.success(
-        t(data.published ? "page-published" : "page-unpublished") as string
-      );
+      toast.success(t(data.published ? "page-published" : "page-unpublished"));
     },
   });
 

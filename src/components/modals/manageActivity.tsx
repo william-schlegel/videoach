@@ -175,7 +175,7 @@ function ActivityForm({
     <form onSubmit={handleSubmit(onSuccess)} className="space-y-2">
       <input
         className="input-bordered input w-full"
-        {...register("name", { required: t("name-mandatory") })}
+        {...register("name", { required: t("name-mandatory") ?? true })}
       />
       {errors.name && (
         <p className="text-sm text-error">{errors.name.message}</p>
@@ -206,7 +206,7 @@ function ActivityForm({
       <div className="col-span-2 flex items-center justify-end gap-2">
         <button
           type="button"
-          className="btn-outline btn btn-secondary"
+          className="btn-outline btn-secondary btn"
           onClick={(e) => {
             e.preventDefault();
             reset();
@@ -215,7 +215,7 @@ function ActivityForm({
         >
           {t("common:cancel")}
         </button>
-        <button className="btn btn-primary" type="submit">
+        <button className="btn-primary btn" type="submit">
           {t("common:save")}
         </button>
       </div>
@@ -232,7 +232,7 @@ const NewActivity = ({ clubId, groupId }: NewActivityProps) => {
   const createActivity = trpc.activities.createActivity.useMutation({
     onSuccess: () => {
       utils.activities.getActivitiesForClub.invalidate();
-      toast.success(t("activity.created") as string);
+      toast.success(t("activity.created"));
     },
     onError(error) {
       toast.error(error.message);
@@ -279,7 +279,7 @@ function UpdateActivity({ clubId, groupId, id }: UpdateActivityProps) {
   const updateActivity = trpc.activities.updateActivity.useMutation({
     onSuccess: () => {
       utils.activities.getActivitiesForClub.invalidate();
-      toast.success(t("activity.updated") as string);
+      toast.success(t("activity.updated"));
     },
     onError(error) {
       toast.error(error.message);
@@ -334,7 +334,7 @@ function DeleteActivity({ clubId, activityId }: DeleteActivityProps) {
   const deleteActivity = trpc.activities.deleteActivity.useMutation({
     onSuccess: () => {
       utils.activities.getActivitiesForClub.invalidate();
-      toast.success(t("activity.deleted") as string);
+      toast.success(t("activity.deleted"));
     },
     onError(error) {
       toast.error(error.message);
@@ -367,7 +367,7 @@ export const NewGroup = ({ userId, variant = "Primary" }: NewGroupProps) => {
       userId
         ? utils.activities.getActivityGroupsForUser.invalidate(userId)
         : utils.activities.getAllActivityGroups.invalidate(),
-        toast.success(t("group.created") as string);
+        toast.success(t("group.created"));
     },
     onError(error) {
       toast.error(error.message);
@@ -431,7 +431,7 @@ export function UpdateGroup({
       userId
         ? utils.activities.getActivityGroupsForUser.invalidate(userId)
         : utils.activities.getAllActivityGroups.invalidate(),
-        toast.success(t("group.updated") as string);
+        toast.success(t("group.updated"));
     },
     onError(error) {
       toast.error(error.message);
@@ -516,7 +516,7 @@ export function DeleteGroup({
       userId
         ? utils.activities.getActivityGroupsForUser.invalidate(userId)
         : utils.activities.getAllActivityGroups.invalidate(),
-        toast.success(t("group.deleted") as string);
+        toast.success(t("group.deleted"));
     },
     onError(error) {
       toast.error(error.message);

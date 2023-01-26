@@ -38,7 +38,7 @@ export const CreateSite = ({ clubId }: CreateSiteProps) => {
     onSuccess: () => {
       utils.clubs.getClubById.invalidate(clubId);
       utils.sites.getSitesForClub.invalidate(clubId);
-      toast.success(t("site.created") as string);
+      toast.success(t("site.created"));
     },
     onError(error) {
       toast.error(error.message);
@@ -90,7 +90,7 @@ export const UpdateSite = ({ siteId, clubId }: UpdateSiteProps) => {
     onSuccess: () => {
       utils.sites.getSiteById.invalidate(siteId);
       utils.sites.getSitesForClub.invalidate(clubId);
-      toast.success(t("site.updated") as string);
+      toast.success(t("site.updated"));
     },
     onError(error) {
       toast.error(error.message);
@@ -147,7 +147,7 @@ export const DeleteSite = ({
     onSuccess: () => {
       utils.clubs.getClubsForManager.invalidate(sessionData?.user?.id ?? "");
       utils.clubs.getClubById.invalidate(clubId);
-      toast.success(t("site.deleted") as string);
+      toast.success(t("site.deleted"));
     },
     onError(error) {
       toast.error(error.message);
@@ -213,7 +213,7 @@ function SiteForm({
         <div>
           <input
             {...register("name", {
-              required: t("name-mandatory"),
+              required: t("name-mandatory") ?? true,
             })}
             type={"text"}
             className="input-bordered input w-full"
@@ -226,7 +226,7 @@ function SiteForm({
         <div>
           <input
             {...register("address", {
-              required: t("address-mandatory"),
+              required: t("address-mandatory") ?? true,
             })}
             type={"text"}
             className="input-bordered input w-full"

@@ -82,7 +82,7 @@ const AddressSearch = ({
             value={address}
             onChange={(e) => handleSelect(e.currentTarget.value)}
             list="addresses"
-            placeholder={t("location") as string}
+            placeholder={t("location") ?? ""}
             required={required}
           />
         </div>

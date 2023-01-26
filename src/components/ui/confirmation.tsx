@@ -33,7 +33,7 @@ function Confirmation({
       title={title}
       handleSubmit={onConfirm}
       handleCancel={onCancel}
-      submitButtonText={textConfirmation ?? (t("continue") as string)}
+      submitButtonText={textConfirmation ?? t("continue")}
       cancelButtonText={textCancel}
       buttonIcon={buttonIcon}
       variant={variant}

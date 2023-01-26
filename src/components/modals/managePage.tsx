@@ -62,7 +62,7 @@ export const CreatePage = ({
   const createPage = trpc.pages.createPage.useMutation({
     onSuccess: () => {
       utils.pages.getPagesForClub.invalidate(clubId);
-      toast.success(t("page-created") as string);
+      toast.success(t("page-created"));
     },
     onError(error) {
       toast.error(error.message);
@@ -91,7 +91,7 @@ export const CreatePage = ({
 
   return (
     <Modal
-      title={t("create-new-page") as string}
+      title={t("create-new-page")}
       variant={variant}
       handleSubmit={handleSubmit(onSubmit, onError)}
     >
@@ -152,7 +152,7 @@ export function UpdatePage({
   const updatePage = trpc.pages.updatePage.useMutation({
     onSuccess: () => {
       utils.pages.getPagesForClub.invalidate(clubId);
-      toast.success(t("page-updated") as string);
+      toast.success(t("page-updated"));
     },
     onError(error) {
       toast.error(error.message);
@@ -182,7 +182,7 @@ export function UpdatePage({
 
   return (
     <Modal
-      title={t("update-page") as string}
+      title={t("update-page")}
       handleSubmit={handleSubmit(onSubmit, onError)}
       buttonIcon={<i className={`bx bx-edit bx-${size}`} />}
       variant={variant}
@@ -246,7 +246,7 @@ export function DeletePage({
   const deletePage = trpc.pages.deletePage.useMutation({
     onSuccess: () => {
       utils.pages.getPagesForClub.invalidate(clubId);
-      toast.success(t("page-deleted") as string);
+      toast.success(t("page-deleted"));
     },
     onError(error) {
       toast.error(error.message);

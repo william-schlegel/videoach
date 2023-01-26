@@ -43,7 +43,7 @@ export const CreateRoom = ({
     onSuccess: () => {
       utils.sites.getRoomsForSite.invalidate(siteId);
       reset();
-      toast.success(t("room.created") as string);
+      toast.success(t("room.created"));
     },
     onError(error) {
       toast.error(error.message);
@@ -112,7 +112,7 @@ export const UpdateRoom = ({
       utils.sites.getRoomsForSite.invalidate(siteId);
       utils.sites.getRoomById.invalidate(roomId);
       reset();
-      toast.success(t("room.updated") as string);
+      toast.success(t("room.updated"));
     },
     onError(error) {
       toast.error(error.message);
@@ -171,7 +171,7 @@ export const DeleteRoom = ({
   const deleteRoom = trpc.sites.deleteRoom.useMutation({
     onSuccess: () => {
       utils.sites.getRoomsForSite.invalidate(siteId);
-      toast.success(t("room.deleted") as string);
+      toast.success(t("room.deleted"));
     },
     onError(error) {
       toast.error(error.message);

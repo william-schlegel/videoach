@@ -38,7 +38,7 @@ export const CreateClub = () => {
   const createClub = trpc.clubs.createClub.useMutation({
     onSuccess: () => {
       utils.clubs.getClubsForManager.invalidate(sessionData?.user?.id ?? "");
-      toast.success(t("club.created") as string);
+      toast.success(t("club.created"));
     },
     onError(error) {
       toast.error(error.message);
@@ -113,7 +113,7 @@ export const UpdateClub = ({ clubId }: PropsWithoutRef<PropsUpdateDelete>) => {
     onSuccess: () => {
       utils.clubs.getClubsForManager.invalidate(sessionData?.user?.id ?? "");
       utils.clubs.getClubById.invalidate(clubId);
-      toast.success(t("club.updated") as string);
+      toast.success(t("club.updated"));
     },
     onError(error) {
       toast.error(error.message);
@@ -204,9 +204,7 @@ function ClubForm({ onSubmit, onCancel, update, initialData }: ClubFormProps) {
   useEffect(() => {
     if (fields.logo?.[0]) {
       if (fields.logo[0].size > MAX_SIZE_LOGO) {
-        toast.error(
-          t("image-size-error", { size: formatSize(MAX_SIZE_LOGO) }) as string
-        );
+        toast.error(t("image-size-error", { size: formatSize(MAX_SIZE_LOGO) }));
         setValue("logo", undefined);
         return;
       }
@@ -244,7 +242,7 @@ function ClubForm({ onSubmit, onCancel, update, initialData }: ClubFormProps) {
         <div>
           <input
             {...register("name", {
-              required: t("name-mandatory"),
+              required: t("name-mandatory") ?? true,
             })}
             type={"text"}
             className="input-bordered input w-full"
@@ -271,7 +269,7 @@ function ClubForm({ onSubmit, onCancel, update, initialData }: ClubFormProps) {
         <div>
           <input
             {...register("address", {
-              required: t("address-mandatory"),
+              required: t("address-mandatory") ?? true,
             })}
             type={"text"}
             className="input-bordered input w-full"
@@ -372,7 +370,7 @@ export const DeleteClub = ({ clubId }: PropsWithoutRef<PropsUpdateDelete>) => {
     onSuccess: () => {
       utils.clubs.getClubsForManager.invalidate(sessionData?.user?.id ?? "");
       utils.clubs.getClubById.invalidate(clubId);
-      toast.success(t("deleted") as string);
+      toast.success(t("deleted"));
     },
     onError(error) {
       toast.error(error.message);

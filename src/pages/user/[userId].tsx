@@ -118,7 +118,7 @@ export default function Profile() {
   const updateUser = trpc.users.updateUser.useMutation({
     onSuccess() {
       utils.users.getUserById.invalidate(myUserId);
-      toast.success(t("user-updated") as string);
+      toast.success(t("user-updated"));
     },
     onError(error) {
       toast.error(error.message);
@@ -129,7 +129,7 @@ export default function Profile() {
     if (!isCUID(data.pricingId)) {
       setError("pricingId", {
         type: "required",
-        message: t("pricing-mandatory"),
+        message: t("pricing-mandatory") ?? "",
       });
       return;
     } else clearErrors("pricingId");
@@ -192,7 +192,7 @@ export default function Profile() {
           <div>
             <input
               {...register("name", {
-                required: t("name-mandatory"),
+                required: t("name-mandatory") ?? true,
               })}
               type={"text"}
               className="input-bordered input w-full"

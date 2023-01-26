@@ -43,7 +43,7 @@ export function CoachOfferDisplay({ offerId }: CoachOfferDisplayProps) {
           </span>
           <span>{offerQuery.data?.freeHours.toFixed(0)} h</span>
         </div>
-        <p className="badge badge-secondary">
+        <p className="badge-secondary badge">
           {getNameTarget(offerQuery.data?.target)}
         </p>
       </div>
@@ -318,7 +318,7 @@ export function CoachOfferPage({ offerId, condensed }: CoachOfferPageProps) {
               unit={"h"}
               money={false}
               className="rounded bg-primary/10 outline outline-primary"
-              label={t("offer.free-hours")}
+              label={t("offer.free-hours") ?? ""}
             />
             {condensed ? null : (
               <button

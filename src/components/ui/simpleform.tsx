@@ -21,7 +21,7 @@ type SimpleFormField<T> = {
   component?: ReactNode;
   type?: HTMLInputTypeAttribute;
   disabled?: boolean;
-  unit?: string;
+  unit?: DefaultTFuncReturn;
   rows?: number;
 };
 

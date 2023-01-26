@@ -49,7 +49,7 @@ const ManageCertifications = ({
           setDocId("");
           window.open(data.url, "_blank");
         } else {
-          toast.error(t("type-invalid") as string);
+          toast.error(t("type-invalid"));
         }
     },
   });

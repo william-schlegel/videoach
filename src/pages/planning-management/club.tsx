@@ -692,7 +692,7 @@ function FormActivity({
           <input
             type="time"
             {...register("startTime", {
-              required: t("start-hour-mandatory") as string,
+              required: t("start-hour-mandatory") ?? true,
             })}
             className="input-bordered input w-fit self-start"
           />
@@ -709,7 +709,7 @@ function FormActivity({
                 {...register("duration", {
                   valueAsNumber: true,
                   validate: (v) => Number(v) > 1,
-                  required: t("duration-mandatory") as string,
+                  required: t("duration-mandatory") ?? true,
                 })}
                 className="input-bordered input w-full"
               />

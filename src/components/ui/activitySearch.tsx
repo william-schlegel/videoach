@@ -67,7 +67,7 @@ const ActivitySearch = ({
             value={debouncedActivity}
             onChange={(e) => setActivity(e.currentTarget.value)}
             list="activities"
-            placeholder={t("enter-activity") as string}
+            placeholder={t("enter-activity") ?? ""}
           />
         </div>
         {error ? <p className="label-text-alt text-error">{error}</p> : null}

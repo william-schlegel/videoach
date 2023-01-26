@@ -58,7 +58,7 @@ export const CreateSubscription = ({ clubId }: CreateSubscriptionProps) => {
     onSuccess: () => {
       utils.clubs.getClubById.invalidate(clubId);
       utils.subscriptions.getSubscriptionsForClub.invalidate(clubId);
-      toast.success(t("subscription.created") as string);
+      toast.success(t("subscription.created"));
     },
     onError(error) {
       toast.error(error.message);
@@ -125,7 +125,7 @@ export const UpdateSubscription = ({
     onSuccess: () => {
       utils.subscriptions.getSubscriptionById.invalidate(subscriptionId);
       utils.subscriptions.getSubscriptionsForClub.invalidate(clubId);
-      toast.success(t("subscription.updated") as string);
+      toast.success(t("subscription.updated"));
     },
     onError(error) {
       toast.error(error.message);
@@ -191,7 +191,7 @@ export const DeleteSubscription = ({
     onSuccess: () => {
       utils.clubs.getClubsForManager.invalidate(sessionData?.user?.id ?? "");
       utils.clubs.getClubById.invalidate(clubId);
-      toast.success(t("subscription.deleted") as string);
+      toast.success(t("subscription.deleted"));
     },
     onError(error) {
       toast.error(error.message);

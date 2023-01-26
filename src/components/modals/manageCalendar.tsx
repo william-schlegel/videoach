@@ -289,7 +289,7 @@ export const CreateRoomCalendar = ({
         roomId,
         siteId,
       });
-      toast.success(t("calendar-created") as string);
+      toast.success(t("calendar-created"));
     },
     onError(error) {
       toast.error(error.message);
@@ -302,7 +302,7 @@ export const CreateRoomCalendar = ({
         roomId,
         siteId,
       });
-      toast.success(t("calendar-updated") as string);
+      toast.success(t("calendar-updated"));
     },
     onError(error) {
       toast.error(error.message);

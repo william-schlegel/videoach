@@ -91,7 +91,7 @@ export const HeroCreation = ({ clubId, pageId }: HeroCreationProps) => {
   );
   const createSection = trpc.pages.createPageSection.useMutation({
     onSuccess() {
-      toast.success(t("section-created") as string);
+      toast.success(t("section-created"));
       utils.pages.getPageSection.invalidate({ pageId, section: "HERO" });
       reset();
       setImagePreview("");
@@ -114,7 +114,7 @@ export const HeroCreation = ({ clubId, pageId }: HeroCreationProps) => {
       Promise.all(
         data.elements.map((elem) => deleteSectionElement.mutateAsync(elem.id))
       );
-      toast.success(t("section-deleted") as string);
+      toast.success(t("section-deleted"));
       utils.pages.getPageSection.invalidate({ pageId, section: "HERO" });
       reset();
       setImagePreview("");
@@ -128,7 +128,7 @@ export const HeroCreation = ({ clubId, pageId }: HeroCreationProps) => {
     trpc.pages.createPageSectionElement.useMutation();
   const updateSectionElement = trpc.pages.updatePageSectionElement.useMutation({
     onSuccess() {
-      toast.success(t("section-updated") as string);
+      toast.success(t("section-updated"));
       utils.pages.getPageSection.invalidate({ pageId, section: "HERO" });
     },
     onError(error) {
@@ -138,7 +138,7 @@ export const HeroCreation = ({ clubId, pageId }: HeroCreationProps) => {
   const deleteUserDocument = trpc.files.deleteUserDocument.useMutation();
   const updatePageStyle = trpc.pages.updatePageStyleForClub.useMutation({
     onSuccess() {
-      toast.success(t("style-saved") as string);
+      toast.success(t("style-saved"));
     },
     onError(error) {
       toast.error(error.message);
@@ -232,9 +232,7 @@ export const HeroCreation = ({ clubId, pageId }: HeroCreationProps) => {
       const image = fields.images[0];
       if (!image) return;
       if (image.size > MAX_SIZE) {
-        toast.error(
-          t("image-size-error", { size: formatSize(MAX_SIZE) }) as string
-        );
+        toast.error(t("image-size-error", { size: formatSize(MAX_SIZE) }));
         setValue("images", undefined);
         return;
       }

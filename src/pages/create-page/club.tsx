@@ -84,7 +84,7 @@ function ClubPage({
                   >
                     <span>{page.name}</span>
                     <div className="flex items-center gap-2">
-                      <span className="badge badge-secondary">
+                      <span className="badge-secondary badge">
                         {t(
                           PAGE_TARGET_LIST.find((t) => t.value === page.target)
                             ?.label ?? ""
@@ -129,9 +129,7 @@ const PageContent = ({ pageId, clubId }: PageContentProps) => {
     onSuccess(data) {
       utils.pages.getPageById.invalidate(pageId);
       utils.pages.getPagesForClub.invalidate(clubId);
-      toast.success(
-        t(data.published ? "page-published" : "page-unpublished") as string
-      );
+      toast.success(t(data.published ? "page-published" : "page-unpublished"));
     },
   });
 
@@ -163,7 +161,7 @@ const PageContent = ({ pageId, clubId }: PageContentProps) => {
             href={`/presentation-page/club/${clubId}/${pageId}`}
             target="_blank"
             referrerPolicy="no-referrer"
-            className="btn btn-primary flex gap-2"
+            className="btn-primary btn flex gap-2"
           >
             {t("page-preview")}
             <i className="bx bx-link-external bx-xs" />

@@ -49,7 +49,7 @@ export const UpdateUser = ({
       utils.users.getUserById.invalidate(userId);
       utils.users.getUserFullById.invalidate(userId);
       reset();
-      toast.success(t("user-updated") as string);
+      toast.success(t("user-updated"));
     },
     onError(error) {
       toast.error(error.message);
@@ -105,7 +105,7 @@ export const DeleteUser = ({
   const deleteUser = trpc.users.deleteUser.useMutation({
     onSuccess: () => {
       utils.users.getAllUsers.invalidate();
-      toast.success(t("user-deleted") as string);
+      toast.success(t("user-deleted"));
     },
     onError(error) {
       toast.error(error.message);

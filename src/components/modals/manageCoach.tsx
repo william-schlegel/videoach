@@ -52,7 +52,7 @@ export const CreateOffer = ({ userId }: { userId: string }) => {
   const createOffer = trpc.coachs.createCoachOffer.useMutation({
     onSuccess: () => {
       utils.coachs.getCoachOffers.invalidate(userId);
-      toast.success(t("offer.created") as string);
+      toast.success(t("offer.created"));
     },
     onError(error) {
       toast.error(error.message);
@@ -138,7 +138,7 @@ export const UpdateOffer = ({
       utils.coachs.getCoachOffers.invalidate(userId);
       utils.coachs.getOfferById.invalidate(offerId);
       utils.coachs.getOfferWithDetails.invalidate(offerId);
-      toast.success(t("offer.updated") as string);
+      toast.success(t("offer.updated"));
     },
     onError(error) {
       toast.error(error.message);
@@ -197,7 +197,7 @@ export const DeleteOffer = ({
     onSuccess: () => {
       utils.coachs.getCoachOffers.invalidate(userId);
       utils.coachs.getOfferById.invalidate(offerId);
-      toast.success(t("offer.deleted") as string);
+      toast.success(t("offer.deleted"));
     },
     onError(error) {
       toast.error(error.message);
@@ -311,7 +311,7 @@ function OfferForm({ onSubmit, onCancel, initialData }: OfferFormProps) {
               <input
                 className="input-bordered input"
                 {...register("name", {
-                  required: t("offer.name-mandatory"),
+                  required: t("offer.name-mandatory") ?? true,
                 })}
               />
               {errors.name ? (
@@ -323,7 +323,7 @@ function OfferForm({ onSubmit, onCancel, initialData }: OfferFormProps) {
               <input
                 className="input-bordered input"
                 {...register("startDate", {
-                  required: t("offer.date-mandatory"),
+                  required: t("offer.date-mandatory") ?? true,
                 })}
                 type="date"
                 defaultValue={formatDateAsYYYYMMDD()}
@@ -606,7 +606,7 @@ function OfferForm({ onSubmit, onCancel, initialData }: OfferFormProps) {
           </div>
           <button
             type="button"
-            className="btn btn-primary"
+            className="btn-primary btn"
             onClick={() => handleAddPack()}
           >
             {t("offer.add-pack")}
@@ -615,7 +615,7 @@ function OfferForm({ onSubmit, onCancel, initialData }: OfferFormProps) {
       </div>
       <div className="col-span-2 flex items-center justify-end gap-2">
         <button
-          className="btn btn-outline btn-secondary"
+          className="btn-outline btn-secondary btn"
           onClick={(e) => {
             e.preventDefault();
             reset();
@@ -624,7 +624,7 @@ function OfferForm({ onSubmit, onCancel, initialData }: OfferFormProps) {
         >
           {t("common:cancel")}
         </button>
-        <button className="btn btn-primary" type="submit">
+        <button className="btn-primary btn" type="submit">
           {t("offer.save")}
         </button>
       </div>

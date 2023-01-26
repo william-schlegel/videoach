@@ -71,7 +71,7 @@ const ManageSubscriptions = ({
           <CreateSubscription clubId={clubId} />
         </div>
         <button
-          className="btn-outline btn-primary btn"
+          className="btn-outline btn btn-primary"
           onClick={() => {
             const path = `/manager/${sessionData?.user?.id}/clubs?clubId=${clubId}`;
             router.push(path);
@@ -158,7 +158,7 @@ export function SubscriptionContent({
   const undateSelection =
     trpc.subscriptions.updateSubscriptionSelection.useMutation({
       onSuccess() {
-        toast.success(t("subscription.selection-success") as string);
+        toast.success(t("subscription.selection-success"));
       },
       onError(error) {
         toast.error(error.message);
@@ -285,7 +285,7 @@ export function SubscriptionContent({
               {info}
             </div>
             <button
-              className="btn-primary btn-block btn mt-4"
+              className="btn btn-primary btn-block mt-4"
               onClick={handleSaveSelection}
             >
               {t("subscription.validate-selection")}

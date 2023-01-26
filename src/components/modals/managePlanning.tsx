@@ -38,7 +38,7 @@ export const CreatePlanning = ({
   const createPlanning = trpc.plannings.createPlanningForClub.useMutation({
     onSuccess: () => {
       utils.plannings.getPlanningsForClub.invalidate(clubId);
-      toast.success(t("planning-created") as string);
+      toast.success(t("planning-created"));
     },
     onError(error) {
       toast.error(error.message);
@@ -95,7 +95,7 @@ export const CreatePlanning = ({
             className="input-bordered input w-full"
             {...register("startDate", {
               valueAsDate: true,
-              required: t("date-mandatory"),
+              required: t("date-mandatory") ?? true,
             })}
             type="date"
             defaultValue={formatDateAsYYYYMMDD()}
@@ -204,7 +204,7 @@ export function UpdatePlanning({
   const updatePlanning = trpc.plannings.updatePlanningForClub.useMutation({
     onSuccess: () => {
       utils.plannings.getPlanningsForClub.invalidate(clubId);
-      toast.success(t("planning-updated") as string);
+      toast.success(t("planning-updated"));
     },
     onError(error) {
       toast.error(error.message);
@@ -214,7 +214,7 @@ export function UpdatePlanning({
     {
       onSuccess: () => {
         utils.plannings.getPlanningsForClub.invalidate(clubId);
-        toast.success(t("planning-created") as string);
+        toast.success(t("planning-created"));
       },
       onError(error) {
         toast.error(error.message);
@@ -292,7 +292,7 @@ export function UpdatePlanning({
             className="input-bordered input w-full"
             {...register("startDate", {
               valueAsDate: true,
-              required: t("date-mandatory"),
+              required: t("date-mandatory") ?? true,
             })}
             type="date"
             defaultValue={formatDateAsYYYYMMDD()}
@@ -323,7 +323,7 @@ export function DeletePlanning({
   const deletePlanning = trpc.plannings.deletePlanning.useMutation({
     onSuccess: () => {
       utils.plannings.getPlanningsForClub.invalidate(clubId);
-      toast.success(t("planning-deleted") as string);
+      toast.success(t("planning-deleted"));
     },
     onError(error) {
       toast.error(error.message);

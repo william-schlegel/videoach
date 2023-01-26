@@ -71,7 +71,7 @@ export const CreateCertification = ({ userId }: CreateCertificationProps) => {
   const { t } = useTranslation("coach");
   const addCertification = trpc.coachs.createCertification.useMutation({
     onSuccess() {
-      toast.success(t("certification-created") as string);
+      toast.success(t("certification-created"));
       utils.coachs.getCertificationsForCoach.invalidate(userId);
     },
     onError(error) {
@@ -266,7 +266,7 @@ export const UpdateCertification = ({
   );
   const updateCertification = trpc.coachs.updateCertification.useMutation({
     onSuccess: () => {
-      toast.success(t("certification-updated") as string);
+      toast.success(t("certification-updated"));
       utils.coachs.getCertificationsForCoach.invalidate(userId);
     },
     onError(error) {
@@ -322,7 +322,7 @@ export const DeleteCertification = ({
   const deleteCertification = trpc.coachs.deleteCertification.useMutation({
     onSuccess: () => {
       utils.coachs.getCertificationsForCoach.invalidate(userId);
-      toast.success(t("certification-deleted") as string);
+      toast.success(t("certification-deleted"));
     },
     onError(error) {
       toast.error(error.message);
@@ -371,7 +371,7 @@ export const CreateCertificationGroup = ({
     onSuccess: () => {
       utils.coachs.getCertificationGroups.invalidate();
       setData(emptyData);
-      toast.success(t("certification.group-created") as string);
+      toast.success(t("certification.group-created"));
     },
     onError(error) {
       toast.error(error.message);
@@ -432,7 +432,7 @@ export function UpdateCertificationGroup({
     onSuccess: () => {
       utils.coachs.getCertificationGroups.invalidate();
       setData(emptyData);
-      toast.success(t("certification.group-updated") as string);
+      toast.success(t("certification.group-updated"));
     },
     onError(error) {
       toast.error(error.message);
@@ -477,7 +477,7 @@ export function DeleteCertificationGroup({ groupId }: DeleteGroupProps) {
   const deleteGroup = trpc.coachs.deleteGroup.useMutation({
     onSuccess() {
       utils.coachs.getCertificationGroups.invalidate(),
-        toast.success(t("certification.group-deleted") as string);
+        toast.success(t("certification.group-deleted"));
     },
     onError(error) {
       toast.error(error.message);

@@ -1,12 +1,11 @@
-import { isCUID } from "@lib/checkValidity.js";
+import { isCUID } from "@lib/checkValidity";
 import nextI18nConfig from "@root/next-i18next.config.mjs";
 import Layout from "@root/src/components/layout";
-import { trpc } from "@trpcclient/trpc.js";
+import { trpc } from "@trpcclient/trpc";
 import { type GetServerSidePropsContext } from "next";
 import { useSession } from "next-auth/react";
 import { useTranslation } from "next-i18next";
 import { serverSideTranslations } from "next-i18next/serverSideTranslations";
-import { useEffect } from "react";
 import { StreamChat } from "stream-chat";
 import { env } from "../env/client.mjs";
 
@@ -35,6 +34,7 @@ const Chat = () => {
   return (
     <Layout className="container mx-auto my-2 flex flex-col gap-2">
       <h1 className="flex justify-between">{t("member.my-chat")}</h1>
+      {user.data?.name}
     </Layout>
   );
 };

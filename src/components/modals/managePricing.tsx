@@ -59,7 +59,7 @@ export const CreatePricing = ({ variant = "Primary" }: CreatePricingProps) => {
     onSuccess: () => {
       utils.pricings.getAllPricing.invalidate();
       reset();
-      toast.success(t("pricing.created") as string);
+      toast.success(t("pricing.created"));
     },
     onError(error) {
       toast.error(error.message);
@@ -163,7 +163,7 @@ export const UpdatePricing = ({
     onSuccess: () => {
       utils.pricings.getPricingById.invalidate(pricingId);
       reset();
-      toast.success(t("pricing.updated") as string);
+      toast.success(t("pricing.updated"));
     },
     onError(error) {
       toast.error(error.message);
@@ -248,7 +248,7 @@ export const DeletePricing = ({
     onSuccess: () => {
       utils.pricings.getPricingById.invalidate(pricingId);
       utils.pricings.getAllPricing.invalidate();
-      toast.success(t("pricing.deleted") as string);
+      toast.success(t("pricing.deleted"));
     },
     onError(error) {
       toast.error(error.message);
@@ -279,7 +279,7 @@ export const UndeletePricing = ({
     onSuccess: () => {
       utils.pricings.getPricingById.invalidate(pricingId);
       utils.pricings.getAllPricing.invalidate();
-      toast.success(t("pricing.restored") as string);
+      toast.success(t("pricing.restored"));
     },
     onError(error) {
       toast.error(error.message);
@@ -359,7 +359,7 @@ function PricingForm({
         <div className="flex flex-col gap-2">
           <input
             {...register("title", {
-              required: t("pricing.name-mandatory"),
+              required: t("pricing.name-mandatory") ?? true,
             })}
             type={"text"}
             className="input-bordered input w-full"
@@ -372,7 +372,7 @@ function PricingForm({
         <div className="flex flex-col gap-2">
           <textarea
             {...register("description", {
-              required: t("pricing.description-mandatory"),
+              required: t("pricing.description-mandatory") ?? true,
             })}
             rows={3}
           />

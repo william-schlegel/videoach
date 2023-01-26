@@ -207,14 +207,15 @@ export const coachRouter = router({
   ),
   getCoachsForClub: publicProcedure
     .input(z.string().cuid())
-    .query(({ input, ctx }) =>
-      ctx.prisma.user.findMany({
-        where: {
-          role: { in: ["COACH", "MANAGER_COACH"] },
-          coachData: { clubs: { some: { id: input } } },
+    .query(async ({ input, ctx }) => {
+      const club = await ctx.prisma.club.findUnique({
+        where: { id: input },
+        include: {
+          coachs: { include: { user: { select: { id: true, name: true } } } },
         },
-      })
-    ),
+      });
+      return club?.coachs.map((c) => c.user) ?? [];
+    }),
 
   getCertificationsForCoach: protectedProcedure
     .input(z.string())

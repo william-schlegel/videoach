@@ -49,7 +49,7 @@ export const CoachCreation = ({ userId, pageId }: CoachCreationProps) => {
   const [previewTheme, setPreviewTheme] = useState<TThemes>("cupcake");
   const updatePageStyle = trpc.pages.updatePageStyleForCoach.useMutation({
     onSuccess() {
-      toast.success(t("style-saved") as string);
+      toast.success(t("style-saved"));
     },
     onError(error) {
       toast.error(error.message);
@@ -95,7 +95,7 @@ export const CoachCreation = ({ userId, pageId }: CoachCreationProps) => {
     trpc.pages.createPageSectionElement.useMutation();
   const updateSectionElement = trpc.pages.updatePageSectionElement.useMutation({
     onSuccess() {
-      toast.success(t("section-updated") as string);
+      toast.success(t("section-updated"));
     },
     onError(error) {
       toast.error(error.message);
@@ -166,9 +166,7 @@ export const CoachCreation = ({ userId, pageId }: CoachCreationProps) => {
       const image = fields.images[0];
       if (!image) return;
       if (image.size > MAX_SIZE) {
-        toast.error(
-          t("image-size-error", { size: formatSize(MAX_SIZE) }) as string
-        );
+        toast.error(t("image-size-error", { size: formatSize(MAX_SIZE) }));
         setValue("images", undefined);
         return;
       }
@@ -470,7 +468,7 @@ function PhotoSection({
             href={`tel:${phone}`}
             target="_blank"
             rel="noreferrer"
-            className={`btn btn-outline btn-secondary btn-block ${
+            className={`btn-outline btn btn-secondary btn-block ${
               preview ? "btn-sm my-2 text-xs" : "btn-lg my-4 text-base"
             } gap-4`}
           >
