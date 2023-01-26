@@ -27,7 +27,7 @@ export default function Layout({ children, className }: Props) {
       </Head>
       <div
         ref={wrapperRef}
-        className="flex min-h-screen flex-col bg-base-200"
+        className="grid min-h-screen grid-rows-[auto_1fr_auto] bg-base-200"
         data-theme="cupcake"
       >
         <Navbar

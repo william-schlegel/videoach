@@ -38,9 +38,9 @@ const CoachDashboard = ({
 
   const published = coachQuery.data?.coachData?.page?.published;
   return (
-    <Layout className="container mx-auto my-2 flex flex-col gap-2">
+    <Layout className="container mx-auto my-2 space-y-2">
       <h1 className="flex items-center justify-between">
-        <div className="flex items-center gap-4">
+        <div className="flex flex-wrap items-center gap-4">
           <span>{t("coach-dashboard")}</span>
           <span
             className={`rounded px-4 py-2 text-sm ${
@@ -55,7 +55,7 @@ const CoachDashboard = ({
         <div className="flex items-center gap-4">
           {features.includes("COACH_CERTIFICATION") ? (
             <Link
-              className="btn-secondary btn"
+              className="btn btn-secondary"
               href={`${userId}/certifications`}
             >
               {t("manage-certifications")}
@@ -65,7 +65,7 @@ const CoachDashboard = ({
           )}
         </div>
       </h1>
-      <section className="stats shadow">
+      <section className="stats w-full shadow">
         <div className="stat">
           <div className="stat-figure text-primary">
             <i className="bx bx-building bx-lg" />
@@ -108,7 +108,7 @@ const CoachDashboard = ({
           </div>
         </div>
       </section>
-      <section className="grid grid-cols-2 gap-2">
+      <section className="grid auto-rows-auto gap-2 lg:grid-cols-2">
         <article className="rounded-md border border-primary p-2">
           <div className="flex items-center justify-between">
             <h2>{t("planning")}</h2>
@@ -126,7 +126,7 @@ const CoachDashboard = ({
             </div>
           )}
         </article>
-        <article className="col-span-2 rounded-md border border-primary p-2">
+        <article className="col-span-full rounded-md border border-primary p-2">
           <h2>{t("chat-members")}</h2>
         </article>
       </section>

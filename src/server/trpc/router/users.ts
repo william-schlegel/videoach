@@ -80,6 +80,7 @@ export const userRouter = router({
     .query(({ ctx, input }) => {
       return ctx.prisma.reservation.findMany({
         where: { userId: input.userId, date: { gte: input.after } },
+        orderBy: { date: "asc" },
         include: {
           room: true,
           activity: true,

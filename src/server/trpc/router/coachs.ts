@@ -73,6 +73,7 @@ export const coachRouter = router({
       });
       const imageData = await ctx.prisma.page.findFirst({
         where: {
+          coachId: coach?.id,
           target: "HOME",
           sections: {
             some: {

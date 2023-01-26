@@ -46,7 +46,7 @@ function ClubPage({
   });
 
   return (
-    <Layout className="container mx-auto my-2 flex flex-col gap-2">
+    <Layout className="container mx-auto my-2 space-y-2 p-2">
       <h1 className="flex items-center">
         {t("manage-page")}
         <div className="ml-auto flex items-center gap-2">
@@ -67,8 +67,8 @@ function ClubPage({
           </select>
         </div>
       </h1>
-      <div className="flex gap-4">
-        <aside className="flex min-w-fit flex-grow flex-col gap-2">
+      <div className="flex flex-col gap-4 lg:flex-row">
+        <aside className="min-w-fit space-y-2">
           <h4>{t("pages")}</h4>
           <CreatePage clubId={clubId} />
           <ul className="menu overflow-hidden rounded border border-secondary bg-base-100">
@@ -136,9 +136,9 @@ const PageContent = ({ pageId, clubId }: PageContentProps) => {
   if (queryPage.isLoading) return <Spinner />;
   return (
     <article className="flex flex-grow flex-col gap-4">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-wrap items-center justify-between">
         <h2> {queryPage.data?.name}</h2>
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
           <div className="pill">
             <div className="form-control">
               <label className="label cursor-pointer gap-4">
@@ -161,7 +161,7 @@ const PageContent = ({ pageId, clubId }: PageContentProps) => {
             href={`/presentation-page/club/${clubId}/${pageId}`}
             target="_blank"
             referrerPolicy="no-referrer"
-            className="btn-primary btn flex gap-2"
+            className="btn btn-primary flex gap-2"
           >
             {t("page-preview")}
             <i className="bx bx-link-external bx-xs" />

@@ -66,11 +66,11 @@
     "save-activity": "Enregistrer",
     "save-activities": "Enregistrer",
     "no-calendar": "Toute la journée (hors calendrier)",
-    "max-duration": "Durée maximum de réservation (0 si pas de limite)",
+    "duration": "Durée des réservations",
     "start-time": "A partir de",
-    "duration_zero": "Durée de réservation",
-    "duration_other": "Durée de réservation (maximum : {{count}} minutes)",
-    "minutes": "minutes"
+    "minutes": "minutes",
+    "slot": "Créneau",
+    "no-slot": "Aucun créneau de défini"
   },
   "room": {
     "room_zero": "Aucune salle",

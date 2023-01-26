@@ -254,7 +254,7 @@ export const HeroCreation = ({ clubId, pageId }: HeroCreationProps) => {
   if (querySection.isLoading) return <Spinner />;
 
   return (
-    <div className="grid w-full grid-cols-2 gap-2">
+    <div className="grid w-full auto-rows-auto gap-2 lg:grid-cols-2">
       <div>
         <h3>{t(updating ? "updating-section" : "creation-section")}</h3>
 
@@ -378,8 +378,8 @@ export const HeroCreation = ({ clubId, pageId }: HeroCreationProps) => {
           </div>
         </form>
       </div>
-      <div className={`flex flex-col gap-2`}>
-        <h3 className="flex items-center justify-between">
+      <div className={`space-y-2`}>
+        <h3 className="flex flex-wrap items-center justify-between">
           <span>{t("preview")}</span>
           <ThemeSelector
             onSelect={(t) => setPreviewTheme(t)}

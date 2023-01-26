@@ -47,7 +47,7 @@ export function CoachOfferDisplay({ offerId }: CoachOfferDisplayProps) {
           {getNameTarget(offerQuery.data?.target)}
         </p>
       </div>
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid auto-rows-auto gap-4 lg:grid-cols-2">
         <div>
           <p className="font-semibold text-primary">{t("offer.description")}</p>
           <p>{offerQuery.data?.description} </p>

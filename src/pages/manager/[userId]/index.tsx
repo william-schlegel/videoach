@@ -130,7 +130,7 @@ const ManagerClubs = ({
           <div className="stat-value text-primary">{memberCount}</div>
         </div>
       </section>
-      <section className="grid grid-cols-2 gap-2">
+      <section className="grid auto-rows-auto gap-2 lg:grid-cols-2">
         <article className="rounded-md border border-primary p-2">
           <h2>{t("planning")}</h2>
           <div className="flex flex-col gap-2">
@@ -149,7 +149,7 @@ const ManagerClubs = ({
             </div>
           )}
         </article>
-        <article className="col-span-2 rounded-md border border-primary p-2">
+        <article className="col-span-full rounded-md border border-primary p-2">
           <h2>{t("chat-members-coachs")}</h2>
         </article>
       </section>

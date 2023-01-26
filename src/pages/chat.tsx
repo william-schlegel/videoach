@@ -33,7 +33,7 @@ const Chat = () => {
 
   return (
     <Layout className="container mx-auto my-2 flex flex-col gap-2">
-      <h1 className="flex justify-between">{t("member.my-chat")}</h1>
+      <h1>{t("member.my-chat")}</h1>
       {user.data?.name}
     </Layout>
   );

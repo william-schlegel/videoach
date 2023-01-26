@@ -381,18 +381,18 @@ model ActivityGroup {
 }
 
 model Activity {
-  id                 String             @id @default(cuid())
-  name               String
-  groupId            String
-  group              ActivityGroup      @relation(fields: [groupId], references: [id], onDelete: Cascade)
-  clubId             String
-  club               Club               @relation(fields: [clubId], references: [id], onDelete: Cascade)
-  rooms              Room[]             @relation(name: "rooms-activities")
-  planningActivities PlanningActivity[]
-  subscriptions      Subscription[]
-  noCalendar         Boolean            @default(false)
-  maxDuration        Int                @default(0)
-  reservations       Reservation[]
+  id                  String             @id @default(cuid())
+  name                String
+  groupId             String
+  group               ActivityGroup      @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  clubId              String
+  club                Club               @relation(fields: [clubId], references: [id], onDelete: Cascade)
+  rooms               Room[]             @relation(name: "rooms-activities")
+  planningActivities  PlanningActivity[]
+  subscriptions       Subscription[]
+  noCalendar          Boolean            @default(false)
+  reservationDuration Int                @default(60)
+  reservations        Reservation[]
 
   @@index([groupId])
   @@index([clubId])
@@ -679,8 +679,8 @@ model Reservation {
   planningActivity   PlanningActivity? @relation(fields: [planningActivityId], references: [id], onDelete: Cascade)
   activityId         String?
   activity           Activity?         @relation(fields: [activityId], references: [id], onDelete: Cascade)
+  activitySlot       Int?
   date               DateTime
-  duration           Float             @default(0)
   roomId             String?
   room               Room?             @relation(fields: [roomId], references: [id], onDelete: Cascade)
   userId             String

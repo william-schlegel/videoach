@@ -52,11 +52,11 @@ function CoachOffer({
         <h1>{t("offer.my-offer", { count: offerQuery.data?.length ?? 0 })}</h1>
         <CreateOffer userId={sessionData?.user?.id ?? ""} />
       </div>
-      <div className="flex gap-4">
+      <div className="flex flex-col gap-4 lg:flex-row">
         {offerQuery.isLoading ? (
           <Spinner />
         ) : (
-          <ul className="menu w-1/4 overflow-hidden rounded bg-base-100">
+          <ul className="menu rounded bg-base-100 lg:w-1/4">
             {offerQuery.data?.map((offer) => (
               <li key={offer.id}>
                 <Link
@@ -66,7 +66,7 @@ function CoachOffer({
                   }`}
                 >
                   <span>{offer.name}</span>
-                  <span className="badge badge-secondary">
+                  <span className="badge-secondary badge">
                     {getName(offer.target)}
                   </span>
                 </Link>
@@ -95,9 +95,9 @@ function OfferContent({ userId, offerId }: OfferContentProps) {
   });
   if (offerQuery.isLoading) return <Spinner />;
   return (
-    <div className="flex w-full flex-col gap-4">
+    <div className="w-full space-y-4">
       <div className="flex items-center justify-between">
-        <div className="flex items-center gap-4">
+        <div className="flex flex-wrap items-center gap-4">
           <h2>{offerQuery.data?.name}</h2>
           <Link
             className="btn btn-primary flex items-center gap-4"

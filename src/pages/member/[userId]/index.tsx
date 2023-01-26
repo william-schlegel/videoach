@@ -26,8 +26,6 @@ import Spinner from "@ui/spinner";
 import {
   add,
   format,
-  getHours,
-  getMinutes,
   isBefore,
   isEqual,
   startOfDay,
@@ -42,7 +40,6 @@ import { useTranslation } from "next-i18next";
 import { serverSideTranslations } from "next-i18next/serverSideTranslations";
 import Link from "next/link";
 import { useState } from "react";
-import { type SubmitHandler, useForm } from "react-hook-form";
 import { useDisplaySubscriptionInfo } from "../../manager/[userId]/[clubId]/subscription";
 
 /***
@@ -63,11 +60,11 @@ const MemberDashboard = ({
   });
 
   return (
-    <Layout className="container mx-auto my-2 flex flex-col gap-2">
+    <Layout className="container mx-auto my-2 p-2">
       <h1 className="flex justify-between">
         {t("member.dashboard")}
         <Link
-          className="btn-secondary btn"
+          className="btn btn-secondary"
           href={`/member/${userId}/subscribe`}
         >
           {t("member.new-subscription")}
@@ -78,12 +75,12 @@ const MemberDashboard = ({
           count: queryUser.data?.memberData?.subscriptions.length ?? 0,
         })}
       </h2>
-      <section className="mb-4 grid grid-flow-col gap-4">
+      <section className="mb-4 grid grid-cols-[repeat(auto-fit,minmax(20rem,1fr))] gap-4">
         {queryUser.data?.memberData?.subscriptions.map((sub) => (
           <Subscription key={sub.id} subscription={sub} />
         ))}
       </section>
-      <section className="grid grid-cols-2 gap-2">
+      <section className="grid auto-rows-auto gap-2 lg:grid-cols-2">
         <article className="rounded-md border border-primary p-2">
           <div className="flex items-center justify-between">
             <h2>{t("member.my-planning")}</h2>
@@ -93,7 +90,7 @@ const MemberDashboard = ({
         </article>
         <article className="rounded-md border border-primary p-2">
           <h2>{t("member.my-reservations")}</h2>
-          <div className="flex flex-wrap gap-2">
+          <div className="grid grid-cols-[repeat(auto-fit,_minmax(10rem,_1fr))] gap-2">
             {queryReservations.data?.map((reservation) => (
               <MyReservation
                 key={reservation.id}
@@ -187,10 +184,10 @@ function MyReservation({ reservation, memberId, day }: MyReservationProps) {
           </div>
           <div className="flex justify-between">
             <span className="space-x-2">
-              <span>{format(reservation?.date, "hh:mm")}</span>
+              <span>{format(reservation?.date, "HH:mm")}</span>
               <span className="text-xs">
                 {"("}
-                {reservation.duration}
+                {reservation.activity.reservationDuration}
                 {"')"}
               </span>
             </span>
@@ -308,7 +305,7 @@ function MakeReservation({
   if (room.reservation === "NONE")
     return (
       <div className="text-center">
-        <p className="btn-outline btn-disabled btn-xs btn">
+        <p className="btn btn-outline btn-disabled btn-xs">
           {t("member.free-access")}
         </p>
       </div>
@@ -324,10 +321,10 @@ function MakeReservation({
       {reservations.find(
         (r) => r.id === planningActivityId && isEqual(day, r.date)
       ) ? (
-        <span className="btn-accent btn-xs btn">{t("member.reserved")}</span>
+        <span className="btn btn-accent btn-xs">{t("member.reserved")}</span>
       ) : (
         <button
-          className="btn-primary btn-xs btn"
+          className="btn btn-primary btn-xs"
           onClick={() =>
             createReservation.mutate({
               planningActivityId,
@@ -359,26 +356,16 @@ type WncProps = {
   reservations: { id: string; date: Date }[];
 };
 
+type TOpeningTime =
+  | (DayOpeningTime & {
+      workingHours: OpeningTime[];
+    })
+  | null;
+
 function Wnc({ activity, day, memberId, reservations }: WncProps) {
   const { t } = useTranslation("dashboard");
   const { getDayForDate } = useDayName();
   const dayName = getDayForDate(day);
-  // console.log("memberId", memberId);
-  // const calRoom = trpc.calendars.getCalendarForRoom.useQuery(
-  //   {
-  //     clubId: activity.clubId,
-  //     siteId: activity.siteId ?? "",
-  //     roomId: activity.roomId ?? "",
-  //   },
-  //   { enabled: isCUID(activity.roomId) && isCUID(activity.siteId) }
-  // );
-  // const calSite = trpc.calendars.getCalendarForSite.useQuery(
-  //   {
-  //     clubId: activity.clubId,
-  //     siteId: activity.siteId ?? "",
-  //   },
-  //   { enabled: isCUID(activity.siteId) }
-  // );
   const calClub = trpc.calendars.getCalendarForClub.useQuery(
     activity.clubId,
 
@@ -386,16 +373,7 @@ function Wnc({ activity, day, memberId, reservations }: WncProps) {
   );
 
   let openingText = "";
-  let OT:
-    | (DayOpeningTime & {
-        workingHours: OpeningTime[];
-      })
-    | null = null;
-  // if (calRoom.data)
-  //   OT = calRoom.data.openingTime.find((d) => d.name === dayName) ?? null;
-  // else if (calSite.data)
-  //   OT = calSite.data.openingTime.find((d) => d.name === dayName) ?? null;
-  // else if (calClub.data)
+  let OT: TOpeningTime = null;
   if (calClub.data)
     OT = calClub.data.openingTime.find((d) => d.name === dayName) ?? null;
 
@@ -427,6 +405,7 @@ function Wnc({ activity, day, memberId, reservations }: WncProps) {
             reservations={reservations}
             day={day}
             memberId={memberId}
+            workingHours={OT}
           />
         </div>
       ))}
@@ -440,11 +419,7 @@ type ReserveDurationProps = {
   reservations: { id: string; date: Date }[];
   day: Date;
   memberId: string;
-};
-
-type ReserveDurationFormValues = {
-  time: Date;
-  duration: number;
+  workingHours: TOpeningTime;
 };
 
 function ReserveDuration({
@@ -453,11 +428,9 @@ function ReserveDuration({
   reservations,
   day,
   memberId,
+  workingHours,
 }: ReserveDurationProps) {
   const { t } = useTranslation("dashboard");
-  const { register, handleSubmit } = useForm<ReserveDurationFormValues>({
-    defaultValues: { duration: Math.min(60, activity.maxDuration) },
-  });
   const utils = trpc.useContext();
   const createReservation =
     trpc.plannings.createActivityReservation.useMutation({
@@ -472,28 +445,28 @@ function ReserveDuration({
         });
       },
     });
+  const [closeModal, setCloseModal] = useState(false);
 
   if (isBefore(day, startOfToday())) return null;
 
-  const onSubmit: SubmitHandler<ReserveDurationFormValues> = (data) => {
-    const date = add(startOfDay(day), {
-      hours: getHours(data.time),
-      minutes: getMinutes(data.time),
-    });
-    console.log("date", date);
+  const onSubmit = (slot: TSlot) => {
+    console.log("slot :>> ", slot);
+    const [hours, minutes] = getHour(setHour(slot.start));
+    const date = add(startOfDay(day), { hours, minutes });
     createReservation.mutate({
       date,
       memberId,
       activityId: activity.id,
       roomId: room.id,
-      duration: data.duration,
+      activitySlot: slot.number,
     });
+    setCloseModal(true);
   };
 
   if (room?.reservation === "NONE")
     return (
       <div className="text-center">
-        <p className="btn-outline btn-disabled btn-xs btn">
+        <p className="btn btn-outline btn-disabled btn-xs">
           {t("member.free-access")}
         </p>
       </div>
@@ -513,41 +486,115 @@ function ReserveDuration({
       {reservations.find(
         (r) => r.id === activity.id && isEqual(day, r.date)
       ) ? (
-        <span className="btn-accent btn-xs btn">{t("member.reserved")}</span>
+        <span className="btn btn-accent btn-xs">{t("member.reserved")}</span>
       ) : (
         <Modal
           title={t("member.reserve")}
           variant="Primary"
           buttonSize="xs"
-          handleSubmit={handleSubmit(onSubmit)}
+          cancelButtonText=""
+          closeModal={closeModal}
+          onCloseModal={() => setCloseModal(false)}
         >
           <h3>{t("member.reserve")}</h3>
-          <div className="form-control">
-            <label>
-              {t("club:activity.start-time", { count: activity.maxDuration })}
-            </label>
-            <input
-              type="time"
-              {...register("time", { valueAsDate: true })}
-              className="input-bordered input w-full"
-            />
-
-            <label>
-              {t("club:activity.duration", { count: activity.maxDuration })}
-            </label>
-            <div className="input-group">
-              <input
-                type="number"
-                min={0}
-                max={activity.maxDuration}
-                {...register("duration", { valueAsNumber: true })}
-                className="input-bordered input w-full"
-              />
-              <span>{t("club:activity.minutes")}</span>
-            </div>
-          </div>
+          <label>{t("club:activity.slot")}</label>
+          <AvailableSlots
+            workingHours={workingHours}
+            duration={activity.reservationDuration}
+            day={day}
+            reservations={reservations}
+            onSelect={(slot) => onSubmit(slot)}
+          />
         </Modal>
       )}
+    </div>
+  );
+}
+
+type TSlot = {
+  start: number;
+  end: number;
+  slot: string;
+  number: number;
+  available: boolean;
+};
+type AvailableSlotsProps = {
+  workingHours: TOpeningTime;
+  reservations: { id: string; date: Date }[];
+  onSelect: (slot: TSlot) => void;
+  duration: number;
+  day: Date;
+};
+
+function getHour(workingHour: string | null | undefined) {
+  if (workingHour == null || workingHour == undefined) return [0, 0];
+  const hm = workingHour.split(":");
+  if (hm.length < 2) return [0, 0];
+  const h = Number(hm[0]);
+  const m = Number(hm[1]);
+  return [h, m];
+}
+
+function setHour(hm: number) {
+  const h = Math.floor(hm);
+  const m = (hm - h) * 60;
+  return `${`0${h}`.slice(-2)}:${`0${m}`.slice(-2)}`;
+}
+
+function AvailableSlots({
+  workingHours,
+  reservations,
+  duration,
+  onSelect,
+  day,
+}: AvailableSlotsProps) {
+  const { t } = useTranslation("dashboard");
+  const slots: Array<TSlot> = [];
+  if (!workingHours) return <span>{t("club:activity.no-slot")}</span>;
+  const [hs, ms] = getHour(workingHours.workingHours[0]?.opening);
+  let hStart = (hs ?? 0) + (ms ?? 0) / 60;
+  const [he, me] = getHour(workingHours.workingHours[0]?.closing);
+  const hEnd = (he ?? 0) + (me ?? 0) / 60;
+  const durationDec = duration / 60;
+
+  function checkAvailability(start: number) {
+    const [hours, minutes] = getHour(setHour(start));
+    const dtStart = add(startOfDay(day), { hours, minutes });
+    const dtEnd = add(startOfDay(day), {
+      hours,
+      minutes: minutes ?? 0 + duration,
+    });
+    const reserved = reservations.find(
+      (r) => r.date >= dtStart && r.date <= dtEnd
+    );
+    return !reserved;
+  }
+
+  while (hStart < hEnd) {
+    const end = Math.min(hStart + durationDec, hEnd);
+    slots.push({
+      start: hStart,
+      end,
+      slot: `${setHour(hStart)} : ${setHour(end)}`,
+      available: checkAvailability(hStart),
+      number: slots.length,
+    });
+    hStart += durationDec;
+  }
+
+  return (
+    <div className="grid grid-cols-[repeat(auto-fit,minmax(100px,1fr))] gap-2">
+      {slots.map((slot, idx) => (
+        <span
+          key={idx}
+          className={`btn btn-sm ${
+            slot.available ? "btn-primary" : "btn-disabled"
+          }`}
+          onClick={() => onSelect(slot)}
+        >
+          {slot.slot}
+        </span>
+      ))}
     </div>
   );
 }
@@ -573,7 +620,7 @@ function Subscription({ subscription }: SubscriptionProps) {
       subscription.rooms.map((ag) => ag.id)
     );
   return (
-    <div className="card w-full max-w-[32rem] bg-base-100 shadow-xl">
+    <div className="card w-full bg-base-100 shadow-xl">
       <div className="card-body">
         <div className="flex items-center justify-between">
           <h3 className="card-title text-primary">{subscription.name}</h3>

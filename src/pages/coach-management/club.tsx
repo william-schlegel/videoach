@@ -39,7 +39,7 @@ function CoachManagementForClub({
   });
 
   return (
-    <Layout className="container mx-auto my-2 flex flex-col gap-2">
+    <Layout className="container mx-auto my-2 space-y-2 p-2">
       <h1 className="flex items-center">
         {t("common:navigation.coach-management")}
         <div className="ml-auto flex items-center gap-2">
@@ -61,8 +61,8 @@ function CoachManagementForClub({
           </select>
         </div>
       </h1>
-      <div className="flex gap-4">
-        <aside className="flex min-w-fit max-w-xs flex-grow flex-col gap-2">
+      <div className="flex flex-col gap-4 lg:flex-row">
+        <aside className="min-w-fit space-y-2 lg:max-w-xs">
           <h4>{t("coach.coachs")}</h4>
           <AddCoachToClub clubId={clubId} />
           <ul className="menu overflow-hidden rounded border border-secondary bg-base-100">

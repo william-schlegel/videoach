@@ -126,7 +126,7 @@ export default function Profile() {
   });
   const { t } = useTranslation("auth");
   const onSubmit: SubmitHandler<FormValues> = (data) => {
-    if (!isCUID(data.pricingId)) {
+    if (!isCUID(data.pricingId) && !isCUID(userQuery.data?.pricingId)) {
       setError("pricingId", {
         type: "required",
         message: t("pricing-mandatory") ?? "",
@@ -148,7 +148,7 @@ export default function Profile() {
       aboutMe: data.aboutMe,
       coachingActivities: data.coachingActivities,
       publicName: data.publicName,
-      pricingId: data.pricingId,
+      pricingId: data.pricingId || (userQuery.data?.pricingId ?? ""),
       monthlyPayment: data.monthlyPayment,
       cancelationDate: data.cancelationDate ?? undefined,
     });
@@ -164,11 +164,19 @@ export default function Profile() {
   }, [fields.latitude, fields.longitude, fields.range]);
 
   function handleAddActivity() {
-    setValue(
-      `coachingActivities.${fields.coachingActivities?.length ?? 0}`,
-      newActivity
-    );
+    if (newActivity)
+      setValue(
+        `coachingActivities.${fields.coachingActivities?.length ?? 0}`,
+        newActivity
+      );
     setNewActivity("");
+  }
+
+  function handleDeleteActivity(idx: number) {
+    setValue(
+      `coachingActivities`,
+      fields.coachingActivities?.filter((_, i) => i !== idx) ?? []
+    );
   }
 
   return (
@@ -276,8 +284,12 @@ export default function Profile() {
                 </div>
                 <div className="mt-4 flex flex-wrap gap-2">
                   {fields.coachingActivities?.map((activity, idx) => (
-                    <span key={`ACT-${idx}`} className="pill w-fit">
-                      {activity}
+                    <span key={`ACT-${idx}`} className="pill w-fit space-x-2">
+                      <span>{activity}</span>
+                      <i
+                        className="bx bx-trash bx-xs cursor-pointer text-error"
+                        onClick={() => handleDeleteActivity(idx)}
+                      />
                     </span>
                   ))}
                 </div>
@@ -450,7 +462,7 @@ export default function Profile() {
                 </div>
                 <div className="flex-none">
                   <button
-                    className="btn-warning btn-xs btn"
+                    className="btn btn-warning btn-xs"
                     type="button"
                     onClick={() => setValue("cancelationDate", null)}
                   >
@@ -462,7 +474,7 @@ export default function Profile() {
           </div>
         </section>
         <button
-          className="btn-primary btn col-span-2 w-fit"
+          className="btn btn-primary col-span-2 w-fit"
           disabled={updateUser.isLoading}
         >
           {t("save-profile")}

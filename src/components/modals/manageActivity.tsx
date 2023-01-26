@@ -138,7 +138,7 @@ type NewActivityProps = {
 type ActivityFormValues = {
   name: string;
   noCalendar: boolean;
-  maxDuration: number;
+  reservationDuration: number;
 };
 
 type ActivityFormProps = {
@@ -190,23 +190,25 @@ function ActivityForm({
           <span className="label-text">{t("activity.no-calendar")}</span>
         </label>
       </div>
-      {fields.noCalendar ? (
-        <div className="form-control">
-          <label>{t("activity.max-duration")}</label>
-          <div className="input-group">
-            <input
-              type="text"
-              className="input-bordered input w-full"
-              {...register("maxDuration", { valueAsNumber: true })}
-            />
-            <span>{t("activity.minutes")}</span>
-          </div>
-        </div>
-      ) : null}
+      <div className="grid grid-cols-[auto_1fr] gap-4">
+        {fields.noCalendar ? (
+          <>
+            <label>{t("activity.duration")}</label>
+            <div className="input-group">
+              <input
+                type="text"
+                className="input-bordered input w-full"
+                {...register("reservationDuration", { valueAsNumber: true })}
+              />
+              <span>{t("activity.minutes")}</span>
+            </div>
+          </>
+        ) : null}
+      </div>
       <div className="col-span-2 flex items-center justify-end gap-2">
         <button
           type="button"
-          className="btn-outline btn-secondary btn"
+          className="btn-outline btn btn-secondary"
           onClick={(e) => {
             e.preventDefault();
             reset();
@@ -215,7 +217,7 @@ function ActivityForm({
         >
           {t("common:cancel")}
         </button>
-        <button className="btn-primary btn" type="submit">
+        <button className="btn btn-primary" type="submit">
           {t("common:save")}
         </button>
       </div>
@@ -252,7 +254,7 @@ const NewActivity = ({ clubId, groupId }: NewActivityProps) => {
       closeModal={close}
       cancelButtonText=""
     >
-      <h3 className="space-x-2">
+      <h3>
         <span>{t("activity.create-group")}</span>
         <span className="text-primary">{groupQuery.data?.name}</span>
       </h3>
@@ -308,14 +310,14 @@ function UpdateActivity({ clubId, groupId, id }: UpdateActivityProps) {
       cancelButtonText=""
     >
       <h3>
-        {t("activity.update")}
+        <span>{t("activity.update")}</span>
         <span className="text-primary">{queryActivity.data?.name}</span>
       </h3>
       <ActivityForm
         initialValues={{
           name: queryActivity.data?.name ?? "",
           noCalendar: !!queryActivity.data?.noCalendar,
-          maxDuration: queryActivity.data?.maxDuration ?? 0,
+          reservationDuration: queryActivity.data?.reservationDuration ?? 0,
         }}
         onSubmit={(data) => handleSubmit(data)}
         onCancel={() => setClose(true)}

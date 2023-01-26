@@ -450,7 +450,7 @@ export const planningRouter = router({
         memberId: z.string().cuid(),
         activityId: z.string().cuid(),
         date: z.date(),
-        duration: z.number(),
+        activitySlot: z.number(),
         roomId: z.string().cuid(),
       })
     )
@@ -460,7 +460,7 @@ export const planningRouter = router({
           date: input.date,
           activityId: input.activityId,
           userId: input.memberId,
-          duration: input.duration,
+          activitySlot: input.activitySlot,
           roomId: input.roomId,
         },
       })

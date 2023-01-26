@@ -184,7 +184,7 @@ export const CoachCreation = ({ userId, pageId }: CoachCreationProps) => {
   if (querySection.isLoading) return <Spinner />;
 
   return (
-    <div className="grid w-full grid-cols-2 gap-2">
+    <div className="grid w-full auto-rows-auto gap-2 lg:grid-cols-2">
       <div>
         <h3>{t("updating-page")}</h3>
         <form
@@ -273,8 +273,8 @@ export const CoachCreation = ({ userId, pageId }: CoachCreationProps) => {
         </form>
       </div>
       <div>
-        <div className={`flex flex-col gap-2`}>
-          <h3 className="flex items-center justify-between">
+        <div className={`space-y-2`}>
+          <h3 className="flex flex-wrap items-center justify-between">
             <span>{t("preview")}</span>
             <ThemeSelector
               onSelect={(t) => setPreviewTheme(t)}
@@ -468,7 +468,7 @@ function PhotoSection({
             href={`tel:${phone}`}
             target="_blank"
             rel="noreferrer"
-            className={`btn-outline btn btn-secondary btn-block ${
+            className={`btn btn-outline btn-secondary btn-block ${
               preview ? "btn-sm my-2 text-xs" : "btn-lg my-4 text-base"
             } gap-4`}
           >

@@ -16,7 +16,7 @@ import { useHover } from "@lib/useHover";
 
 type FindCoachProps = {
   address?: string;
-  onSelect?: (id: string) => void;
+  onSelect?: (coachDataId: string) => void;
 };
 
 function FindCoach({ address = "", onSelect }: FindCoachProps) {
@@ -128,7 +128,7 @@ function FindCoach({ address = "", onSelect }: FindCoachProps) {
         {withSelect ? (
           <td>
             <span
-              className="btn-primary btn-xs btn"
+              className="btn btn-primary btn-xs"
               tabIndex={0}
               onClick={() => onSelect(item.id)}
             >
@@ -164,7 +164,7 @@ function FindCoach({ address = "", onSelect }: FindCoachProps) {
           </div>
         </div>
         <button
-          className="btn-primary btn flex items-center gap-4"
+          className="btn btn-primary flex items-center gap-4"
           onClick={() => handleSearch()}
         >
           {t("search-coach")}

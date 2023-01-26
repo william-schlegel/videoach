@@ -242,7 +242,7 @@ export const clubRouter = router({
     .input(
       z.object({
         clubId: z.string().cuid(),
-        coachId: z.string().cuid(),
+        coachDataId: z.string().cuid(),
       })
     )
     .mutation(async ({ ctx, input }) => {
@@ -257,24 +257,9 @@ export const clubRouter = router({
           code: "UNAUTHORIZED",
           message: "You are not authorized to modify this club",
         });
-      const userCoach = await ctx.prisma.userCoach.findUnique({
-        where: { userId: input.coachId },
-      });
-      if (!userCoach) {
-        return await ctx.prisma.userCoach.create({
-          data: {
-            userId: input.coachId,
-            clubs: {
-              connect: {
-                id: input.clubId,
-              },
-            },
-          },
-        });
-      }
 
       return ctx.prisma.userCoach.update({
-        where: { userId: input.coachId },
+        where: { id: input.coachDataId },
         data: {
           clubs: {
             connect: {

@@ -345,7 +345,7 @@ function ClubForm({ onSubmit, onCancel, update, initialData }: ClubFormProps) {
       ) : null}
       <div className="col-span-2 flex items-center justify-end gap-2">
         <button
-          className="btn-outline btn-secondary btn"
+          className="btn-outline btn btn-secondary"
           onClick={(e) => {
             e.preventDefault();
             onCancel();
@@ -353,7 +353,7 @@ function ClubForm({ onSubmit, onCancel, update, initialData }: ClubFormProps) {
         >
           {t("common:cancel")}
         </button>
-        <button className="btn-primary btn" type="submit">
+        <button className="btn btn-primary" type="submit">
           {t("common:save")}
         </button>
       </div>
@@ -413,8 +413,8 @@ export const AddCoachToClub = ({ clubId }: { clubId: string }) => {
     >
       <h3>{t("coach.find")}</h3>
       <FindCoach
-        onSelect={(coachId) => {
-          addCoachToClub.mutate({ clubId, coachId });
+        onSelect={(coachDataId) => {
+          addCoachToClub.mutate({ clubId, coachDataId });
           setCloseModal(true);
         }}
       />
@@ -460,7 +460,7 @@ export function CoachDataPresentation({
         <label>{t("activity.activities")}</label>
         <div className="flex flex-wrap gap-2">
           {activityGroups.map((ag) => (
-            <span key={ag.id} className="pill">
+            <span key={ag.id} className="pill bg-base-100">
               {ag.name}
             </span>
           ))}
@@ -491,7 +491,7 @@ export function CoachDataPresentation({
             target="_blank"
             rel="noreferrer"
           >
-            <button className="btn-primary btn flex items-center gap-4">
+            <button className="btn btn-primary flex items-center gap-4">
               <span>{t("coach.view-page")}</span>
               <i className="bx bx-link-external bx-xs" />
             </button>

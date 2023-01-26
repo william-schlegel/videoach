@@ -29,12 +29,12 @@ function CoachPage({
   });
 
   return (
-    <Layout className="container mx-auto my-2 flex flex-col gap-2">
-      <h1 className="flex items-center justify-between">
+    <Layout className="container mx-auto my-2 space-y-2">
+      <h1 className="flex flex-wrap items-center justify-between">
         <span>{t("manage-page")}</span>
 
         {queryPage.data?.id ? (
-          <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2">
             <div className="pill">
               <div className="form-control">
                 <label className="label cursor-pointer gap-4">
