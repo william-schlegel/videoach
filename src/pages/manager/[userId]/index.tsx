@@ -1,6 +1,7 @@
 import { authOptions } from "@auth/[...nextauth]";
 import { useDayName } from "@lib/useDayName";
 import useUserInfo from "@lib/useUserInfo";
+import { CreateEvent } from "@modals/manageEvent";
 import { Role } from "@prisma/client";
 import nextI18nConfig from "@root/next-i18next.config.mjs";
 import Layout from "@root/src/components/layout";
@@ -71,7 +72,7 @@ const ManagerClubs = ({
     >
       <h1 className="flex justify-between">
         {t("manager-dashboard")}
-        <Link className="btn-secondary btn" href={`${userId}/clubs`}>
+        <Link className="btn btn-secondary" href={`${userId}/clubs`}>
           {t("manage-club")}
         </Link>
       </h1>
@@ -145,15 +146,22 @@ const ManagerClubs = ({
         <article className="rounded-md border border-primary p-2">
           <h2>{t("event")}</h2>
           {features.includes("MANAGER_EVENT") ? (
-            <div></div>
+            <div className="space-y-2">
+              {managerQuery.data?.map((club) => (
+                <div
+                  key={club.id}
+                  className="flex items-center justify-between gap-4 rounded border border-secondary p-4"
+                >
+                  <h3>{club.name}</h3>
+                  <CreateEvent clubId={club.id} />
+                </div>
+              ))}
+            </div>
           ) : (
             <div className="alert alert-error">
               {t("common:navigation.insufficient-plan")}
             </div>
           )}
-        </article>
-        <article className="col-span-full rounded-md border border-primary p-2">
-          <h2>{t("chat-members-coachs")}</h2>
         </article>
       </section>
     </Layout>
@@ -218,7 +226,7 @@ export const getServerSideProps = async ({
     props: {
       ...(await serverSideTranslations(
         locale ?? "fr",
-        ["common", "dashboard"],
+        ["common", "dashboard", "club"],
         nextI18nConfig
       )),
       userId: session?.user?.id || "",

@@ -27,7 +27,7 @@ type SimpleFormField<T> = {
 
 type SimpleFormProps<T extends FieldValues> = {
   fields: SimpleFormField<T>[];
-  errors?: FieldErrors;
+  errors?: FieldErrors<T>;
   register: UseFormRegister<T>;
   onSubmit?: FormEventHandler<HTMLFormElement> | undefined;
   children?: ReactNode;
@@ -45,7 +45,6 @@ export default function SimpleForm<T extends FieldValues>({
   className = "",
   isLoading = false,
 }: SimpleFormProps<T>): JSX.Element {
-  const { t } = useTranslation("common");
   return (
     <form
       className={`grid grid-cols-[auto_1fr] gap-2 ${className ?? ""}`}
@@ -125,13 +124,9 @@ export default function SimpleForm<T extends FieldValues>({
                         className="input-bordered input w-full"
                       />
                     )}
-                    {errors && errors[fn] ? (
-                      <p className="text-sm text-error">
-                        {typeof field.required === "string"
-                          ? field.required
-                          : t("required")}
-                      </p>
-                    ) : null}
+                    <TextError
+                      err={errors?.[fn]?.message as string | undefined}
+                    />
                   </div>
                 </>
               )}
@@ -142,4 +137,14 @@ export default function SimpleForm<T extends FieldValues>({
       {children}
     </form>
   );
+}
+
+type TextErrorProps = { err: string | undefined };
+
+export function TextError({ err }: TextErrorProps) {
+  const { t } = useTranslation("common");
+  if (!err) return null;
+  const msg = err || t("required") || "Error";
+
+  return <p className="text-sm text-error"> {msg} </p>;
 }

@@ -172,6 +172,7 @@ model UserDocument {
   certification      Certification?
   pageSectionElement PageSectionElement[]
   club               Club?
+  event              Event?
 
   @@index([userId])
 }
@@ -195,13 +196,11 @@ model Club {
   calendars     OpeningCalendar[]
   pages         Page[]
   pageStyle     String            @default("light")
-  // searchAddress String?
-  // latitude      Float             @default(48.8583701)
-  // longitude     Float             @default(2.2944813)
   plannings     Planning[]
   logoId        String?           @unique
   logo          UserDocument?     @relation(fields: [logoId], references: [id])
   subscriptions Subscription[]
+  events        Event[]
 
   @@index([managerId])
   @@index([logoId])
@@ -292,6 +291,40 @@ model Subscription {
 
   @@index([clubId])
 }
+
+model Event {
+  id            String        @id @default(cuid())
+  clubId        String
+  club          Club          @relation(fields: [clubId], references: [id], onDelete: Cascade)
+  name          String
+  brief         String        @db.MediumText
+  description   String        @db.Text
+  pageId        String?
+  page          Page?
+  startDate     DateTime
+  endDate       DateTime
+  startDisplay  DateTime      @default(now())
+  endDisplay    DateTime
+  bannerText    String
+  cancelled     Boolean
+  documentId    String?       @unique
+  document      UserDocument? @relation(fields: [documentId], references: [id])
+  price         Float
+  free          Boolean
+  address       String
+  searchAddress String?
+  latitude      Float         @default(48.8583701)
+  longitude     Float         @default(2.2944813)
+
+  @@index([pageId])
+  @@index([clubId])
+}
+
+// ----------------------------------------------------------------------------------------------
+
+//                             COACH OFFERS
+
+// ----------------------------------------------------------------------------------------------
 
 enum CoachingLevelList {
   ALL
@@ -555,6 +588,8 @@ enum PageTarget {
   PLANS
   CONTACT
   VIDEOS
+  EVENTS
+  EVENT
 }
 
 enum PageSectionModel {
@@ -617,9 +652,12 @@ model Page {
   coachId   String?       @unique
   coach     UserCoach?    @relation(fields: [coachId], references: [userId], onDelete: Cascade)
   published Boolean       @default(false)
+  eventId   String?       @unique
+  event     Event?        @relation(fields: [eventId], references: [id], onDelete: Cascade)
 
   @@index([clubId])
   @@index([coachId])
+  @@index([eventId])
 }
 
 // ----------------------------------------------------------------------------------------------

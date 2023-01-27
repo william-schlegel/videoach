@@ -48,9 +48,18 @@ function ButtonIcon({
     ? "btn btn-primary"
     : "btn btn-secondary";
 
+  const sz =
+    buttonSize === "lg"
+      ? "btn-lg"
+      : buttonSize === "md"
+      ? "btn-md"
+      : buttonSize === "sm"
+      ? "btn-sm"
+      : "btn-xs";
+
   return fullButton ? (
     <label
-      className={`${color} ${outlined} flex items-center gap-2 btn-${buttonSize}`}
+      className={`${color} ${outlined} flex items-center gap-2 ${sz}`}
       tabIndex={0}
     >
       {iconComponent}
@@ -60,7 +69,7 @@ function ButtonIcon({
     <div className={"tooltip z-50"} data-tip={title}>
       <label
         htmlFor={btnId}
-        className={`${color} ${outlined} gap-2 btn-${buttonSize} `}
+        className={`${color} ${outlined} gap-2 ${sz} `}
         tabIndex={0}
       >
         {iconComponent}

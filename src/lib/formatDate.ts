@@ -24,17 +24,25 @@ export const remainingDays = (startDate: Date) => {
 
 type TformatDateLocalizedOptions = {
   withTime?: boolean;
-  withDay?: boolean;
+  withDay?: boolean | "short" | "long";
+  dateFormat?: "number" | "short" | "long";
 };
 
 export const formatDateLocalized = (
   dt: Date | null | undefined,
-  options?: TformatDateLocalizedOptions
+  options: TformatDateLocalizedOptions = {
+    withDay: false,
+    withTime: false,
+    dateFormat: "number",
+  }
 ) => {
-  const { withTime, withDay } = options ?? { withTime: false, withDay: false };
+  const { withTime, withDay, dateFormat } = options;
   let frmt = "";
-  if (withDay) frmt = "E ";
-  frmt = frmt.concat("P");
+  if (withDay === true || withDay === "short") frmt = "E ";
+  if (withDay === "long") frmt = "EEEE ";
+  if (dateFormat === "number") frmt = frmt.concat("P");
+  if (dateFormat === "short") frmt = frmt.concat("PP");
+  if (dateFormat === "long") frmt = frmt.concat("PPP");
   if (withTime) frmt = frmt.concat("p");
   return format(dt ?? startOfToday(), frmt, {
     locale: i18n?.language === "en" ? enUS : fr,
