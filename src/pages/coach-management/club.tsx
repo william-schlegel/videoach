@@ -39,7 +39,10 @@ function CoachManagementForClub({
   });
 
   return (
-    <Layout className="container mx-auto my-2 space-y-2 p-2">
+    <Layout
+      title={t("common:navigation.coach-management")}
+      className="container mx-auto my-2 space-y-2 p-2"
+    >
       <h1 className="flex items-center">
         {t("common:navigation.coach-management")}
         <div className="ml-auto flex items-center gap-2">

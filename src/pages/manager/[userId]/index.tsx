@@ -65,10 +65,13 @@ const ManagerClubs = ({
   if (managerQuery.isLoading) return <Spinner />;
 
   return (
-    <Layout className="container mx-auto my-2 flex flex-col gap-2">
+    <Layout
+      title={t("manager-dashboard")}
+      className="container mx-auto my-2 space-y-2 p-2"
+    >
       <h1 className="flex justify-between">
         {t("manager-dashboard")}
-        <Link className="btn btn-secondary" href={`${userId}/clubs`}>
+        <Link className="btn-secondary btn" href={`${userId}/clubs`}>
           {t("manage-club")}
         </Link>
       </h1>

@@ -16,7 +16,10 @@ function Subscribe() {
     enabled: isCUID(userId),
   });
   return (
-    <Layout className="container mx-auto my-2 flex flex-col gap-2">
+    <Layout
+      title={t("new-subscription")}
+      className="container mx-auto my-2 space-y-2 p-2"
+    >
       <h1 className="flex justify-between">{t("new-subscription")}</h1>
       <h2>{t("find-club")}</h2>
       <p>{t("how-to-subscribe")}</p>

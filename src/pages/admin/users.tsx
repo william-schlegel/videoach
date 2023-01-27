@@ -64,7 +64,10 @@ function UserManagement() {
     return <div>{t("admin-only")}</div>;
 
   return (
-    <Layout className="container mx-auto">
+    <Layout
+      title={t("user.manage-users")}
+      className="container mx-auto my-2 space-y-2 p-2"
+    >
       <div className="mb-4 flex flex-row items-center gap-4">
         <h1>{t("user.manage-users")}</h1>
       </div>

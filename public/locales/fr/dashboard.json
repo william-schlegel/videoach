@@ -33,6 +33,7 @@
   "rating": "Note",
   "schedule": "Rendez-vous",
   "no-planning": "Pas d'activités aujourd'hui",
+  "my-chat": "Mon espace de discussions",
   "member": {
     "dashboard": "Espace membre",
     "reservation": "Réserver une activité",
@@ -42,7 +43,6 @@
     "my-subscription_other": "Mes abonnements",
     "my-planning": "Mon planning",
     "my-reservations": "Mes réservations à venir",
-    "my-chat": "Discussions",
     "all-day": "Toute la journée",
     "closed": "Fermé",
     "whole-club": "Sur tout le club",

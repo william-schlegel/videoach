@@ -7,10 +7,11 @@ import { type TThemes } from "./themeSelector";
 
 type Props = {
   children: ReactNode;
+  title?: string | null;
   className?: string;
 };
 
-export default function Layout({ children, className }: Props) {
+export default function Layout({ children, className, title }: Props) {
   const [theme, setTheme] = useLocalStorage<TThemes>("theme", "cupcake");
   const wrapperRef = useRef<HTMLDivElement>(null);
 
@@ -21,7 +22,7 @@ export default function Layout({ children, className }: Props) {
   return (
     <>
       <Head>
-        <title>Videoach</title>
+        <title>Videoach{title ? ` - ${title}` : ""}</title>
         <meta name="description" content="Management de clubs de sport" />
         <link rel="icon" href="/favicon.ico" />
       </Head>

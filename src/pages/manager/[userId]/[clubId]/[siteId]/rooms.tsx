@@ -58,7 +58,10 @@ const ManageRooms = ({
     );
 
   return (
-    <Layout className="container mx-auto">
+    <Layout
+      title={t("room.manage-my-rooms", { count: roomQuery.data?.length ?? 0 })}
+      className="container mx-auto my-2 space-y-2 p-2"
+    >
       <div className="mb-4 flex flex-row items-center justify-between">
         <div className="flex items-center gap-4">
           <h1 className="flex items-center gap-4">

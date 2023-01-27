@@ -69,7 +69,12 @@ const ManageCertifications = ({
     );
 
   return (
-    <Layout className="container mx-auto">
+    <Layout
+      title={t("manage-my-certifications", {
+        count: certificationQuery.data?.certifications?.length ?? 0,
+      })}
+      className="container mx-auto my-2 space-y-2 p-2"
+    >
       <div className="mb-4 flex flex-row items-center gap-4">
         <h1>
           {t("manage-my-certifications", {

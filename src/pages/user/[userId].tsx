@@ -180,7 +180,10 @@ export default function Profile() {
   }
 
   return (
-    <Layout className="container mx-auto">
+    <Layout
+      title={t("your-profile")}
+      className="container mx-auto my-2 space-y-2 p-2"
+    >
       <div className="flex items-center justify-between">
         <h1>{t("your-profile")}</h1>
         <Modal
@@ -462,7 +465,7 @@ export default function Profile() {
                 </div>
                 <div className="flex-none">
                   <button
-                    className="btn btn-warning btn-xs"
+                    className="btn-warning btn-xs btn"
                     type="button"
                     onClick={() => setValue("cancelationDate", null)}
                   >
@@ -474,7 +477,7 @@ export default function Profile() {
           </div>
         </section>
         <button
-          className="btn btn-primary col-span-2 w-fit"
+          className="btn-primary btn col-span-2 w-fit"
           disabled={updateUser.isLoading}
         >
           {t("save-profile")}

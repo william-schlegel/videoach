@@ -73,7 +73,10 @@ function ClubPlanning({
   });
 
   return (
-    <Layout className="container mx-auto my-2 flex flex-col gap-2">
+    <Layout
+      title={t("planning-management")}
+      className="container mx-auto my-2 space-y-2 p-2"
+    >
       <h1 className="flex items-center">
         {t("planning-management")}
         <div className="ml-auto flex items-center gap-2">
@@ -303,7 +306,7 @@ const PlanningContent = ({
         <div className="modal-box relative">
           <label
             htmlFor="modal-drop"
-            className="btn btn-secondary btn-sm btn-circle absolute right-2 top-2"
+            className="btn-secondary btn-sm btn-circle btn absolute right-2 top-2"
           >
             <i className="bx bx-x bx-sm" />
           </label>
@@ -566,7 +569,7 @@ function PopupActivityDetails({
       }}
     >
       <button
-        className="btn btn-secondary btn-sm btn-circle absolute right-1 top-1"
+        className="btn-secondary btn-sm btn-circle btn absolute right-1 top-1"
         onClick={onClose}
       >
         <i className="bx bx-x bx-sm" />
@@ -751,7 +754,7 @@ function FormActivity({
               buttonIcon={<i className="bx bx-trash bx-sm" />}
             />
           ) : null}
-          <button className="btn btn-primary ml-2">
+          <button className="btn-primary btn ml-2">
             {t(update ? "update" : "validation")}
           </button>
         </label>

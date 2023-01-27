@@ -7,7 +7,10 @@ import Layout from "@root/src/components/layout";
 function Page404() {
   const { t } = useTranslation("common");
   return (
-    <Layout className="grid h-screen w-full items-center bg-neutral">
+    <Layout
+      title={t("error-500")}
+      className="grid h-screen w-full items-center bg-neutral"
+    >
       <div className="flex items-center justify-center gap-4">
         <span className="text-3xl font-bold text-primary">404</span>
         <span className="text-secondary">{t("error-500")}</span>

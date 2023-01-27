@@ -30,7 +30,10 @@ const AdminDashboard = () => {
   if (adminQuery.isLoading) return <Spinner />;
 
   return (
-    <Layout className="container mx-auto my-2 flex flex-col gap-2">
+    <Layout
+      title={t("admin-dashboard")}
+      className="container mx-auto my-2 space-y-2 p-2"
+    >
       <h1 className="flex justify-between">{t("admin-dashboard")}</h1>
       <section className="stats shadow">
         <div className="stat">

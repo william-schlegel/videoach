@@ -47,7 +47,10 @@ function CoachOffer({
     return <div>{t("coach-only")}</div>;
 
   return (
-    <Layout className="container mx-auto">
+    <Layout
+      title={t("offer.my-offer", { count: offerQuery.data?.length ?? 0 })}
+      className="container mx-auto my-2 space-y-2 p-2"
+    >
       <div className="mb-4 flex flex-row items-center gap-4">
         <h1>{t("offer.my-offer", { count: offerQuery.data?.length ?? 0 })}</h1>
         <CreateOffer userId={sessionData?.user?.id ?? ""} />
@@ -100,7 +103,7 @@ function OfferContent({ userId, offerId }: OfferContentProps) {
         <div className="flex flex-wrap items-center gap-4">
           <h2>{offerQuery.data?.name}</h2>
           <Link
-            className="btn btn-primary flex items-center gap-4"
+            className="btn-primary btn flex items-center gap-4"
             href={`/company/${offerId}`}
             target="_blank"
             rel="noreffer"

@@ -29,7 +29,10 @@ function CoachPage({
   });
 
   return (
-    <Layout className="container mx-auto my-2 space-y-2">
+    <Layout
+      title={t("manage-page")}
+      className="container mx-auto my-2 space-y-2 p-2"
+    >
       <h1 className="flex flex-wrap items-center justify-between">
         <span>{t("manage-page")}</span>
 

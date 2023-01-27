@@ -12,7 +12,7 @@ const Home = () => {
   const router = useRouter();
 
   return (
-    <Layout>
+    <Layout title={t("title")}>
       <section className="bg-gradient-home-hero hero min-h-screen">
         <div className="hero-content flex-col lg:flex-row-reverse">
           <Image
@@ -30,19 +30,19 @@ const Home = () => {
             <p className="py-6">{t("hero-text")}</p>
             <div className="flex flex-wrap gap-2">
               <button
-                className="btn btn-accent"
+                className="btn-accent btn"
                 onClick={() => router.push("#find-club")}
               >
                 {t("btn-visitor")}
               </button>
               <button
-                className="btn btn-primary"
+                className="btn-primary btn"
                 onClick={() => router.push("/manager")}
               >
                 {t("btn-manager")}
               </button>
               <button
-                className="btn btn-secondary"
+                className="btn-secondary btn"
                 onClick={() => router.push("/coach")}
               >
                 {t("btn-coach")}

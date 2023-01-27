@@ -38,7 +38,10 @@ const CoachDashboard = ({
 
   const published = coachQuery.data?.coachData?.page?.published;
   return (
-    <Layout className="container mx-auto my-2 space-y-2">
+    <Layout
+      title={t("coach-dashboard")}
+      className="container mx-auto my-2 space-y-2 p-2"
+    >
       <h1 className="flex items-center justify-between">
         <div className="flex flex-wrap items-center gap-4">
           <span>{t("coach-dashboard")}</span>
@@ -55,7 +58,7 @@ const CoachDashboard = ({
         <div className="flex items-center gap-4">
           {features.includes("COACH_CERTIFICATION") ? (
             <Link
-              className="btn btn-secondary"
+              className="btn-secondary btn"
               href={`${userId}/certifications`}
             >
               {t("manage-certifications")}

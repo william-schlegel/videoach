@@ -46,7 +46,10 @@ function ClubPage({
   });
 
   return (
-    <Layout className="container mx-auto my-2 space-y-2 p-2">
+    <Layout
+      title={t("manage-page")}
+      className="container mx-auto my-2 space-y-2 p-2"
+    >
       <h1 className="flex items-center">
         {t("manage-page")}
         <div className="ml-auto flex items-center gap-2">
@@ -161,7 +164,7 @@ const PageContent = ({ pageId, clubId }: PageContentProps) => {
             href={`/presentation-page/club/${clubId}/${pageId}`}
             target="_blank"
             referrerPolicy="no-referrer"
-            className="btn btn-primary flex gap-2"
+            className="btn-primary btn flex gap-2"
           >
             {t("page-preview")}
             <i className="bx bx-link-external bx-xs" />

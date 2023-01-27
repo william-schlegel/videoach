@@ -32,8 +32,11 @@ const Chat = () => {
   });
 
   return (
-    <Layout className="container mx-auto my-2 flex flex-col gap-2">
-      <h1>{t("member.my-chat")}</h1>
+    <Layout
+      title={t("my-chat")}
+      className="container mx-auto my-2 space-y-2 p-2"
+    >
+      <h1>{t("my-chat")}</h1>
       {user.data?.name}
     </Layout>
   );

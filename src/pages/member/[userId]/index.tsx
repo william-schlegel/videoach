@@ -60,7 +60,10 @@ const MemberDashboard = ({
   });
 
   return (
-    <Layout className="container mx-auto my-2 p-2">
+    <Layout
+      title={t("member.dashboard")}
+      className="container mx-auto my-2 space-y-2 p-2"
+    >
       <h1 className="flex justify-between">
         {t("member.dashboard")}
         <Link
@@ -305,7 +308,7 @@ function MakeReservation({
   if (room.reservation === "NONE")
     return (
       <div className="text-center">
-        <p className="btn btn-outline btn-disabled btn-xs">
+        <p className="btn-outline btn-disabled btn btn-xs">
           {t("member.free-access")}
         </p>
       </div>
@@ -466,7 +469,7 @@ function ReserveDuration({
   if (room?.reservation === "NONE")
     return (
       <div className="text-center">
-        <p className="btn btn-outline btn-disabled btn-xs">
+        <p className="btn-outline btn-disabled btn btn-xs">
           {t("member.free-access")}
         </p>
       </div>

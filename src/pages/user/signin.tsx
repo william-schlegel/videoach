@@ -1,14 +1,14 @@
-import { getProviders, signIn } from "next-auth/react";
+import nextI18nConfig from "@root/next-i18next.config.mjs";
+import Layout from "@root/src/components/layout";
+import SimpleForm from "@ui/simpleform";
 import type {
   GetServerSidePropsContext,
   InferGetServerSidePropsType,
 } from "next";
+import { getProviders, signIn } from "next-auth/react";
 import { useTranslation } from "next-i18next";
 import { serverSideTranslations } from "next-i18next/serverSideTranslations";
-import nextI18nConfig from "@root/next-i18next.config.mjs";
-import SimpleForm from "@ui/simpleform";
 import { useForm } from "react-hook-form";
-import Layout from "@root/src/components/layout";
 
 type EmailFormValues = {
   email: string;
@@ -30,7 +30,7 @@ export default function SignIn({
   }
 
   return (
-    <Layout className="grid h-screen place-items-center">
+    <Layout title={t("connect")} className="grid h-screen place-items-center">
       <div className="card w-full max-w-md bg-base-100 shadow-xl">
         <div className="card-body">
           <h2 className="card-title">{t("connect")}</h2>

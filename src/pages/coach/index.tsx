@@ -24,7 +24,7 @@ function CoachPage(
   const { t } = useTranslation("home");
 
   return (
-    <Layout>
+    <Layout title={t("coach-title")}>
       <section className="hero bg-base-100">
         <div className="hero-content py-48 text-center">
           <div className="max-w-md">
@@ -68,7 +68,7 @@ function CoachPage(
             ))}
           </PricingContainer>
           <Link href="/user/signin">
-            <button className="btn btn-accent btn-block my-4">
+            <button className="btn-accent btn-block btn my-4">
               {t("pricing.create-your-account")}
             </button>
           </Link>

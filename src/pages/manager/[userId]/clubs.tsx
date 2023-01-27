@@ -60,7 +60,10 @@ const ManageClubs = ({
     return <div>{t("manager-only")}</div>;
 
   return (
-    <Layout className="container mx-auto">
+    <Layout
+      title={t("club.manage-my-club", { count: clubQuery.data?.length ?? 0 })}
+      className="container mx-auto my-2 space-y-2 p-2"
+    >
       <div className="mb-4 flex flex-row items-center gap-4">
         <h1>
           {t("club.manage-my-club", { count: clubQuery.data?.length ?? 0 })}
@@ -198,7 +201,7 @@ export function ClubContent({ userId, clubId }: ClubContentProps) {
                 {t("site.site", { count: clubQuery?.data?.sites?.length ?? 0 })}
               </h3>
               <Link
-                className="btn btn-secondary"
+                className="btn-secondary btn"
                 href={`/manager/${userId}/${clubId}/sites`}
               >
                 {t("site.manage")}
