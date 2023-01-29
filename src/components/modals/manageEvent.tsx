@@ -2,6 +2,7 @@
 import { formatDateAsYYYYMMDD, formatDateLocalized } from "@lib/formatDate";
 import { formatMoney, formatSize } from "@lib/formatNumber";
 import AddressSearch, { type AddressData } from "@ui/addressSearch";
+import type { ButtonSize } from "@ui/buttonIcon";
 import ButtonIcon from "@ui/buttonIcon";
 import Confirmation from "@ui/confirmation";
 import Ribbon from "@ui/ribbon";
@@ -9,12 +10,7 @@ import { format, isDate, isSameDay, startOfToday } from "date-fns";
 import { useSession } from "next-auth/react";
 import { useTranslation } from "next-i18next";
 import { useEffect, useState, type PropsWithoutRef } from "react";
-import {
-  useForm,
-  useWatch,
-  type SubmitErrorHandler,
-  type SubmitHandler,
-} from "react-hook-form";
+import { useForm, useWatch, type SubmitHandler } from "react-hook-form";
 import { toast } from "react-toastify";
 import { trpc } from "../../utils/trpc";
 import Modal, { type TModalVariant } from "../ui/modal";
@@ -23,6 +19,8 @@ import { Map as MapComponent, Marker } from "react-map-gl";
 import { env } from "@root/src/env/client.mjs";
 import { LATITUDE, LONGITUDE } from "@lib/defaultValues";
 import { useWriteFile } from "@lib/useManageFile";
+import { isCUID } from "@lib/checkValidity";
+import Spinner from "@ui/spinner";
 
 type EventFormValues = {
   name: string;
@@ -57,8 +55,9 @@ export const CreateEvent = ({ clubId }: CreateEventProps) => {
 
   const createEvent = trpc.events.createEvent.useMutation({
     onSuccess: () => {
-      utils.clubs.getClubById.invalidate(clubId);
-      utils.events.getEventsForClub.invalidate(clubId);
+      utils.dashboards.getManagerDataForUserId.invalidate(
+        sessionData?.user?.id
+      );
       toast.success(t("event.created"));
     },
     onError(error) {
@@ -115,78 +114,109 @@ export const CreateEvent = ({ clubId }: CreateEventProps) => {
   );
 };
 
-type UpdateEventProps = {
-  eventId: string;
-  clubId: string;
-};
-
-export const UpdateEvent = ({ eventId, clubId }: UpdateEventProps) => {
+export const UpdateEvent = ({
+  eventId,
+  variant = "Icon-Outlined-Primary",
+  buttonSize = "sm",
+}: PropsUpdateDelete) => {
+  const { data: sessionData } = useSession();
   const utils = trpc.useContext();
-  const {
-    register,
-    handleSubmit,
-    formState: { errors },
-    reset,
-    getValues,
-  } = useForm<EventFormValues>();
+  const { t } = useTranslation("club");
+  const [initialData, setInitialData] = useState<EventFormValues | undefined>();
+  const [closeModal, setCloseModal] = useState(false);
   const queryEvent = trpc.events.getEventById.useQuery(eventId, {
     onSuccess(data) {
-      if (data)
-        reset({
-          ...data,
-          startDate: formatDateAsYYYYMMDD(data.startDate),
-          endDate: formatDateAsYYYYMMDD(data.endDate),
-          startDisplay: formatDateAsYYYYMMDD(data.startDisplay),
-          endDisplay: formatDateAsYYYYMMDD(data.endDisplay),
-        });
+      console.log("data", data);
+      setInitialData({
+        name: data?.name ?? "",
+        brief: data?.brief ?? "",
+        description: data?.description ?? "",
+        startDate: formatDateAsYYYYMMDD(data?.startDate, true),
+        endDate: formatDateAsYYYYMMDD(data?.endDate, true),
+        startDisplay: formatDateAsYYYYMMDD(data?.startDisplay, true),
+        endDisplay: formatDateAsYYYYMMDD(data?.endDisplay, true),
+        bannerText: data?.bannerText ?? "",
+        cancelled: !!data?.cancelled,
+        price: data?.price ?? 0,
+        free: !!data?.free,
+        address: data?.address ?? "",
+        searchAddress: data?.searchAddress ?? "",
+        longitude: data?.longitude ?? LONGITUDE,
+        latitude: data?.latitude ?? LATITUDE,
+        images: undefined,
+      });
     },
+    enabled: isCUID(eventId),
   });
+  const saveImage = useWriteFile(
+    sessionData?.user?.id ?? "",
+    "IMAGE",
+    MAX_SIZE
+  );
+
   const updateEvent = trpc.events.updateEvent.useMutation({
     onSuccess: () => {
-      utils.events.getEventById.invalidate(eventId);
-      utils.events.getEventsForClub.invalidate(clubId);
+      utils.dashboards.getManagerDataForUserId.invalidate(
+        sessionData?.user?.id ?? ""
+      );
       toast.success(t("event.updated"));
     },
     onError(error) {
       toast.error(error.message);
     },
   });
-  const { t } = useTranslation("club");
 
-  const onSubmit: SubmitHandler<EventFormValues> = (data) => {
+  const onSubmit = async (data: EventFormValues) => {
+    let documentId: string | undefined = undefined;
+    if (data.images?.[0]) documentId = await saveImage(data.images[0]);
     updateEvent.mutate({
       id: eventId,
-      ...data,
+      name: data.name,
+      brief: data.brief,
+      description: data.description,
+      bannerText: data.bannerText,
+      cancelled: data.cancelled,
+      free: data.free,
+      address: data.address,
+      searchAddress: data.searchAddress,
+      longitude: data.longitude,
+      latitude: data.latitude,
       startDate: new Date(data.startDate),
       endDate: new Date(data.endDate),
       startDisplay: new Date(data.startDisplay),
       endDisplay: new Date(data.endDisplay),
+      price: isNaN(data.price) ? 0 : Number(data.price),
+      documentId,
     });
-  };
-
-  const onError: SubmitErrorHandler<EventFormValues> = (errors) => {
-    console.error("errors", errors);
+    setInitialData(undefined);
+    setCloseModal(true);
   };
 
   return (
     <Modal
-      title={t("event.update", {
-        eventName: queryEvent.data?.name,
-      })}
-      handleSubmit={handleSubmit(onSubmit, onError)}
-      submitButtonText={t("event.update")}
-      errors={errors}
-      buttonIcon={<i className="bx bx-edit bx-sm" />}
-      variant={"Icon-Outlined-Primary"}
-      className="w-11/12 max-w-3xl"
+      title={t("event.update")}
+      buttonIcon={<i className="bx bx-edit bx-xs" />}
+      variant={variant}
+      buttonSize={buttonSize}
+      cancelButtonText=""
+      closeModal={closeModal}
+      onCloseModal={() => setCloseModal(false)}
+      className="w-11/12 max-w-4xl"
     >
-      <div className="flex items-center justify-between">
-        <h3 className="flex items-center gap-4">
-          {t("event.update")}
-          <span className="text-primary">{queryEvent?.data?.name}</span>
-        </h3>
-      </div>
-      {/* <EventForm register={register} errors={errors} getValues={getValues} /> */}
+      <h3>
+        {t("event.update")} {queryEvent.data?.name}
+      </h3>
+      {initialData ? (
+        <EventForm
+          update={true}
+          initialValues={initialData}
+          onSubmit={onSubmit}
+          onCancel={() => setCloseModal(true)}
+          initialImageUrl={queryEvent.data?.imageUrl ?? ""}
+        />
+      ) : (
+        <Spinner />
+      )}
     </Modal>
   );
 };
@@ -195,12 +225,14 @@ type PropsUpdateDelete = {
   clubId: string;
   eventId: string;
   variant?: TModalVariant;
+  buttonSize?: ButtonSize;
 };
 
 export const DeleteEvent = ({
   clubId,
   eventId,
   variant = "Icon-Outlined-Secondary",
+  buttonSize = "sm",
 }: PropsWithoutRef<PropsUpdateDelete>) => {
   const utils = trpc.useContext();
   const { data: sessionData } = useSession();
@@ -221,11 +253,12 @@ export const DeleteEvent = ({
     <Confirmation
       message={t("event.deletion-message")}
       title={t("event.deletion")}
-      buttonIcon={<i className="bx bx-trash bx-sm" />}
+      buttonIcon={<i className="bx bx-trash bx-xs" />}
       onConfirm={() => {
         deleteEvent.mutate(eventId);
       }}
       variant={variant}
+      buttonSize={buttonSize}
     />
   );
 };
@@ -233,13 +266,35 @@ export const DeleteEvent = ({
 type EventFormProps = {
   onSubmit: (data: EventFormValues) => void;
   initialValues?: EventFormValues;
+  initialImageUrl?: string;
   onCancel: () => void;
+  update?: boolean;
+};
+
+const defaultValues = {
+  name: "",
+  brief: "",
+  description: "",
+  startDate: formatDateAsYYYYMMDD(startOfToday(), true),
+  endDate: "",
+  startDisplay: formatDateAsYYYYMMDD(startOfToday(), true),
+  endDisplay: "",
+  bannerText: "",
+  cancelled: false,
+  price: 0,
+  free: false,
+  address: "",
+  searchAddress: "",
+  longitude: LONGITUDE,
+  latitude: LATITUDE,
+  images: undefined,
 };
 
 function EventForm({
   onSubmit,
   initialValues,
   onCancel,
+  initialImageUrl,
 }: EventFormProps): JSX.Element {
   const { t } = useTranslation("club");
   const {
@@ -250,17 +305,18 @@ function EventForm({
     reset,
     setValue,
   } = useForm<EventFormValues>({
-    defaultValues: {
-      startDisplay: formatDateAsYYYYMMDD(startOfToday()),
-    },
+    defaultValues,
   });
-  const fields = useWatch({ control });
-  const [imagePreview, setImagePreview] = useState("");
-  const [showMap, setShowMap] = useState(false);
+  const fields = useWatch({ control, defaultValue: defaultValues });
+  const [imagePreview, setImagePreview] = useState(initialImageUrl);
 
   useEffect(() => {
     if (initialValues) reset(initialValues);
   }, [initialValues, reset]);
+
+  useEffect(() => {
+    if (initialImageUrl) setImagePreview(initialImageUrl);
+  }, [initialImageUrl]);
 
   useEffect(() => {
     if (fields.images?.length) {
@@ -283,6 +339,7 @@ function EventForm({
   };
 
   const onSuccess: SubmitHandler<EventFormValues> = (data) => {
+    console.log("submit data", data);
     onSubmit(data);
     reset();
   };
@@ -454,85 +511,11 @@ function EventForm({
           onSearch={(adr) => setAddress(adr)}
         />
       </div>
-      <div
-        className="relative col-span-full aspect-[4_/_1] w-full rounded border border-primary p-2 text-center text-white"
-        style={{
-          backgroundImage: `${imagePreview ? `url(${imagePreview})` : "unset"}`,
-          backgroundColor: "rgb(0 0 0 / 0.5)",
-          backgroundSize: "cover",
-          backgroundPosition: "center",
-          backgroundBlendMode: "darken",
-        }}
-      >
-        <h3 className="">{fields.name}</h3>
-        <p className="text-lg">{fields.brief}</p>
-        <p>{fields.description}</p>
-        <p className="text-xl font-bold text-accent">
-          <DisplayDate dtStart={fields.startDate} dtEnd={fields.endDate} />
-        </p>
-        {fields.cancelled ? (
-          <p className="absolute left-1/4 top-1/4 bottom-1/4 right-1/4 flex -rotate-12 items-center justify-center bg-error/80 px-20 py-4 text-3xl font-bold text-error-content">
-            {t("event.cancelled")}
-          </p>
-        ) : null}
-        {fields.bannerText ? (
-          <Ribbon bgColor="accent" offset="1rem" text={fields.bannerText} />
-        ) : null}
-        <div className="grid grid-cols-2 items-stretch px-4">
-          <p className="text-left text-xl font-bold">
-            {fields.free
-              ? t("event.free")
-              : fields.price
-              ? t("event.participation-price", {
-                  price: formatMoney(fields.price),
-                })
-              : ""}
-          </p>
-          <p className="space-x-4 text-right text-xl font-bold">
-            <span>{fields.address}</span>
-            {fields.searchAddress ? (
-              <button type="button" onClick={() => setShowMap((prev) => !prev)}>
-                <ButtonIcon
-                  iconComponent={
-                    <i className={`bx ${showMap ? "bx-x" : "bx-map"} bx-sm`} />
-                  }
-                  title={t("event.view-map")}
-                  buttonVariant="Icon-Outlined-Secondary"
-                  buttonSize="md"
-                />
-              </button>
-            ) : null}
-          </p>
-          <div
-            className={`absolute left-0 top-0 bottom-0 ${
-              showMap ? "w-1/2" : "w-0"
-            }`}
-            style={{ transition: "width 200ms ease" }}
-          >
-            <MapComponent
-              initialViewState={{ zoom: 8 }}
-              style={{ width: "100%", height: "100%" }}
-              mapStyle="mapbox://styles/mapbox/streets-v9"
-              mapboxAccessToken={env.NEXT_PUBLIC_MAPBOX_TOKEN}
-              attributionControl={false}
-              longitude={fields.longitude ?? LONGITUDE}
-              latitude={fields.latitude ?? LATITUDE}
-            >
-              <Marker
-                longitude={fields.longitude ?? LONGITUDE}
-                latitude={fields.latitude ?? LATITUDE}
-                anchor="bottom"
-              >
-                <i className="bx bx-map bx-sm text-secondary" />
-              </Marker>
-            </MapComponent>
-          </div>
-        </div>
-      </div>
+      <DisplayEventCard imageUrl={imagePreview ?? ""} fields={fields} />
       <div className="col-span-full flex items-center justify-end gap-2">
         <button
           type="button"
-          className="btn-outline btn btn-secondary"
+          className="btn-outline btn-secondary btn"
           onClick={(e) => {
             e.preventDefault();
             reset();
@@ -541,11 +524,148 @@ function EventForm({
         >
           {t("common:cancel")}
         </button>
-        <button className="btn btn-primary" type="submit">
+        <button className="btn-primary btn" type="submit">
           {t("common:save")}
         </button>
       </div>
     </form>
+  );
+}
+
+type DisplayEventCard = {
+  imageUrl: string;
+  fields: Partial<EventFormValues>;
+};
+
+function DisplayEventCard({ imageUrl, fields }: DisplayEventCard) {
+  const [showMap, setShowMap] = useState(false);
+  const { t } = useTranslation("club");
+
+  return (
+    <div
+      className="relative col-span-full aspect-[4_/_1] w-full rounded border border-primary p-2 text-center text-white"
+      style={{
+        backgroundImage: `${imageUrl ? `url(${imageUrl})` : "unset"}`,
+        backgroundColor: "rgb(0 0 0 / 0.5)",
+        backgroundSize: "cover",
+        backgroundPosition: "center",
+        backgroundBlendMode: "darken",
+      }}
+    >
+      <h3 className="">{fields.name}</h3>
+      <p className="text-lg">{fields.brief}</p>
+      <p>{fields.description}</p>
+      <p className="text-xl font-bold text-accent">
+        <DisplayDate dtStart={fields.startDate} dtEnd={fields.endDate} />
+      </p>
+      {fields.cancelled ? (
+        <p className="absolute left-1/4 top-1/4 bottom-1/4 right-1/4 flex -rotate-12 items-center justify-center bg-error/80 px-20 py-4 text-3xl font-bold text-error-content">
+          {t("event.cancelled")}
+        </p>
+      ) : null}
+      {fields.bannerText ? (
+        <Ribbon bgColor="accent" offset="1rem" text={fields.bannerText} />
+      ) : null}
+      <div className="grid grid-cols-2 items-stretch px-4">
+        <p className="text-left text-xl font-bold">
+          {fields.free
+            ? t("event.free")
+            : fields.price
+            ? t("event.participation-price", {
+                price: formatMoney(fields.price),
+              })
+            : ""}
+        </p>
+        <p className="space-x-4 text-right text-xl font-bold">
+          <span>{fields.address}</span>
+          {fields.searchAddress ? (
+            <button type="button" onClick={() => setShowMap((prev) => !prev)}>
+              <ButtonIcon
+                iconComponent={
+                  <i className={`bx ${showMap ? "bx-x" : "bx-map"} bx-sm`} />
+                }
+                title={t("event.view-map")}
+                buttonVariant="Icon-Outlined-Secondary"
+                buttonSize="md"
+              />
+            </button>
+          ) : null}
+        </p>
+        <div
+          className={`absolute left-0 top-0 bottom-0 ${
+            showMap ? "w-1/2" : "w-0"
+          }`}
+          style={{ transition: "width 200ms ease" }}
+        >
+          <MapComponent
+            initialViewState={{ zoom: 8 }}
+            style={{ width: "100%", height: "100%" }}
+            mapStyle="mapbox://styles/mapbox/streets-v9"
+            mapboxAccessToken={env.NEXT_PUBLIC_MAPBOX_TOKEN}
+            attributionControl={false}
+            longitude={fields.longitude ?? LONGITUDE}
+            latitude={fields.latitude ?? LATITUDE}
+          >
+            <Marker
+              longitude={fields.longitude ?? LONGITUDE}
+              latitude={fields.latitude ?? LATITUDE}
+              anchor="bottom"
+            >
+              <i className="bx bx-map bx-sm text-secondary" />
+            </Marker>
+          </MapComponent>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+export function ShowEventCard({ eventId }: { eventId: string }) {
+  const [fields, setFields] = useState<EventFormValues | undefined>(undefined);
+  const event = trpc.events.getEventById.useQuery(eventId, {
+    enabled: isCUID(eventId),
+    onSuccess(data) {
+      if (data)
+        setFields({
+          name: data.name,
+          brief: data.brief,
+          description: data.description,
+          startDate: formatDateAsYYYYMMDD(data.startDate, true),
+          endDate: formatDateAsYYYYMMDD(data.endDate, true),
+          startDisplay: formatDateAsYYYYMMDD(data.startDisplay, true),
+          endDisplay: formatDateAsYYYYMMDD(data.endDisplay, true),
+          bannerText: data.bannerText,
+          cancelled: data.cancelled,
+          price: data.price,
+          free: data.free,
+          address: data.address,
+          searchAddress: data.searchAddress,
+          longitude: data.longitude,
+          latitude: data.latitude,
+        });
+    },
+  });
+  const { t } = useTranslation("club");
+
+  return (
+    <Modal
+      title={t("event.show")}
+      className="w-11/12 max-w-4xl"
+      variant="Icon-Primary"
+      buttonSize="sm"
+      buttonIcon={<i className="bx bx-show bx-xs" />}
+    >
+      {event.isLoading ? (
+        <Spinner />
+      ) : fields ? (
+        <DisplayEventCard
+          imageUrl={event.data?.imageUrl ?? ""}
+          fields={fields}
+        />
+      ) : (
+        <p>{t("event.no-event")}</p>
+      )}
+    </Modal>
   );
 }
 

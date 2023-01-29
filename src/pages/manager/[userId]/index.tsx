@@ -1,7 +1,13 @@
 import { authOptions } from "@auth/[...nextauth]";
+import { formatDateLocalized } from "@lib/formatDate";
 import { useDayName } from "@lib/useDayName";
 import useUserInfo from "@lib/useUserInfo";
-import { CreateEvent } from "@modals/manageEvent";
+import {
+  CreateEvent,
+  DeleteEvent,
+  ShowEventCard,
+  UpdateEvent,
+} from "@modals/manageEvent";
 import { Role } from "@prisma/client";
 import nextI18nConfig from "@root/next-i18next.config.mjs";
 import Layout from "@root/src/components/layout";
@@ -72,7 +78,7 @@ const ManagerClubs = ({
     >
       <h1 className="flex justify-between">
         {t("manager-dashboard")}
-        <Link className="btn btn-secondary" href={`${userId}/clubs`}>
+        <Link className="btn-secondary btn" href={`${userId}/clubs`}>
           {t("manage-club")}
         </Link>
       </h1>
@@ -150,10 +156,32 @@ const ManagerClubs = ({
               {managerQuery.data?.map((club) => (
                 <div
                   key={club.id}
-                  className="flex items-center justify-between gap-4 rounded border border-secondary p-4"
+                  className="rounded border border-secondary p-4"
                 >
-                  <h3>{club.name}</h3>
-                  <CreateEvent clubId={club.id} />
+                  <div className="flex items-center justify-between gap-4">
+                    <h3>{club.name}</h3>
+                    <CreateEvent clubId={club.id} />
+                  </div>
+                  <div className="flex gap-2">
+                    {club.events.map((event) => (
+                      <div key={event.id} className="border border-primary p-1">
+                        <p className="text-center font-bold text-primary">
+                          {event.name}
+                        </p>
+                        <p>
+                          {formatDateLocalized(event.startDate, {
+                            dateFormat: "number",
+                            withTime: true,
+                          })}
+                        </p>
+                        <div className="flex items-center justify-between gap-4">
+                          <UpdateEvent clubId={club.id} eventId={event.id} />
+                          <DeleteEvent clubId={club.id} eventId={event.id} />
+                          <ShowEventCard eventId={event.id} />
+                        </div>
+                      </div>
+                    ))}
+                  </div>
                 </div>
               ))}
             </div>

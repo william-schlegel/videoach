@@ -7,8 +7,13 @@ import { i18n } from "next-i18next";
  * @param dt date to covert (default = now)
  * @returns date formated as YYYY-MM-DD
  */
-export const formatDateAsYYYYMMDD = (dt: Date = startOfToday()) => {
-  return format(dt, "yyyy-MM-dd");
+export const formatDateAsYYYYMMDD = (
+  dt: Date = startOfToday(),
+  withTime?: boolean
+) => {
+  let d = format(dt, "yyyy-MM-dd");
+  if (withTime) d = d.concat("T").concat(format(dt, "HH:mm:ss"));
+  return d;
 };
 
 /**

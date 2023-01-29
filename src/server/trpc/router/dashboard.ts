@@ -1,5 +1,6 @@
 import { Role } from "@prisma/client";
 import { TRPCError } from "@trpc/server";
+import { startOfToday } from "date-fns";
 import { z } from "zod";
 import { router, protectedProcedure } from "../trpc";
 
@@ -33,6 +34,14 @@ export const dashboardRouter = router({
           subscriptions: {
             select: {
               _count: true,
+            },
+          },
+          events: {
+            where: {
+              startDate: { gte: startOfToday() },
+            },
+            orderBy: {
+              startDate: "asc",
             },
           },
         },

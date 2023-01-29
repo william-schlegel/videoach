@@ -212,6 +212,12 @@
     "image-size": "maximum autorisé: {{size}}",
     "delete-image": "Supprimer l'image",
     "participation-price": "Participation : {{price}}",
-    "view-map": "Voir sur la carte"
+    "view-map": "Voir sur la carte",
+    "show": "Visualiser l'évènement",
+    "no-event": "Aucun évènement à afficher",
+    "update": "Modifier l'évènement",
+    "updated": "Evènement modifié avec succès",
+    "deletion": "Suppression de l'évènement",
+    "deletion-message": "Etes-vous sûr de vouloir supprimer cet évènement?|Cette suppression est définitive"
   }
 }
