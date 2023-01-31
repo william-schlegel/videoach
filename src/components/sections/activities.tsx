@@ -653,7 +653,11 @@ function ActivityGroupContentCard({
                     className={`btn btn-primary ${
                       preview ? "btn-xs max-w-full overflow-hidden text-xs" : ""
                     }`}
-                    href={`${window.location.origin}${window.location.pathname}/activity-group/${activity.id}`}
+                    href={
+                      preview
+                        ? "#"
+                        : `${window.location.origin}${window.location.pathname}/activity-group/${activity.id}`
+                    }
                   >
                     {t("activity-group.more-details")}
                   </Link>

@@ -45,7 +45,6 @@ export const CoachCreation = ({ userId, pageId }: CoachCreationProps) => {
   const queryCoach = trpc.users.getUserById.useQuery(userId);
   const queryCoachData = trpc.pages.getCoachDataForPage.useQuery(userId);
   const fields = useWatch({ control });
-  const utils = trpc.useContext();
   const [previewTheme, setPreviewTheme] = useState<TThemes>("cupcake");
   const updatePageStyle = trpc.pages.updatePageStyleForCoach.useMutation({
     onSuccess() {
@@ -66,12 +65,7 @@ export const CoachCreation = ({ userId, pageId }: CoachCreationProps) => {
           (e) => e.elementType === "OPTION"
         );
 
-        if (hc?.images?.[0]) {
-          const { url } = await utils.files.getDocumentUrlById.fetch(
-            hc.images[0].id
-          );
-          setImagePreview(url);
-        }
+        if (hc?.images?.[0]) setImagePreview(hc.images[0].url);
         const resetData: CoachCreationForm = {
           description: hc?.content ?? "",
           subtitle: hc?.subTitle ?? "",
@@ -123,7 +117,7 @@ export const CoachCreation = ({ userId, pageId }: CoachCreationProps) => {
       if (hc?.images?.[0])
         await deleteUserDocument.mutateAsync({
           userId: hc.images[0].userId,
-          documentId: hc.images[0].id,
+          documentId: hc.images[0].docId,
         });
       docId = await writeFile(data.images?.[0]);
     }

@@ -1,7 +1,6 @@
 import nextI18nConfig from "@root/next-i18next.config.mjs";
 import PageNavigation from "@root/src/pages/create-page/pageNavigation";
 import { createProxySSGHelpers } from "@trpc/react-query/ssg";
-import { trpc } from "@trpcclient/trpc";
 import { createContextInner } from "@trpcserver/context";
 import { appRouter } from "@trpcserver/router/_app";
 import type {
@@ -11,7 +10,6 @@ import type {
 import { serverSideTranslations } from "next-i18next/serverSideTranslations";
 import Head from "next/head";
 import superjson from "superjson";
-import { isCUID } from "@lib/checkValidity";
 import { ActivityGroupDisplayElement } from "@sections/activities";
 
 function ActivityGroup(
