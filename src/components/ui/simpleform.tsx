@@ -146,5 +146,5 @@ export function TextError({ err }: TextErrorProps) {
   if (!err) return null;
   const msg = err || t("required") || "Error";
 
-  return <p className="text-sm text-error"> {msg} </p>;
+  return <p className="text-sm text-error">{msg}</p>;
 }

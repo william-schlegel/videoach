@@ -635,6 +635,8 @@ model PageSectionElement {
 model PageSection {
   id       String               @id @default(cuid())
   model    PageSectionModel
+  title    String?
+  subTitle String?
   elements PageSectionElement[]
   pageId   String
   page     Page                 @relation(fields: [pageId], references: [id], onDelete: Cascade)

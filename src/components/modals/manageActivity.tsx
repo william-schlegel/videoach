@@ -1,5 +1,5 @@
 import { trpc } from "../../utils/trpc";
-import Modal, { type TModalVariant } from "../ui/modal";
+import Modal, { getButtonSize, type TModalVariant } from "../ui/modal";
 import { useEffect, useState } from "react";
 import Confirmation from "../ui/confirmation";
 import { useTranslation } from "next-i18next";
@@ -461,7 +461,7 @@ export function UpdateGroup({
     <Modal
       title={t("group.update")}
       handleSubmit={update}
-      buttonIcon={<i className={`bx bx-edit bx-${size}`} />}
+      buttonIcon={<i className={`bx bx-edit ${getButtonSize(size)}`} />}
       variant={variant}
       buttonSize={size}
     >
@@ -531,7 +531,7 @@ export function DeleteGroup({
       title={t("group.deletion")}
       message={t("group.deletion-message")}
       onConfirm={() => deleteGroup.mutate({ groupId })}
-      buttonIcon={<i className={`bx bx-trash bx-${size}`} />}
+      buttonIcon={<i className={`bx bx-trash ${getButtonSize(size)}`} />}
       variant={variant}
       textConfirmation={t("group.deletion-confirmation")}
       buttonSize={size}

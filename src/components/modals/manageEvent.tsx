@@ -13,7 +13,7 @@ import { useEffect, useState, type PropsWithoutRef } from "react";
 import { useForm, useWatch, type SubmitHandler } from "react-hook-form";
 import { toast } from "react-toastify";
 import { trpc } from "../../utils/trpc";
-import Modal, { type TModalVariant } from "../ui/modal";
+import Modal, { getButtonSize, type TModalVariant } from "../ui/modal";
 import { TextError } from "../ui/simpleform";
 import { Map as MapComponent, Marker } from "react-map-gl";
 import { env } from "@root/src/env/client.mjs";
@@ -195,7 +195,7 @@ export const UpdateEvent = ({
   return (
     <Modal
       title={t("event.update")}
-      buttonIcon={<i className="bx bx-edit bx-xs" />}
+      buttonIcon={<i className={`bx bx-edit ${getButtonSize(buttonSize)}`} />}
       variant={variant}
       buttonSize={buttonSize}
       cancelButtonText=""
@@ -253,7 +253,7 @@ export const DeleteEvent = ({
     <Confirmation
       message={t("event.deletion-message")}
       title={t("event.deletion")}
-      buttonIcon={<i className="bx bx-trash bx-xs" />}
+      buttonIcon={<i className={`bx bx-trash ${getButtonSize(buttonSize)}`} />}
       onConfirm={() => {
         deleteEvent.mutate(eventId);
       }}
@@ -515,7 +515,7 @@ function EventForm({
       <div className="col-span-full flex items-center justify-end gap-2">
         <button
           type="button"
-          className="btn-outline btn-secondary btn"
+          className="btn-outline btn btn-secondary"
           onClick={(e) => {
             e.preventDefault();
             reset();
@@ -524,7 +524,7 @@ function EventForm({
         >
           {t("common:cancel")}
         </button>
-        <button className="btn-primary btn" type="submit">
+        <button className="btn btn-primary" type="submit">
           {t("common:save")}
         </button>
       </div>

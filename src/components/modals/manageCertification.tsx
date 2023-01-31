@@ -1,5 +1,5 @@
 import { trpc } from "../../utils/trpc";
-import Modal, { type TModalVariant } from "../ui/modal";
+import Modal, { getButtonSize, type TModalVariant } from "../ui/modal";
 import React, {
   type Dispatch,
   type SetStateAction,
@@ -182,7 +182,7 @@ export const CreateCertification = ({ userId }: CreateCertificationProps) => {
             {selectedGroup?.modules?.map((mod) => (
               <button
                 key={mod.id}
-                className={`btn-primary btn normal-case ${
+                className={`btn btn-primary normal-case ${
                   moduleIds.get(mod.id)?.selected ? "" : "btn-outline"
                 }`}
                 onClick={() => toggleModule(mod.id)}
@@ -198,7 +198,7 @@ export const CreateCertification = ({ userId }: CreateCertificationProps) => {
             {Array.from(selectedActivities.values()).map((act) => (
               <button
                 key={act.id}
-                className={`btn-primary btn normal-case ${
+                className={`btn btn-primary normal-case ${
                   activityIds.get(act.id)?.selected ? "" : "btn-outline"
                 }`}
                 onClick={() => toggleActivity(act.id)}
@@ -287,7 +287,7 @@ export const UpdateCertification = ({
       title={t("update-certification")}
       handleSubmit={handleSubmit(onSubmit, onError)}
       errors={errors}
-      buttonIcon={<i className="bx bx-edit bx-sm" />}
+      buttonIcon={<i className={`bx bx-edit ${getButtonSize(buttonSize)}`} />}
       variant={variant}
       buttonSize={buttonSize}
     >
@@ -336,7 +336,7 @@ export const DeleteCertification = ({
       onConfirm={() => {
         deleteCertification.mutate(certificationId);
       }}
-      buttonIcon={<i className="bx bx-trash bx-sm" />}
+      buttonIcon={<i className={`bx bx-trash ${getButtonSize(buttonSize)}`} />}
       variant={variant}
       buttonSize={buttonSize}
       textConfirmation={t("certification-confirmation")}
@@ -490,7 +490,7 @@ export function DeleteCertificationGroup({ groupId }: DeleteGroupProps) {
       title={t("coach:group-deletion")}
       message={t("coach:group-deletion-message")}
       onConfirm={() => deleteGroup.mutate(groupId)}
-      buttonIcon={<i className="bx bx-trash bx-sm" />}
+      buttonIcon={<i className="bx bx-trash bx-xs" />}
       variant={"Icon-Outlined-Secondary"}
       textConfirmation={t("coach:group-deletion-confirmation")}
       buttonSize="sm"
@@ -647,7 +647,7 @@ function CertificationGroupForm({
                 <div className="flex flex-wrap items-center gap-2">
                   <span>{mod.name}</span>
                   {mod.activityIds.map((id) => (
-                    <span key={id} className="badge-primary badge">
+                    <span key={id} className="badge badge-primary">
                       {agQuery.data?.find((g) => g.id === id)?.name ?? "???"}
                     </span>
                   ))}
@@ -684,7 +684,7 @@ function CertificationGroupForm({
             <div className="flex flex-wrap gap-2">
               {agQuery.data?.map((ag) => (
                 <button
-                  className={`btn-primary btn-sm btn normal-case ${
+                  className={`btn btn-primary btn-sm normal-case ${
                     selectedModule?.activityIds.includes(ag.id) ||
                     activityIds.has(ag.id)
                       ? ""

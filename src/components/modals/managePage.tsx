@@ -1,5 +1,5 @@
 import { trpc } from "../../utils/trpc";
-import Modal, { type TModalVariant } from "../ui/modal";
+import Modal, { getButtonSize, type TModalVariant } from "../ui/modal";
 import Confirmation from "../ui/confirmation";
 import { useTranslation } from "next-i18next";
 import { type ButtonSize } from "@ui/buttonIcon";
@@ -62,7 +62,7 @@ export const CreatePage = ({
   const createPage = trpc.pages.createPage.useMutation({
     onSuccess: () => {
       utils.pages.getPagesForClub.invalidate(clubId);
-      toast.success(t("page-created"));
+      toast.success(t("club.page-created"));
     },
     onError(error) {
       toast.error(error.message);
@@ -91,22 +91,22 @@ export const CreatePage = ({
 
   return (
     <Modal
-      title={t("create-new-page")}
+      title={t("club.create-new-page")}
       variant={variant}
       handleSubmit={handleSubmit(onSubmit, onError)}
     >
-      <h3>{t("create-new-page")}</h3>
+      <h3>{t("club.create-new-page")}</h3>
       <SimpleForm
         errors={errors}
         register={register}
         fields={[
           {
-            label: t("page-name"),
+            label: t("club.page-name"),
             name: "name",
-            required: t("name-mandatory"),
+            required: t("club.name-mandatory"),
           },
           {
-            label: t("page-target"),
+            label: t("club.page-target"),
             name: "target",
             component: (
               <select
@@ -152,7 +152,7 @@ export function UpdatePage({
   const updatePage = trpc.pages.updatePage.useMutation({
     onSuccess: () => {
       utils.pages.getPagesForClub.invalidate(clubId);
-      toast.success(t("page-updated"));
+      toast.success(t("club.page-updated"));
     },
     onError(error) {
       toast.error(error.message);
@@ -182,14 +182,14 @@ export function UpdatePage({
 
   return (
     <Modal
-      title={t("update-page")}
+      title={t("club.update-page")}
       handleSubmit={handleSubmit(onSubmit, onError)}
-      buttonIcon={<i className={`bx bx-edit bx-${size}`} />}
+      buttonIcon={<i className={`bx bx-edit ${getButtonSize(size)}`} />}
       variant={variant}
       buttonSize={size}
     >
       <h3 className="space-x-2">
-        {t("update-page")}
+        {t("club.update-page")}
         <span className="text-primary">{pageQuery.data?.name}</span>
       </h3>
       {pageQuery.isLoading ? (
@@ -200,12 +200,12 @@ export function UpdatePage({
           register={register}
           fields={[
             {
-              label: t("page-name"),
+              label: t("club.page-name"),
               name: "name",
-              required: t("name-mandatory"),
+              required: t("club.name-mandatory"),
             },
             {
-              label: t("page-target"),
+              label: t("club.page-target"),
               name: "target",
               component: (
                 <select
@@ -246,7 +246,7 @@ export function DeletePage({
   const deletePage = trpc.pages.deletePage.useMutation({
     onSuccess: () => {
       utils.pages.getPagesForClub.invalidate(clubId);
-      toast.success(t("page-deleted"));
+      toast.success(t("club.page-deleted"));
     },
     onError(error) {
       toast.error(error.message);
@@ -256,12 +256,12 @@ export function DeletePage({
 
   return (
     <Confirmation
-      title={t("page-deletion")}
-      message={t("page-deletion-message")}
+      title={t("club.page-deletion")}
+      message={t("club.page-deletion-message")}
       onConfirm={() => deletePage.mutate(pageId)}
-      buttonIcon={<i className={`bx bx-trash bx-${size}`} />}
+      buttonIcon={<i className={`bx bx-trash ${getButtonSize(size)}`} />}
       variant={variant}
-      textConfirmation={t("page-deletion-confirmation")}
+      textConfirmation={t("club.page-deletion-confirmation")}
       buttonSize={size}
     />
   );

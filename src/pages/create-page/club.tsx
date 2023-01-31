@@ -25,6 +25,7 @@ import { toast } from "react-toastify";
 import { isCUID } from "@lib/checkValidity";
 import { useRouter } from "next/router";
 import createLink from "@lib/createLink";
+import { ActivityGroupCreation } from "@sections/activities";
 
 function ClubPage({
   userId,
@@ -53,7 +54,7 @@ function ClubPage({
       <h1 className="flex items-center">
         {t("manage-page")}
         <div className="ml-auto flex items-center gap-2">
-          <label>{t("select-club")}</label>
+          <label>{t("club.select-club")}</label>
           <select
             className="w-48 min-w-fit"
             value={clubId}
@@ -72,7 +73,7 @@ function ClubPage({
       </h1>
       <div className="flex flex-col gap-4 lg:flex-row">
         <aside className="min-w-fit space-y-2">
-          <h4>{t("pages")}</h4>
+          <h4>{t("club.pages")}</h4>
           <CreatePage clubId={clubId} />
           <ul className="menu overflow-hidden rounded border border-secondary bg-base-100">
             {queryPages.data?.map((page) => (
@@ -87,7 +88,7 @@ function ClubPage({
                   >
                     <span>{page.name}</span>
                     <div className="flex items-center gap-2">
-                      <span className="badge-secondary badge">
+                      <span className="badge badge-secondary">
                         {t(
                           PAGE_TARGET_LIST.find((t) => t.value === page.target)
                             ?.label ?? ""
@@ -164,14 +165,14 @@ const PageContent = ({ pageId, clubId }: PageContentProps) => {
             href={`/presentation-page/club/${clubId}/${pageId}`}
             target="_blank"
             referrerPolicy="no-referrer"
-            className="btn-primary btn flex gap-2"
+            className="btn btn-primary flex gap-2"
           >
             {t("page-preview")}
             <i className="bx bx-link-external bx-xs" />
           </Link>
 
-          <UpdatePage clubId={clubId} pageId={pageId} />
-          <DeletePage clubId={clubId} pageId={pageId} />
+          <UpdatePage clubId={clubId} pageId={pageId} size="md" />
+          <DeletePage clubId={clubId} pageId={pageId} size="md" />
         </div>
       </div>
       <div className="btn-group flex-wrap">
@@ -189,6 +190,9 @@ const PageContent = ({ pageId, clubId }: PageContentProps) => {
       </div>
       <div className="w-full">
         {section === "HERO" && <HeroCreation clubId={clubId} pageId={pageId} />}
+        {section === "ACTIVITY_GROUPS" && (
+          <ActivityGroupCreation clubId={clubId} pageId={pageId} />
+        )}
       </div>
     </article>
   );

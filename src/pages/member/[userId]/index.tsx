@@ -20,7 +20,7 @@ import nextI18nConfig from "@root/next-i18next.config.mjs";
 import Layout from "@root/src/components/layout";
 import { trpc } from "@trpcclient/trpc";
 import Confirmation from "@ui/confirmation";
-import Modal from "@ui/modal";
+import Modal, { getButtonSize } from "@ui/modal";
 import { SelectDate } from "@ui/selectDay";
 import Spinner from "@ui/spinner";
 import {
@@ -154,7 +154,7 @@ function MyReservation({ reservation, memberId, day }: MyReservationProps) {
         <Confirmation
           message={t("member.reservation-delete-message")}
           title={t("member.delete-reservation")}
-          buttonIcon={<i className="bx bx-trash bx-xs" />}
+          buttonIcon={<i className={`bx bx-trash ${getButtonSize("xs")}`} />}
           onConfirm={() => handleDeleteReservation()}
           buttonSize="xs"
           variant="Icon-Only-Secondary"
@@ -308,7 +308,7 @@ function MakeReservation({
   if (room.reservation === "NONE")
     return (
       <div className="text-center">
-        <p className="btn-outline btn-disabled btn btn-xs">
+        <p className="btn btn-outline btn-disabled btn-xs">
           {t("member.free-access")}
         </p>
       </div>
@@ -469,7 +469,7 @@ function ReserveDuration({
   if (room?.reservation === "NONE")
     return (
       <div className="text-center">
-        <p className="btn-outline btn-disabled btn btn-xs">
+        <p className="btn btn-outline btn-disabled btn-xs">
           {t("member.free-access")}
         </p>
       </div>
@@ -627,7 +627,7 @@ function Subscription({ subscription }: SubscriptionProps) {
       <div className="card-body">
         <div className="flex items-center justify-between">
           <h3 className="card-title text-primary">{subscription.name}</h3>
-          <span className="badge-primary badge">{subscription.club.name}</span>
+          <span className="badge badge-primary">{subscription.club.name}</span>
         </div>
         {shortInfo ? <p>{shortInfo}</p> : ""}
         <div className="flex gap-2">

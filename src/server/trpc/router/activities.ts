@@ -7,7 +7,7 @@ const activityObject = z.object({
   id: z.string().cuid(),
   name: z.string(),
   noCalendar: z.boolean().default(false),
-  duration: z.number().default(60),
+  reservationDuration: z.number().default(60),
   clubId: z.string().cuid(),
   groupId: z.string().cuid(),
 });

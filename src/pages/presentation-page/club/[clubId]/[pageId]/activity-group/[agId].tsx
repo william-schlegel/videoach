@@ -1,5 +1,4 @@
 import nextI18nConfig from "@root/next-i18next.config.mjs";
-import { HeroDisplay } from "@sections/hero";
 import PageNavigation from "@root/src/pages/create-page/pageNavigation";
 import { createProxySSGHelpers } from "@trpc/react-query/ssg";
 import { trpc } from "@trpcclient/trpc";
@@ -12,39 +11,24 @@ import type {
 import { serverSideTranslations } from "next-i18next/serverSideTranslations";
 import Head from "next/head";
 import superjson from "superjson";
-import { ActivityGroupDisplayCard } from "@sections/activities";
 import { isCUID } from "@lib/checkValidity";
+import { ActivityGroupDisplayElement } from "@sections/activities";
 
-function ClubPresentation(
+function ActivityGroup(
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   props: InferGetServerSidePropsType<typeof getServerSideProps>
 ) {
-  const queryPage = trpc.pages.getClubPage.useQuery(props.pageId, {
-    enabled: isCUID(props.pageId),
-  });
-
   return (
-    <div data-theme={queryPage.data?.theme ?? "light"}>
+    <div data-theme={props.page.theme ?? "light"}>
       <Head>
-        <title>{queryPage.data?.clubName}</title>
+        <title>{props.page.clubName}</title>
       </Head>
-      <PageNavigation pages={queryPage.data?.pages ?? []} />
-      {queryPage.data?.sections.map((section) =>
-        section.model === "HERO" ? (
-          <HeroDisplay
-            key={section.id}
-            clubId={queryPage.data.clubId}
-            pageId={props.pageId}
-          />
-        ) : section.model === "ACTIVITY_GROUPS" ? (
-          <ActivityGroupDisplayCard key={section.id} pageId={props.pageId} />
-        ) : null
-      )}
+      <PageNavigation pages={props.page.pages ?? []} />
+      <ActivityGroupDisplayElement elementId={props.agId} />
     </div>
   );
 }
-
-export default ClubPresentation;
+export default ActivityGroup;
 
 export const getServerSideProps = async ({
   locale,
@@ -56,8 +40,10 @@ export const getServerSideProps = async ({
     transformer: superjson,
   });
 
+  const agId = (params?.agId as string) ?? "";
+  ssg.pages.getPageSectionElement.prefetch(agId);
   const pageId = (params?.pageId as string) ?? "";
-  ssg.pages.getClubPage.prefetch(pageId);
+  const page = await ssg.pages.getClubPage.fetch(pageId);
 
   return {
     props: {
@@ -66,7 +52,8 @@ export const getServerSideProps = async ({
         ["pages"],
         nextI18nConfig
       )),
-      pageId,
+      agId,
+      page,
     },
   };
 };

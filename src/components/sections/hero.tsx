@@ -7,6 +7,7 @@ import { type PageSectionModel } from "@prisma/client";
 import { trpc } from "@trpcclient/trpc";
 import ButtonIcon from "@ui/buttonIcon";
 import Confirmation from "@ui/confirmation";
+import { getButtonSize } from "@ui/modal";
 import Spinner from "@ui/spinner";
 import { useTranslation } from "next-i18next";
 import { useRouter } from "next/router";
@@ -58,12 +59,8 @@ export const HeroCreation = ({ clubId, pageId }: HeroCreationProps) => {
         }
         const hc = data?.elements.find((e) => e.elementType === "HERO_CONTENT");
         const cta = data?.elements.find((e) => e.elementType === "CTA");
-        if (hc?.images?.[0]) {
-          const { url } = await utils.files.getDocumentUrlById.fetch(
-            hc.images[0].id
-          );
-          setImagePreview(url);
-        }
+        setImagePreview(hc?.images?.[0]?.url ?? "");
+
         const linkUrl = cta?.link
           ? new URL(cta.link)
           : { protocol: "https:", host: "", pathname: "" };
@@ -81,6 +78,7 @@ export const HeroCreation = ({ clubId, pageId }: HeroCreationProps) => {
         reset(resetData);
         setUpdating(true);
       },
+      refetchOnWindowFocus: false,
     }
   );
   const queryPages = trpc.pages.getPagesForClub.useQuery(clubId);
@@ -159,7 +157,7 @@ export const HeroCreation = ({ clubId, pageId }: HeroCreationProps) => {
         if (hc?.images?.[0])
           await deleteUserDocument.mutateAsync({
             userId: hc.images[0].userId,
-            documentId: hc.images[0].id,
+            documentId: hc.images[0].docId,
           });
         docId = await writeFile(data?.images?.[0]);
       }
@@ -262,7 +260,7 @@ export const HeroCreation = ({ clubId, pageId }: HeroCreationProps) => {
           className="grid grid-cols-[auto_1fr] gap-2 rounded border border-primary p-2"
           onSubmit={handleSubmit(onSubmit)}
         >
-          <label>{t("image")}</label>
+          <label>{t("hero.image")}</label>
           <input
             type="file"
             className="file-input-bordered file-input-primary file-input w-full"
@@ -290,21 +288,21 @@ export const HeroCreation = ({ clubId, pageId }: HeroCreationProps) => {
               </div>
             </div>
           ) : null}
-          <label>{t("title")}</label>
+          <label>{t("hero.title")}</label>
           <input
             {...register("title")}
             type="text"
             className="input-bordered input w-full"
           />
-          <label>{t("subtitle")}</label>
+          <label>{t("hero.subtitle")}</label>
           <input
             {...register("subtitle")}
             type="text"
             className="input-bordered input w-full"
           />
-          <label>{t("description")}</label>
+          <label>{t("hero.description")}</label>
           <textarea {...register("description")} rows={4} />
-          <label>{t("button-cta")}</label>
+          <label>{t("hero.button-cta")}</label>
           <input
             {...register("cta")}
             type="text"
@@ -312,7 +310,7 @@ export const HeroCreation = ({ clubId, pageId }: HeroCreationProps) => {
           />
           {fields.cta ? (
             <>
-              <label>{t("linked-page")}</label>
+              <label>{t("hero.linked-page")}</label>
               <div className="grid grid-cols-2 gap-2">
                 <select
                   defaultValue={getValues("linkedPage")}
@@ -323,7 +321,7 @@ export const HeroCreation = ({ clubId, pageId }: HeroCreationProps) => {
                       {page.name}
                     </option>
                   ))}
-                  <option value={"url"}>{t("external-url")}</option>
+                  <option value={"url"}>{t("hero.external-url")}</option>
                 </select>
                 <select
                   defaultValue={getValues("pageSection")}
@@ -341,7 +339,7 @@ export const HeroCreation = ({ clubId, pageId }: HeroCreationProps) => {
           {fields.cta && fields.linkedPage === "url" ? (
             <>
               <label className="label">
-                <span>{t("external-url")}</span>
+                <span>{t("hero.external-url")}</span>
               </label>
               <label className="input-group">
                 <select
@@ -369,7 +367,9 @@ export const HeroCreation = ({ clubId, pageId }: HeroCreationProps) => {
                 title={t("section-deletion")}
                 message={t("section-deletion-message")}
                 variant={"Icon-Outlined-Secondary"}
-                buttonIcon={<i className="bx bx-trash bx-sm" />}
+                buttonIcon={
+                  <i className={`bx bx-trash ${getButtonSize("md")}`} />
+                }
                 buttonSize="md"
                 textConfirmation={t("section-deletion-confirm")}
                 onConfirm={() => handleDeleteSection()}
@@ -414,10 +414,6 @@ export const HeroDisplay = ({ clubId, pageId }: HeroDisplayProps) => {
   const heroContent = querySection.data?.elements.find(
     (e) => e.elementType === "HERO_CONTENT"
   );
-  const queryImage = trpc.files.getDocumentUrlById.useQuery(
-    heroContent?.images?.[0]?.id ?? "",
-    { enabled: isCUID(heroContent?.images?.[0]?.id) }
-  );
   const cta = querySection.data?.elements.find((e) => e.elementType === "CTA");
 
   if (querySection.isLoading) return <Spinner />;
@@ -425,7 +421,7 @@ export const HeroDisplay = ({ clubId, pageId }: HeroDisplayProps) => {
 
   return (
     <HeroContent
-      imageSrc={queryImage.data?.url}
+      imageSrc={heroContent?.images?.[0]?.url}
       title={heroContent?.title ?? ""}
       subtitle={heroContent?.subTitle ?? ""}
       description={heroContent?.content ?? ""}

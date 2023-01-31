@@ -8,6 +8,7 @@ import {
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 import { router, protectedProcedure, publicProcedure } from "../trpc";
+import { getDocUrl } from "./files";
 
 const PageObject = z.object({
   id: z.string().cuid(),
@@ -21,6 +22,8 @@ const PageSectionObject = z.object({
   id: z.string().cuid(),
   model: z.nativeEnum(PageSectionModel),
   pageId: z.string().cuid(),
+  title: z.string().optional(),
+  subtitle: z.string().optional(),
 });
 
 const PageSectionElementObject = z.object({
@@ -125,8 +128,8 @@ export const pageRouter = router({
         section: z.nativeEnum(PageSectionModel),
       })
     )
-    .query(({ ctx, input }) =>
-      ctx.prisma.pageSection.findFirst({
+    .query(async ({ ctx, input }) => {
+      const section = await ctx.prisma.pageSection.findFirst({
         where: {
           pageId: input.pageId,
           model: input.section,
@@ -135,9 +138,88 @@ export const pageRouter = router({
           elements: {
             include: { images: true },
           },
+          page: { include: { club: true } },
         },
-      })
-    ),
+      });
+      const images: {
+        elemId: string;
+        docId: string;
+        userId: string;
+        url: string;
+      }[] = [];
+      const userId = section?.page.club?.managerId ?? "";
+      for (const elem of section?.elements ?? []) {
+        for (const doc of elem.images) {
+          const url = await getDocUrl(userId, doc.id);
+          if (url)
+            images.push({
+              elemId: elem.id,
+              docId: doc.id,
+              userId: doc.userId,
+              url,
+            });
+        }
+      }
+      if (!section) return null;
+      return {
+        id: section.id,
+        title: section.title,
+        subTitle: section.subTitle,
+        elements: section.elements.map((e) => ({
+          id: e.id,
+          title: e.title,
+          subTitle: e.subTitle,
+          content: e.content,
+          elementType: e.elementType,
+          link: e.link,
+          optionValue: e.optionValue,
+          pageId: e.pageId,
+          sectionId: e.sectionId,
+          pageSection: e.pageSection,
+          images: images
+            .filter((i) => i.elemId === e.id)
+            .map((i) => ({ docId: i.docId, userId: i.userId, url: i.url })),
+        })),
+      };
+    }),
+  getPageSectionElement: protectedProcedure
+    .input(z.string().cuid())
+    .query(async ({ ctx, input }) => {
+      const elem = await ctx.prisma.pageSectionElement.findUnique({
+        where: { id: input },
+        include: {
+          images: true,
+        },
+      });
+      const images: {
+        docId: string;
+        userId: string;
+        url: string;
+      }[] = [];
+      for (const doc of elem?.images ?? []) {
+        const url = await getDocUrl(doc.userId, doc.id);
+        if (url)
+          images.push({
+            docId: doc.id,
+            userId: doc.userId,
+            url,
+          });
+      }
+      if (!elem) return null;
+      return {
+        id: elem.id,
+        title: elem.title,
+        subTitle: elem.subTitle,
+        content: elem.content,
+        elementType: elem.elementType,
+        link: elem.link,
+        optionValue: elem.optionValue,
+        pageId: elem.pageId,
+        sectionId: elem.sectionId,
+        pageSection: elem.pageSection,
+        images,
+      };
+    }),
   createPage: protectedProcedure
     .input(PageObject.omit({ id: true }))
     .mutation(({ ctx, input }) =>
@@ -167,6 +249,23 @@ export const pageRouter = router({
         data: {
           model: input.model,
           pageId: input.pageId,
+          title: input.title,
+          subTitle: input.subtitle,
+        },
+      })
+    ),
+  updatePageSection: protectedProcedure
+    .input(PageSectionObject.partial())
+    .mutation(({ ctx, input }) =>
+      ctx.prisma.pageSection.update({
+        where: {
+          id: input.id,
+        },
+        data: {
+          model: input.model,
+          pageId: input.pageId,
+          title: input.title,
+          subTitle: input.subtitle,
         },
       })
     ),
