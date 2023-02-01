@@ -280,7 +280,7 @@ export const HeroCreation = ({ clubId, pageId }: HeroCreationProps) => {
                 >
                   <ButtonIcon
                     iconComponent={<i className="bx bx-trash" />}
-                    title={t("delete-image")}
+                    title={t("hero.delete-image")}
                     buttonVariant="Icon-Secondary"
                     buttonSize="sm"
                   />

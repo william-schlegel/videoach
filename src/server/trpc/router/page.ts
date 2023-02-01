@@ -182,7 +182,27 @@ export const pageRouter = router({
         })),
       };
     }),
-  getPageSectionElement: protectedProcedure
+  getPageSectionElements: publicProcedure
+    .input(
+      z.object({
+        pageId: z.string().cuid(),
+        section: z.nativeEnum(PageSectionModel),
+      })
+    )
+    .query(async ({ ctx, input }) => {
+      const section = await ctx.prisma.pageSection.findFirst({
+        where: {
+          pageId: input.pageId,
+          model: input.section,
+        },
+        include: {
+          elements: true,
+        },
+      });
+      if (!section) return null;
+      return section.elements;
+    }),
+  getPageSectionElementById: protectedProcedure
     .input(z.string().cuid())
     .query(async ({ ctx, input }) => {
       const elem = await ctx.prisma.pageSectionElement.findUnique({

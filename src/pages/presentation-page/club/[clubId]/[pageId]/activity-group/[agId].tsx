@@ -11,6 +11,7 @@ import { serverSideTranslations } from "next-i18next/serverSideTranslations";
 import Head from "next/head";
 import superjson from "superjson";
 import { ActivityGroupDisplayElement } from "@sections/activities";
+import { ActivityDisplayCard } from "@sections/activity";
 
 function ActivityGroup(
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -22,7 +23,10 @@ function ActivityGroup(
         <title>{props.page.clubName}</title>
       </Head>
       <PageNavigation pages={props.page.pages ?? []} />
-      <ActivityGroupDisplayElement elementId={props.agId} />
+      <section className="min-h-screen w-full bg-base-200 p-4">
+        <ActivityGroupDisplayElement elementId={props.agId} />
+        <ActivityDisplayCard pageId={props.pageId} groupId={props.agId} />
+      </section>
     </div>
   );
 }
@@ -39,9 +43,10 @@ export const getServerSideProps = async ({
   });
 
   const agId = (params?.agId as string) ?? "";
-  ssg.pages.getPageSectionElement.prefetch(agId);
+  ssg.pages.getPageSectionElementById.prefetch(agId);
   const pageId = (params?.pageId as string) ?? "";
   const page = await ssg.pages.getClubPage.fetch(pageId);
+  ssg.pages.getPageSectionElements.prefetch({ pageId, section: "ACTIVITIES" });
 
   return {
     props: {
@@ -51,6 +56,7 @@ export const getServerSideProps = async ({
         nextI18nConfig
       )),
       agId,
+      pageId,
       page,
     },
   };

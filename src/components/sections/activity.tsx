@@ -11,21 +11,15 @@ import { TextError } from "@ui/simpleform";
 import Spinner from "@ui/spinner";
 import { useSession } from "next-auth/react";
 import { useTranslation } from "next-i18next";
-import Link from "next/link";
 import { useEffect, useState } from "react";
 import type { SubmitHandler } from "react-hook-form";
 import { useForm, useWatch } from "react-hook-form";
 import { toast } from "react-toastify";
 import ThemeSelector, { type TThemes } from "../themeSelector";
 
-type ActivityGroupCreationProps = {
+type ActivityCreationProps = {
   clubId: string;
   pageId: string;
-};
-
-type ActivityGroupForm = {
-  title: string;
-  subtitle: string;
 };
 
 type ActivityForm = {
@@ -33,80 +27,32 @@ type ActivityForm = {
   title: string;
   subtitle: string;
   description: string;
+  activityGroups: string[];
 };
 
 const MAX_SIZE = 1024 * 1024;
 
-export const ActivityGroupCreation = ({
-  clubId,
-  pageId,
-}: ActivityGroupCreationProps) => {
+export const ActivityCreation = ({ clubId, pageId }: ActivityCreationProps) => {
   const { t } = useTranslation("pages");
-  const { register, handleSubmit, control, reset } =
-    useForm<ActivityGroupForm>();
-  const fields = useWatch({ control });
   const utils = trpc.useContext();
   const [previewTheme, setPreviewTheme] = useState<TThemes>("cupcake");
-  const [updating, setUpdating] = useState(false);
 
+  const createSection = trpc.pages.createPageSection.useMutation();
   const querySection = trpc.pages.getPageSection.useQuery(
-    { pageId, section: "ACTIVITY_GROUPS" },
+    { pageId, section: "ACTIVITIES" },
     {
       onSuccess: async (data) => {
         if (!data) {
-          setUpdating(false);
-          return;
+          createSection.mutate({
+            pageId,
+            model: "ACTIVITIES",
+          });
+          utils.pages.getPageSection.refetch({ pageId, section: "ACTIVITIES" });
         }
-        reset({
-          title: data?.title ?? "",
-          subtitle: data?.subTitle ?? "",
-        });
-        setUpdating(true);
       },
       refetchOnWindowFocus: false,
     }
   );
-  const createSection = trpc.pages.createPageSection.useMutation({
-    onSuccess() {
-      toast.success(t("section-created"));
-      utils.pages.getPageSection.invalidate({
-        pageId,
-        section: "ACTIVITY_GROUPS",
-      });
-      reset();
-    },
-    onError(error) {
-      toast.error(error.message);
-    },
-  });
-  const updateSection = trpc.pages.updatePageSection.useMutation({
-    onSuccess() {
-      toast.success(t("section-created"));
-      utils.pages.getPageSection.invalidate({
-        pageId,
-        section: "ACTIVITY_GROUPS",
-      });
-      reset();
-    },
-    onError(error) {
-      toast.error(error.message);
-    },
-  });
-
-  const deleteSection = trpc.pages.deletePageSection.useMutation({
-    onSuccess() {
-      toast.success(t("section-deleted"));
-      utils.pages.getPageSection.invalidate({
-        pageId,
-        section: "ACTIVITY_GROUPS",
-      });
-      reset();
-    },
-    onError(error) {
-      toast.error(error.message);
-    },
-  });
-
   const updatePageStyle = trpc.pages.updatePageStyleForClub.useMutation({
     onSuccess() {
       toast.success(t("style-saved"));
@@ -115,67 +61,17 @@ export const ActivityGroupCreation = ({
       toast.error(error.message);
     },
   });
-
-  const onSubmit: SubmitHandler<ActivityGroupForm> = (data) => {
-    if (updating) {
-      updateSection.mutate({
-        ...querySection.data,
-        ...data,
-      });
-    } else {
-      createSection.mutate({
-        model: "ACTIVITY_GROUPS",
-        pageId,
-        ...data,
-      });
-    }
-  };
-
-  const handleDeleteSection = () => {
-    deleteSection.mutate({ pageId, sectionId: querySection.data?.id ?? "" });
-  };
+  const groups = trpc.pages.getPageSectionElements.useQuery({
+    pageId,
+    section: "ACTIVITY_GROUPS",
+  });
 
   if (querySection.isLoading) return <Spinner />;
 
   return (
     <div className="grid w-full auto-rows-auto gap-2 lg:grid-cols-2">
       <div className="space-y-2">
-        <h3>{t(updating ? "updating-section" : "creation-section")}</h3>
-        <form
-          className="grid grid-cols-[auto_1fr] gap-2 rounded border border-primary p-2"
-          onSubmit={handleSubmit(onSubmit)}
-        >
-          <label>{t("activity-group.title")}</label>
-          <input
-            {...register("title")}
-            type="text"
-            className="input-bordered input w-full"
-          />
-          <label>{t("activity-group.subtitle")}</label>
-          <input
-            {...register("subtitle")}
-            type="text"
-            className="input-bordered input w-full"
-          />
-          <div className="col-span-2 flex justify-between">
-            <button className="btn btn-primary" type="submit">
-              {t("save-section")}
-            </button>
-            {updating ? (
-              <Confirmation
-                title={t("section-deletion")}
-                message={t("section-deletion-message")}
-                variant={"Icon-Outlined-Secondary"}
-                buttonIcon={
-                  <i className={`bx bx-trash ${getButtonSize("md")}`} />
-                }
-                buttonSize="md"
-                textConfirmation={t("section-deletion-confirm")}
-                onConfirm={() => handleDeleteSection()}
-              />
-            ) : null}
-          </div>
-        </form>
+        <h3>{t("activity.activity-section")}</h3>
         {querySection.data?.id ? (
           <>
             <div className="flex flex-wrap gap-2">
@@ -186,22 +82,13 @@ export const ActivityGroupCreation = ({
                 >
                   <p>{activity.title}</p>
                   <div className="mt-2 flex items-center justify-between gap-4">
-                    <UpdateActivityGroup
-                      pageId={pageId}
-                      activityId={activity.id}
-                    />
-                    <DeleteActivityGroup
-                      pageId={pageId}
-                      activityId={activity.id}
-                    />
+                    <UpdateActivity pageId={pageId} activityId={activity.id} />
+                    <DeleteActivity pageId={pageId} activityId={activity.id} />
                   </div>
                 </div>
               ))}
             </div>
-            <AddActivityGroup
-              pageId={pageId}
-              sectionId={querySection.data.id}
-            />
+            <AddActivity pageId={pageId} sectionId={querySection.data.id} />
           </>
         ) : null}
       </div>
@@ -214,12 +101,32 @@ export const ActivityGroupCreation = ({
           />
         </h3>
         <div data-theme={previewTheme}>
-          <ActivityGroupContentCard
-            title={fields.title}
-            subtitle={fields.subtitle}
-            elements={querySection.data?.elements}
-            preview
-          />
+          {groups.data?.map((group) => (
+            <>
+              <h2 className="text-center">{group.title}</h2>
+              <section id="ACTIVITIES" className={`w-full bg-base-200 p-4`}>
+                <div className={`container mx-auto p-4`}>
+                  <p className={`text-3xl font-bold text-primary-content`}>
+                    {querySection.data?.title}
+                  </p>
+                  {querySection.data?.subTitle ? (
+                    <p className={`text-lg font-semibold text-primary-content`}>
+                      {querySection.data.subTitle}
+                    </p>
+                  ) : null}
+                  <div className={`mt-4 grid grid-cols-3 gap-2`}>
+                    {querySection.data?.elements
+                      .filter((e) =>
+                        JSON.parse(e.optionValue ?? "[]").includes(group.id)
+                      )
+                      .map((e) => (
+                        <ActivityContentCard key={e.id} activity={e} preview />
+                      ))}
+                  </div>
+                </div>
+              </section>
+            </>
+          ))}
         </div>
       </div>
     </div>
@@ -231,19 +138,19 @@ type ActivityProps = {
   sectionId: string;
 };
 
-function AddActivityGroup({ pageId, sectionId }: ActivityProps) {
+function AddActivity({ pageId, sectionId }: ActivityProps) {
   const utils = trpc.useContext();
   const { t } = useTranslation("pages");
   const [close, setClose] = useState(false);
   const { data: sessionData } = useSession();
 
-  const createAG = trpc.pages.createPageSectionElement.useMutation({
+  const createActivity = trpc.pages.createPageSectionElement.useMutation({
     onSuccess: () => {
       utils.pages.getPageSection.invalidate({
         pageId,
-        section: "ACTIVITY_GROUPS",
+        section: "ACTIVITIES",
       });
-      toast.success(t("activity-group.activity-created"));
+      toast.success(t("activity.activity-created"));
     },
     onError(error) {
       toast.error(error.message);
@@ -258,7 +165,7 @@ function AddActivityGroup({ pageId, sectionId }: ActivityProps) {
   async function handleSubmit(data: ActivityForm) {
     let documentId: string | undefined = undefined;
     if (data.images?.[0]) documentId = await saveImage(data.images[0]);
-    createAG.mutate({
+    createActivity.mutate({
       pageId,
       sectionId,
       elementType: "CARD",
@@ -266,35 +173,37 @@ function AddActivityGroup({ pageId, sectionId }: ActivityProps) {
       subTitle: data.subtitle,
       content: data.description,
       images: documentId ? [documentId] : undefined,
+      optionValue: JSON.stringify(data.activityGroups),
     });
     setClose(true);
   }
 
   return (
     <Modal
-      title={t("activity-group.new-activity")}
+      title={t("activity.new-activity")}
       onCloseModal={() => setClose(false)}
       closeModal={close}
       cancelButtonText=""
-      // className="w-11/12 max-w-4xl"
+      className="w-11/12 max-w-4xl"
     >
       <h3>
-        <span>{t("activity-group.new-activity")}</span>
+        <span>{t("activity.new-activity")}</span>
       </h3>
-      <ActivityGroupForm
+      <ActivityForm
         onSubmit={(data) => handleSubmit(data)}
         onCancel={() => setClose(true)}
+        pageId={pageId}
       />
     </Modal>
   );
 }
 
-type UpdateActivityGroupProps = {
+type UpdateActivityProps = {
   pageId: string;
   activityId: string;
 };
 
-function UpdateActivityGroup({ pageId, activityId }: UpdateActivityGroupProps) {
+function UpdateActivity({ pageId, activityId }: UpdateActivityProps) {
   const utils = trpc.useContext();
   const { t } = useTranslation("pages");
   const [close, setClose] = useState(false);
@@ -310,6 +219,7 @@ function UpdateActivityGroup({ pageId, activityId }: UpdateActivityGroupProps) {
           subtitle: data?.subTitle ?? "",
           description: data?.content ?? "",
           images: undefined,
+          activityGroups: JSON.parse(data?.optionValue ?? "[]"),
         });
       },
       refetchOnWindowFocus: false,
@@ -320,9 +230,9 @@ function UpdateActivityGroup({ pageId, activityId }: UpdateActivityGroupProps) {
     onSuccess: () => {
       utils.pages.getPageSection.invalidate({
         pageId,
-        section: "ACTIVITY_GROUPS",
+        section: "ACTIVITIES",
       });
-      toast.success(t("activity-group.activity-updated"));
+      toast.success(t("activity.activity-updated"));
     },
     onError(error) {
       toast.error(error.message);
@@ -344,34 +254,37 @@ function UpdateActivityGroup({ pageId, activityId }: UpdateActivityGroupProps) {
       subTitle: data.subtitle,
       content: data.description,
       images: documentId ? [documentId] : undefined,
+      optionValue: JSON.stringify(data.activityGroups),
     });
     setClose(true);
   }
 
   return (
     <Modal
-      title={t("activity-group.update-activity")}
+      title={t("activity.update-activity")}
       onCloseModal={() => setClose(false)}
       closeModal={close}
       cancelButtonText=""
       variant="Icon-Outlined-Primary"
       buttonIcon={<i className={`bx bx-edit ${getButtonSize("sm")}`} />}
       buttonSize="sm"
+      className="w-11/12 max-w-4xl"
     >
       <h3>
-        <span>{t("activity-group.update-activity")}</span>
+        <span>{t("activity.update-activity")}</span>
       </h3>
-      <ActivityGroupForm
+      <ActivityForm
         onSubmit={(data) => handleSubmit(data)}
         onCancel={() => setClose(true)}
         initialValues={initialData}
         initialImageUrl={queryActivity.data?.images?.[0]?.url}
+        pageId={pageId}
       />
     </Modal>
   );
 }
 
-function DeleteActivityGroup({ pageId, activityId }: UpdateActivityGroupProps) {
+function DeleteActivity({ pageId, activityId }: UpdateActivityProps) {
   const utils = trpc.useContext();
   const { t } = useTranslation("pages");
 
@@ -379,9 +292,9 @@ function DeleteActivityGroup({ pageId, activityId }: UpdateActivityGroupProps) {
     onSuccess: () => {
       utils.pages.getPageSection.invalidate({
         pageId,
-        section: "ACTIVITY_GROUPS",
+        section: "ACTIVITIES",
       });
-      toast.success(t("activity-group.deleted"));
+      toast.success(t("activity.deleted"));
     },
     onError(error) {
       toast.error(error.message);
@@ -390,8 +303,8 @@ function DeleteActivityGroup({ pageId, activityId }: UpdateActivityGroupProps) {
 
   return (
     <Confirmation
-      message={t("activity-group.deletion-message")}
-      title={t("activity-group.deletion")}
+      message={t("activity.deletion-message")}
+      title={t("activity.deletion")}
       buttonIcon={<i className={`bx bx-trash ${getButtonSize("sm")}`} />}
       onConfirm={() => {
         deleteActivity.mutate(activityId);
@@ -402,12 +315,13 @@ function DeleteActivityGroup({ pageId, activityId }: UpdateActivityGroupProps) {
   );
 }
 
-type ActivityGroupFormProps = {
+type ActivityFormProps = {
   onSubmit: (data: ActivityForm) => void;
   initialValues?: ActivityForm;
   initialImageUrl?: string;
   onCancel: () => void;
   update?: boolean;
+  pageId: string;
 };
 
 const defaultValues: ActivityForm = {
@@ -415,14 +329,16 @@ const defaultValues: ActivityForm = {
   subtitle: "",
   description: "",
   images: undefined,
+  activityGroups: [],
 };
 
-function ActivityGroupForm({
+function ActivityForm({
   onSubmit,
   initialValues,
   onCancel,
   initialImageUrl,
-}: ActivityGroupFormProps) {
+  pageId,
+}: ActivityFormProps) {
   const { t } = useTranslation("pages");
   const {
     handleSubmit,
@@ -436,6 +352,25 @@ function ActivityGroupForm({
   });
   const fields = useWatch({ control, defaultValue: defaultValues });
   const [imagePreview, setImagePreview] = useState(initialImageUrl);
+  const groups = trpc.pages.getPageSectionElements.useQuery(
+    {
+      pageId,
+      section: "ACTIVITY_GROUPS",
+    },
+    {
+      enabled: isCUID(pageId),
+      onSuccess(data) {
+        if (data?.length) {
+          const ags: boolean[] = [];
+          for (const ag of data) {
+            ags.push(initialValues?.activityGroups.includes(ag.id) ?? false);
+          }
+          setActivityGroups(ags);
+        }
+      },
+    }
+  );
+  const [activityGroups, setActivityGroups] = useState<boolean[]>([]);
 
   useEffect(() => {
     if (initialValues) reset(initialValues);
@@ -467,14 +402,20 @@ function ActivityGroupForm({
 
   const onSuccess: SubmitHandler<ActivityForm> = (data) => {
     console.log("submit data", data);
-    onSubmit(data);
+    const ags =
+      groups.data?.filter((_, idx) => activityGroups[idx]).map((ag) => ag.id) ??
+      [];
+    onSubmit({ ...data, activityGroups: ags });
     reset();
   };
 
   return (
-    <form onSubmit={handleSubmit(onSuccess)}>
+    <form
+      onSubmit={handleSubmit(onSuccess)}
+      className="grid grid-cols-[3fr_2fr] gap-2"
+    >
       <div className="grid grid-cols-[auto_1fr] place-content-start gap-y-1">
-        <label className="self-start">{t("activity-group.image")}</label>
+        <label className="self-start">{t("activity.image")}</label>
         <div>
           <input
             type="file"
@@ -508,23 +449,46 @@ function ActivityGroupForm({
           </div>
         ) : null}
 
-        <label className="required">{t("activity-group.title")}</label>
+        <label className="required">{t("activity.title")}</label>
         <div>
           <input
             className="input-bordered input w-full"
             {...register("title", {
-              required: t("activity-group.title-mandatory") ?? true,
+              required: t("activity.title-mandatory") ?? true,
             })}
           />
           <TextError err={errors?.title?.message} />
         </div>
-        <label>{t("activity-group.subtitle")}</label>
+        <label>{t("activity.subtitle")}</label>
         <input
           className="input-bordered input w-full"
           {...register("subtitle")}
         />
-        <label className="self-start">{t("activity-group.description")}</label>
+        <label className="self-start">{t("activity.description")}</label>
         <textarea {...register("description")} rows={4} />
+      </div>
+      <div>
+        <label>{t("activity.activity-group")}</label>
+        <div className="rounded border border-primary p-2">
+          {groups.data?.map((group, idx) => (
+            <div key={group.id} className="form-control">
+              <div className="label cursor-pointer justify-start gap-4">
+                <input
+                  type="checkbox"
+                  className="checkbox-primary checkbox"
+                  checked={activityGroups[idx] ?? false}
+                  onChange={(e) => {
+                    const ags = [...activityGroups];
+                    ags[idx] = e.target.checked;
+                    setActivityGroups(ags);
+                  }}
+                  defaultChecked={false}
+                />
+                <span className="label-text">{group.title}</span>
+              </div>
+            </div>
+          ))}
+        </div>
       </div>
       <div className="col-span-full mt-4 flex items-center justify-end gap-2">
         <button
@@ -546,26 +510,33 @@ function ActivityGroupForm({
   );
 }
 
-type ActivityGroupDisplayProps = {
+type ActivityDisplayProps = {
   pageId: string;
+  groupId: string;
 };
 
-export const ActivityGroupDisplayCard = ({
+export const ActivityDisplayCard = ({
   pageId,
-}: ActivityGroupDisplayProps) => {
+  groupId,
+}: ActivityDisplayProps) => {
   const querySection = trpc.pages.getPageSection.useQuery({
     pageId,
-    section: "ACTIVITY_GROUPS",
+    section: "ACTIVITIES",
   });
+
   if (querySection.isLoading) return <Spinner />;
   if (!querySection.data) return <div>Activities section unavailable</div>;
 
   return (
-    <ActivityGroupContentCard
-      title={querySection.data?.title ?? ""}
-      subtitle={querySection.data?.subTitle ?? ""}
-      elements={querySection.data?.elements}
-    />
+    <div
+      className={`container mx-auto mt-4 grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3`}
+    >
+      {querySection.data?.elements
+        .filter((e) => JSON.parse(e.optionValue ?? "[]").includes(groupId))
+        .map((e) => (
+          <ActivityContentCard key={e.id} activity={e} />
+        ))}
+    </div>
   );
 };
 
@@ -585,124 +556,32 @@ type ActivityContentElement = {
 };
 
 type ActivitiesContentCardProps = {
-  title?: string;
-  subtitle?: string;
   preview?: boolean;
-  elements?: ActivityContentElement[];
+  activity: ActivityContentElement;
 };
 
-function ActivityGroupContentCard({
-  title,
-  subtitle,
+function ActivityContentCard({
   preview = false,
-  elements,
+  activity,
 }: ActivitiesContentCardProps) {
-  const { t } = useTranslation("pages");
   return (
-    <section
-      id="ACTIVITY_GROUPS"
-      className={`${
-        preview ? "aspect-[4/3]" : "min-h-screen"
-      } w-full bg-primary p-4`}
-    >
-      <div className={`container mx-auto p-4 ${preview ? "py-2" : "py-48"}`}>
-        <p
-          className={`${
-            preview
-              ? "text-3xl"
-              : "text-[clamp(4rem,5vw,6rem)] leading-[clamp(6rem,7.5vw,9rem)]"
-          } font-bold text-primary-content`}
-        >
-          {title}
-        </p>
-        <p
-          className={`${
-            preview
-              ? "text-lg"
-              : "text-[clamp(1.5rem,2.5vw,3rem)] leading-[clamp(2.25rem,3.75vw,4.5rem)]"
-          } font-semibold text-primary-content`}
-        >
-          {subtitle}
-        </p>
+    <div key={activity.id} className="card bg-base-100 shadow-xl">
+      {activity.images?.[0]?.url ? (
+        <figure className="white">
+          <img src={activity.images[0].url} alt="" />
+        </figure>
+      ) : null}
+      <div className={`card-body ${preview ? "p-4 text-sm" : ""}`}>
         <div
-          className={`mt-4 grid ${
-            preview
-              ? "grid-cols-[repeat(auto-fit,minmax(8rem,1fr))] gap-2"
-              : "grid-cols-[repeat(auto-fit,minmax(16rem,1fr))] gap-4"
-          }`}
+          className={`card-title ${preview ? "text-base" : ""} text-primary`}
         >
-          {elements?.map((activity) => (
-            <div key={activity.id} className="card bg-base-100 shadow-xl">
-              {activity.images?.[0]?.url ? (
-                <figure className="white">
-                  <img src={activity.images[0].url} alt="" />
-                </figure>
-              ) : null}
-              <div className={`card-body ${preview ? "p-4 text-sm" : ""}`}>
-                <div
-                  className={`card-title ${
-                    preview ? "text-base" : ""
-                  } text-primary`}
-                >
-                  {activity.title}
-                </div>
-                {activity.subTitle ? (
-                  <p className="text-secondary">{activity.subTitle}</p>
-                ) : null}
-                {/* <p>{activity.content}</p> */}
-                <div className="card-actions mt-auto justify-end">
-                  <Link
-                    className={`btn btn-primary ${
-                      preview ? "btn-xs max-w-full overflow-hidden text-xs" : ""
-                    }`}
-                    href={
-                      preview
-                        ? "#"
-                        : `${window.location.origin}${window.location.pathname}/activity-group/${activity.id}`
-                    }
-                  >
-                    {t("activity-group.more-details")}
-                  </Link>
-                </div>
-              </div>
-            </div>
-          ))}
+          {activity.title}
         </div>
-      </div>
-    </section>
-  );
-}
-
-export const ActivityGroupDisplayElement = ({
-  elementId,
-}: {
-  elementId: string;
-}) => {
-  const queryElement = trpc.pages.getPageSectionElementById.useQuery(
-    elementId,
-    {
-      enabled: isCUID(elementId),
-    }
-  );
-  if (queryElement.isLoading) return <Spinner />;
-  if (!queryElement.data) return <div>Activity group unavailable</div>;
-
-  return (
-    <div className={`container mx-auto p-4 py-12`}>
-      <div className="hero-content flex-col lg:flex-row">
-        {queryElement.data.images?.[0]?.url ? (
-          <img
-            src={queryElement.data.images[0].url}
-            alt={queryElement.data.title ?? ""}
-            className="max-w-xl rounded-lg shadow-2xl"
-          />
+        {activity.subTitle ? (
+          <p className="text-secondary">{activity.subTitle}</p>
         ) : null}
-        <div>
-          <h1 className="text-5xl font-bold">{queryElement.data.title}</h1>
-          <h2>{queryElement.data.subTitle}</h2>
-          <p className="py-6">{queryElement.data.content}</p>
-        </div>
+        <p>{activity.content}</p>
       </div>
     </div>
   );
-};
+}

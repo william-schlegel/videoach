@@ -26,6 +26,7 @@ import { isCUID } from "@lib/checkValidity";
 import { useRouter } from "next/router";
 import createLink from "@lib/createLink";
 import { ActivityGroupCreation } from "@sections/activities";
+import { ActivityCreation } from "@sections/activity";
 
 function ClubPage({
   userId,
@@ -48,11 +49,11 @@ function ClubPage({
 
   return (
     <Layout
-      title={t("manage-page")}
+      title={t("club.manage-page")}
       className="container mx-auto my-2 space-y-2 p-2"
     >
       <h1 className="flex items-center">
-        {t("manage-page")}
+        {t("club.manage-page")}
         <div className="ml-auto flex items-center gap-2">
           <label>{t("club.select-club")}</label>
           <select
@@ -192,6 +193,9 @@ const PageContent = ({ pageId, clubId }: PageContentProps) => {
         {section === "HERO" && <HeroCreation clubId={clubId} pageId={pageId} />}
         {section === "ACTIVITY_GROUPS" && (
           <ActivityGroupCreation clubId={clubId} pageId={pageId} />
+        )}
+        {section === "ACTIVITIES" && (
+          <ActivityCreation clubId={clubId} pageId={pageId} />
         )}
       </div>
     </article>

@@ -50,6 +50,25 @@
     "delete-image": "Supprimer l'image"
   },
   "activity-group": {
+    "image": "Image d'illustration",
+    "title": "Titre",
+    "subtitle": "Sous titre",
+    "title-mandatory": "Le titre est obligatoire",
+    "description": "Desciption",
+    "activity-created": "Groupe d'activité créée",
+    "activity-updated": "Groupe d'activité modifiée",
+    "activity-deleted": "Groupe d'activité supprimée",
+    "new-activity": "Nouveau groupe d'activité",
+    "update-activity": "Modifier le groupe d'activité",
+    "deletion": "Supprimer ce groupe d'activité",
+    "deletion-message": "La suppression de ce groupe d'activité est irréversible|Confirmez-vous ?",
+    "deletion-confirm": "Supprimer",
+    "more-details": "En savoir plus",
+    "delete-image": "Supprimer l'image"
+  },
+  "activity": {
+    "image": "Image d'illustration",
+    "activity-section": "Détail des activités",
     "title": "Titre",
     "subtitle": "Sous titre",
     "title-mandatory": "Le titre est obligatoire",
@@ -57,12 +76,13 @@
     "activity-created": "Activité créée",
     "activity-updated": "Activité modifiée",
     "activity-deleted": "Activité supprimée",
+    "activity-group": "Groupes d'activité liés",
     "new-activity": "Nouvelle activité",
     "update-activity": "Modifier l'activité",
     "deletion": "Supprimer cette activité",
     "deletion-message": "La suppression de cette activité est irréversible|Confirmez-vous ?",
     "deletion-confirm": "Supprimer",
-    "more-details": "En savoir plus"
+    "delete-image": "Supprimer l'image"
   },
   "coach": {
     "name": "Nom",

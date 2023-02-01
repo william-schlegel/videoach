@@ -187,7 +187,7 @@ export const CoachCreation = ({ userId, pageId }: CoachCreationProps) => {
         >
           <div className="col-span-2 flex items-start gap-4">
             <div className="flex-1">
-              <label>{t("image")}</label>
+              <label>{t("hero.image")}</label>
               <input
                 type="file"
                 className="file-input-bordered file-input-primary file-input w-full"
@@ -207,7 +207,7 @@ export const CoachCreation = ({ userId, pageId }: CoachCreationProps) => {
                 >
                   <ButtonIcon
                     iconComponent={<i className="bx bx-trash" />}
-                    title={t("delete-image")}
+                    title={t("hero.delete-image")}
                     buttonVariant="Icon-Secondary"
                     buttonSize="sm"
                   />
