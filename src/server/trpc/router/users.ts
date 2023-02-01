@@ -164,7 +164,7 @@ export const userRouter = router({
         email: z.string().email().optional(),
         phone: z.string().optional(),
         address: z.string().optional(),
-        role: z.nativeEnum(Role),
+        role: z.nativeEnum(Role).optional(),
         pricingId: z.string().cuid().optional(),
         monthlyPayment: z.boolean().optional(),
         cancelationDate: z.date().optional(),

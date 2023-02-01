@@ -173,9 +173,17 @@ export default function Navbar({ theme, onChangeTheme }: NavbarProps) {
               <li>
                 <Link
                   className="justify-between"
-                  href={`/user/${sessionData.user.id}`}
+                  href={`/user/${sessionData.user.id}/profile`}
                 >
-                  {t("navigation.my-info")}
+                  {t("navigation.my-profile")}
+                </Link>
+              </li>
+              <li>
+                <Link
+                  className="justify-between"
+                  href={`/user/${sessionData.user.id}/account`}
+                >
+                  {t("navigation.my-account")}
                 </Link>
               </li>
               <li>

@@ -1,6 +1,13 @@
 // This is your Prisma schema file,
 // learn more about it in the docs: https://pris.ly/d/prisma-schema
 
+//       Type | Maximum length
+// -----------+-------------------------------------
+//   TINYTEXT |           255 (2 8−1) bytes
+//       TEXT |        65,535 (216−1) bytes = 64 KiB
+// MEDIUMTEXT |    16,777,215 (224−1) bytes = 16 MiB
+//   LONGTEXT | 4,294,967,295 (232−1) bytes =  4 GiB
+
 generator client {
   provider = "prisma-client-js"
 }
@@ -110,6 +117,7 @@ model UserCoach {
   planningActivities PlanningActivity[]
   plannings          Planning[]
   clubs              Club[]             @relation("coach-club")
+  marketPlaceOffers  CoachMarketPlace[]
 
   @@index([userId])
 }
@@ -184,23 +192,24 @@ model UserDocument {
 // ----------------------------------------------------------------------------------------------
 
 model Club {
-  id            String            @id @default(cuid())
-  name          String
-  address       String            @db.Text
-  managerId     String
-  manager       UserManager       @relation(fields: [managerId], references: [userId], onDelete: Cascade, name: "manager-club")
-  sites         Site[]
-  activities    Activity[]
-  members       UserMember[]      @relation("member-club")
-  coachs        UserCoach[]       @relation("coach-club")
-  calendars     OpeningCalendar[]
-  pages         Page[]
-  pageStyle     String            @default("light")
-  plannings     Planning[]
-  logoId        String?           @unique
-  logo          UserDocument?     @relation(fields: [logoId], references: [id])
-  subscriptions Subscription[]
-  events        Event[]
+  id                 String             @id @default(cuid())
+  name               String
+  address            String             @db.Text
+  managerId          String
+  manager            UserManager        @relation(fields: [managerId], references: [userId], onDelete: Cascade, name: "manager-club")
+  sites              Site[]
+  activities         Activity[]
+  members            UserMember[]       @relation("member-club")
+  coachs             UserCoach[]        @relation("coach-club")
+  calendars          OpeningCalendar[]
+  pages              Page[]
+  pageStyle          String             @default("light")
+  plannings          Planning[]
+  logoId             String?            @unique
+  logo               UserDocument?      @relation(fields: [logoId], references: [id])
+  subscriptions      Subscription[]
+  events             Event[]
+  marketPlaceSearchs CoachMarketPlace[]
 
   @@index([managerId])
   @@index([logoId])
@@ -221,6 +230,7 @@ model Site {
   plannings          Planning[]
   planningActivities PlanningActivity[]
   subscriptions      Subscription[]
+  marketPlaceSearchs CoachMarketPlace[]
 
   @@index([clubId])
 }
@@ -409,6 +419,7 @@ model ActivityGroup {
   certifications       Certification[]
   certificationModules CertificationModule[]
   subscriptions        Subscription[]
+  marketPlaceSearchs   CoachMarketPlace[]
 
   @@index([coachId])
 }
@@ -557,16 +568,17 @@ model CertificationModule {
 }
 
 model Certification {
-  id             String                @id @default(cuid())
-  name           String
-  obtainedIn     DateTime
-  documentId     String?               @unique
-  document       UserDocument?         @relation(fields: [documentId], references: [id])
-  coach          UserCoach             @relation(fields: [coachId], references: [id], onDelete: Cascade)
-  coachId        String
-  modules        CertificationModule[]
-  activityGroups ActivityGroup[]
-  manualModule   String?
+  id                 String                @id @default(cuid())
+  name               String
+  obtainedIn         DateTime
+  documentId         String?               @unique
+  document           UserDocument?         @relation(fields: [documentId], references: [id])
+  coach              UserCoach             @relation(fields: [coachId], references: [id], onDelete: Cascade)
+  coachId            String
+  modules            CertificationModule[]
+  activityGroups     ActivityGroup[]
+  manualModule       String?
+  marketPlaceSearchs CoachMarketPlace[]
 
   @@index([coachId])
 }
@@ -731,4 +743,35 @@ model Reservation {
   @@index([activityId])
   @@index([planningActivityId])
   @@index([userId])
+}
+
+// ----------------------------------------------------------------------------------------------
+
+//                             COACH MARKETPLACE
+
+// ----------------------------------------------------------------------------------------------
+
+enum CoachMarketPlaceType {
+  SEARCH
+  OFFER
+}
+
+model CoachMarketPlace {
+  id              String               @id @default(cuid())
+  type            CoachMarketPlaceType
+  clubId          String?
+  club            Club?                @relation(fields: [clubId], references: [id], onDelete: Cascade)
+  coachId         String?
+  coach           UserCoach?           @relation(fields: [coachId], references: [userId], onDelete: Cascade)
+  sites           Site[]
+  certifications  Certification[]
+  activities      ActivityGroup[]
+  publicationDate DateTime
+  title           String
+  content         String               @db.MediumText
+  views           Int
+  displays        Int
+
+  @@index([clubId])
+  @@index([coachId])
 }

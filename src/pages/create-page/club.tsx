@@ -218,7 +218,6 @@ export const getServerSideProps = async ({
       redirect: "/",
       permanent: false,
     };
-  console.log("query :>> ", query);
   const clubId = (query?.clubId ?? "") as string;
   const pageId = (query?.pageId ?? "") as string;
 

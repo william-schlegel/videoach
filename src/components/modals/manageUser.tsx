@@ -14,9 +14,9 @@ import Confirmation from "@ui/confirmation";
 import { useTranslation } from "next-i18next";
 import { trpc } from "@trpcclient/trpc";
 import Spinner from "@ui/spinner";
-import { ROLE_LIST } from "@root/src/pages/user/[userId]";
 import { toast } from "react-toastify";
 import { Pricing as PricingCard, PricingContainer } from "@ui/pricing";
+import { ROLE_LIST } from "@lib/useUserInfo";
 
 type UserFormValues = {
   name: string;

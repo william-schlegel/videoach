@@ -32,7 +32,7 @@ function ClubPresentation(
   return (
     <div data-theme={queryPage.data?.theme ?? "light"}>
       <Head>
-        <title>{queryPage.data?.clubName}</title>
+        <title>{queryPage.data?.clubName ?? ""}</title>
       </Head>
       <PageNavigation
         clubId={props.clubId}

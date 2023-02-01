@@ -19,7 +19,7 @@ import {
   UpdatePricing,
 } from "@modals/managePricing";
 import { Pricing as PricingComponent } from "@ui/pricing";
-import { getRoleName } from "../user/[userId]";
+import { getRoleName } from "../user/account";
 import Layout from "@root/src/components/layout";
 import { useRouter } from "next/router";
 import createLink from "@lib/createLink";

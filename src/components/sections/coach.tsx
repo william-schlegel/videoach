@@ -349,7 +349,7 @@ export const CoachDisplay = ({ pageId }: CoachDisplayProps) => {
       className="flex min-h-screen flex-col items-center justify-center"
     >
       <Head>
-        <title>{queryPage.data?.publicName}</title>
+        <title>{queryPage.data?.publicName ?? ""}</title>
       </Head>
       <PhotoSection
         imageSrc={queryImage.data?.url}

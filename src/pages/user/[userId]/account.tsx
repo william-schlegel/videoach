@@ -1,6 +1,5 @@
 import { Role } from "@prisma/client";
 import { useRouter } from "next/router";
-import { trpc } from "../../utils/trpc";
 import { useForm, useWatch, type SubmitHandler } from "react-hook-form";
 import type { GetServerSidePropsContext } from "next";
 import { useTranslation } from "next-i18next";
@@ -24,24 +23,10 @@ import Modal from "@ui/modal";
 import { formatMoney } from "@lib/formatNumber";
 import { SubscriptionForm } from "@modals/manageUser";
 import { isDate, startOfToday } from "date-fns";
-
-export const ROLE_LIST = [
-  { label: "user", value: Role.MEMBER },
-  { label: "coach", value: Role.COACH },
-  { label: "manager", value: Role.MANAGER },
-  { label: "manager-coach", value: Role.MANAGER_COACH },
-  { label: "admin", value: Role.ADMIN },
-] as const;
-
-export function getRoleName(role: Role) {
-  return ROLE_LIST.find((r) => r.value === role)?.label ?? "???";
-}
+import { trpc } from "@trpcclient/trpc";
+import { ROLE_LIST } from "@lib/useUserInfo";
 
 type FormValues = {
-  name: string;
-  email: string;
-  phone: string;
-  address: string;
   searchAddress: string;
   longitude: number;
   latitude: number;
@@ -56,7 +41,7 @@ type FormValues = {
   cancelationDate: Date | null;
 };
 
-export default function Profile() {
+export default function Account() {
   const router = useRouter();
   const { userId } = router.query;
   const [theme] = useLocalStorage<TThemes>("theme", "cupcake");
@@ -67,10 +52,6 @@ export default function Profile() {
     enabled: isCUID(myUserId),
     onSuccess: (data) => {
       reset({
-        name: data?.name ?? "",
-        email: data?.email ?? "",
-        phone: data?.phone ?? "",
-        address: data?.address ?? "",
         searchAddress: data?.coachData?.searchAddress ?? "",
         longitude: data?.coachData?.longitude ?? LONGITUDE,
         latitude: data?.coachData?.latitude ?? LATITUDE,
@@ -135,10 +116,6 @@ export default function Profile() {
     } else clearErrors("pricingId");
     updateUser.mutate({
       id: myUserId,
-      name: data.name,
-      email: data.email,
-      phone: data.phone,
-      address: data.address,
       searchAddress: data.searchAddress,
       longitude: data.longitude,
       latitude: data.latitude,
@@ -181,11 +158,11 @@ export default function Profile() {
 
   return (
     <Layout
-      title={t("your-profile")}
+      title={t("your-account")}
       className="container mx-auto my-2 space-y-2 p-2"
     >
       <div className="flex items-center justify-between">
-        <h1>{t("your-profile")}</h1>
+        <h1>{t("your-account")}</h1>
         <Modal
           title={t("payments")}
           buttonIcon={<i className="bx bx-euro bx-sm" />}
@@ -199,44 +176,6 @@ export default function Profile() {
         onSubmit={handleSubmit(onSubmit)}
       >
         <section className={`grid grid-cols-[auto_1fr] gap-2`}>
-          <label>{t("change-name")}</label>
-          <div>
-            <input
-              {...register("name", {
-                required: t("name-mandatory") ?? true,
-              })}
-              type={"text"}
-              className="input-bordered input w-full"
-            />
-            {errors.name ? (
-              <p className="text-sm text-error">{errors.name.message}</p>
-            ) : null}
-          </div>
-          <label>{t("my-email")}</label>
-          <input
-            {...register("email")}
-            type={"email"}
-            className="input-bordered input w-full"
-          />
-          <label>{t("phone")}</label>
-          <input
-            {...register("phone")}
-            type="tel"
-            className="input-bordered input w-full"
-          />
-          <label className="place-self-start">{t("address")}</label>
-          <textarea {...register("address")} rows={2} />
-          <label>{t("account-provider")}</label>
-          <div className="flex gap-2">
-            {userQuery.data?.accounts.map((account) => (
-              <span
-                key={account.id}
-                className="rounded border border-primary px-4 py-2"
-              >
-                {account.provider}
-              </span>
-            ))}
-          </div>
           <label>{t("my-role")}</label>
           {userQuery.data?.role === Role.ADMIN ? (
             <div>{t("admin")}</div>
@@ -465,7 +404,7 @@ export default function Profile() {
                 </div>
                 <div className="flex-none">
                   <button
-                    className="btn-warning btn-xs btn"
+                    className="btn btn-warning btn-xs"
                     type="button"
                     onClick={() => setValue("cancelationDate", null)}
                   >
@@ -477,10 +416,10 @@ export default function Profile() {
           </div>
         </section>
         <button
-          className="btn-primary btn col-span-2 w-fit"
+          className="btn btn-primary col-span-2 w-fit"
           disabled={updateUser.isLoading}
         >
-          {t("save-profile")}
+          {t("save-account")}
         </button>
       </form>
     </Layout>

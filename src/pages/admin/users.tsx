@@ -9,7 +9,6 @@ import { trpc } from "@trpcclient/trpc";
 import { useMemo, useState } from "react";
 import { useTranslation } from "next-i18next";
 import Spinner from "@ui/spinner";
-import { getRoleName, ROLE_LIST } from "../user/[userId]";
 import Pagination from "@ui/pagination";
 import SimpleForm from "@ui/simpleform";
 import {
@@ -21,6 +20,7 @@ import { DeleteUser, UpdateUser } from "@modals/manageUser";
 import { formatMoney } from "@lib/formatNumber";
 import Layout from "@root/src/components/layout";
 import Link from "next/link";
+import { getRoleName, ROLE_LIST } from "@lib/useUserInfo";
 
 type UserFilter = {
   name?: string;
@@ -81,7 +81,7 @@ function UserManagement() {
               <div className="collapse-title text-xl font-medium">
                 <span className="flex items-center gap-4">
                   {t("user.filter")}
-                  <span className="badge-info badge">
+                  <span className="badge badge-info">
                     {Object.keys(filter).length}
                   </span>
                 </span>
@@ -119,7 +119,7 @@ function UserManagement() {
                 />
                 <button
                   onClick={handleSubmit(onSubmit, onError)}
-                  className="btn-primary btn-block btn mt-2 flex gap-4"
+                  className="btn btn-primary btn-block mt-2 flex gap-4"
                 >
                   <i className="bx bx-search bx-sm" />
                   {t("user.search")}
@@ -212,7 +212,7 @@ export function UserContent({ userId }: UserContentProps) {
         <article className="flex flex-col gap-2 rounded-md border border-primary p-2">
           <h2 className="flex items-center justify-between gap-2">
             {t("user.plan")}
-            <span className="badge-primary badge">
+            <span className="badge badge-primary">
               {t(`auth:${getRoleName(userQuery.data?.role ?? "MEMBER")}`)}
             </span>
           </h2>
@@ -351,7 +351,7 @@ export function UserContent({ userId }: UserContentProps) {
               href={`/presentation-page/coach/${userId}/${userQuery.data.coachData.page.id}`}
               target="_blank"
               referrerPolicy="no-referrer"
-              className="btn-primary btn flex gap-2"
+              className="btn btn-primary flex gap-2"
             >
               {t("pages:page-preview")}
               <i className="bx bx-link-external bx-xs" />

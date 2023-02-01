@@ -14,7 +14,6 @@ import { useTranslation } from "next-i18next";
 import { trpc } from "@trpcclient/trpc";
 import Spinner from "@ui/spinner";
 import { Feature, Role } from "@prisma/client";
-import { ROLE_LIST } from "@root/src/pages/user/[userId]";
 import ButtonIcon from "@ui/buttonIcon";
 import {
   DndContext,
@@ -35,6 +34,7 @@ import {
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import { toast } from "react-toastify";
+import { ROLE_LIST } from "@lib/useUserInfo";
 
 type PricingFormValues = {
   title: string;

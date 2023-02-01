@@ -27,7 +27,7 @@ function Offer(
       className="flex min-h-screen flex-col items-center justify-center"
     >
       <Head>
-        <title>{offerData.data?.coach?.publicName}</title>
+        <title>{offerData.data?.coach?.publicName ?? ""}</title>
       </Head>
       <CoachOfferPage offerId={props.offerId} />
     </div>
