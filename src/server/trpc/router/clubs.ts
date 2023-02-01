@@ -31,6 +31,39 @@ export const clubRouter = router({
       }
       return { ...myClub, logoUrl };
     }),
+  getClubPagesForNavByClubId: publicProcedure
+    .input(z.string())
+    .query(async ({ ctx, input }) => {
+      const myClub = await ctx.prisma.club.findUnique({
+        where: { id: input },
+        include: {
+          pages: {
+            where: { published: true },
+            include: {
+              sections: true,
+            },
+          },
+        },
+      });
+      let logoUrl = "";
+      if (myClub?.logoId) {
+        logoUrl = await getDocUrl(myClub.managerId, myClub.logoId);
+      }
+      if (!myClub) return { pages: [], logoUrl };
+      return {
+        pages: myClub.pages.map((p) => ({
+          id: p.id,
+          name: p.name,
+          target: p.target,
+          sections: p.sections.map((s) => ({
+            id: s.id,
+            model: s.model,
+            title: s.title,
+          })),
+        })),
+        logoUrl,
+      };
+    }),
   getClubsForManager: protectedProcedure
     .input(z.string())
     .query(async ({ ctx, input }) => {

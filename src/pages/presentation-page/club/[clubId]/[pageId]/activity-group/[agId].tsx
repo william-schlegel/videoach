@@ -1,5 +1,5 @@
 import nextI18nConfig from "@root/next-i18next.config.mjs";
-import PageNavigation from "@root/src/pages/create-page/pageNavigation";
+import PageNavigation from "@sections/pageNavigation";
 import { createProxySSGHelpers } from "@trpc/react-query/ssg";
 import { createContextInner } from "@trpcserver/context";
 import { appRouter } from "@trpcserver/router/_app";
@@ -12,17 +12,30 @@ import Head from "next/head";
 import superjson from "superjson";
 import { ActivityGroupDisplayElement } from "@sections/activities";
 import { ActivityDisplayCard } from "@sections/activity";
+import { trpc } from "@trpcclient/trpc";
+import { isCUID } from "@lib/checkValidity";
 
 function ActivityGroup(
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   props: InferGetServerSidePropsType<typeof getServerSideProps>
 ) {
+  const queryClub = trpc.clubs.getClubPagesForNavByClubId.useQuery(
+    props.clubId,
+    {
+      enabled: isCUID(props.clubId),
+    }
+  );
+
   return (
     <div data-theme={props.page.theme ?? "light"}>
       <Head>
         <title>{props.page.clubName}</title>
       </Head>
-      <PageNavigation pages={props.page.pages ?? []} />
+      <PageNavigation
+        clubId={props.clubId}
+        logoUrl={queryClub.data?.logoUrl}
+        pages={queryClub.data?.pages ?? []}
+      />
       <section className="min-h-screen w-full bg-base-200 p-4">
         <ActivityGroupDisplayElement elementId={props.agId} />
         <ActivityDisplayCard pageId={props.pageId} groupId={props.agId} />
@@ -47,6 +60,8 @@ export const getServerSideProps = async ({
   const pageId = (params?.pageId as string) ?? "";
   const page = await ssg.pages.getClubPage.fetch(pageId);
   ssg.pages.getPageSectionElements.prefetch({ pageId, section: "ACTIVITIES" });
+  const clubId = (params?.clubId as string) ?? "";
+  ssg.clubs.getClubPagesForNavByClubId.prefetch(clubId);
 
   return {
     props: {
@@ -58,6 +73,7 @@ export const getServerSideProps = async ({
       agId,
       pageId,
       page,
+      clubId,
     },
   };
 };

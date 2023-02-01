@@ -1,6 +1,6 @@
 import nextI18nConfig from "@root/next-i18next.config.mjs";
 import { HeroDisplay } from "@sections/hero";
-import PageNavigation from "@root/src/pages/create-page/pageNavigation";
+import PageNavigation from "@sections/pageNavigation";
 import { createProxySSGHelpers } from "@trpc/react-query/ssg";
 import { trpc } from "@trpcclient/trpc";
 import { createContextInner } from "@trpcserver/context";
@@ -22,13 +22,23 @@ function ClubPresentation(
   const queryPage = trpc.pages.getClubPage.useQuery(props.pageId, {
     enabled: isCUID(props.pageId),
   });
+  const queryClub = trpc.clubs.getClubPagesForNavByClubId.useQuery(
+    props.clubId,
+    {
+      enabled: isCUID(props.clubId),
+    }
+  );
 
   return (
     <div data-theme={queryPage.data?.theme ?? "light"}>
       <Head>
         <title>{queryPage.data?.clubName}</title>
       </Head>
-      <PageNavigation pages={queryPage.data?.pages ?? []} />
+      <PageNavigation
+        clubId={props.clubId}
+        logoUrl={queryClub.data?.logoUrl}
+        pages={queryClub.data?.pages ?? []}
+      />
       {queryPage.data?.sections.map((section) =>
         section.model === "HERO" ? (
           <HeroDisplay
@@ -58,6 +68,8 @@ export const getServerSideProps = async ({
 
   const pageId = (params?.pageId as string) ?? "";
   ssg.pages.getClubPage.prefetch(pageId);
+  const clubId = (params?.clubId as string) ?? "";
+  ssg.clubs.getClubPagesForNavByClubId.prefetch(clubId);
 
   return {
     props: {
@@ -67,6 +79,7 @@ export const getServerSideProps = async ({
         nextI18nConfig
       )),
       pageId,
+      clubId,
     },
   };
 };
