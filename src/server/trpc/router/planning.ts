@@ -225,6 +225,39 @@ export const planningRouter = router({
       // TODO: manage exception days
       return planning;
     }),
+  getCoachPlanningForClub: protectedProcedure
+    .input(
+      z.object({
+        coachId: z.string().cuid(),
+        clubId: z.string().cuid(),
+      })
+    )
+    .query(async ({ ctx, input }) => {
+      const planning = await ctx.prisma.planning.findFirst({
+        where: {
+          startDate: {
+            lte: new Date(Date.now()),
+          },
+          clubId: input.clubId,
+        },
+        include: {
+          club: true,
+          planningActivities: {
+            where: {
+              coachId: input.coachId,
+            },
+            include: {
+              activity: true,
+              coach: true,
+              room: true,
+              site: true,
+            },
+          },
+        },
+      });
+      // TODO: manage exception days
+      return planning;
+    }),
   getMemberDailyPlanning: protectedProcedure
     .input(
       z.object({

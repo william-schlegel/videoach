@@ -74,7 +74,6 @@ export const pageRouter = router({
       const page = await ctx.prisma.page.findFirst({
         where: { coachId: input },
       });
-      console.log("getPageForCoach input", { input, page });
       if (page) return page;
       const user = await ctx.prisma.user.findUnique({ where: { id: input } });
       if (!user)

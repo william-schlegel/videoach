@@ -19,8 +19,6 @@ export function calculateBBox(
       [originLng, originLat],
     ];
   }
-  console.log("originLng :>> ", originLng);
-  console.log("originLat :>> ", originLat);
   const diagonalDistance = distance * Math.sqrt(2);
   const org = point([originLng, originLat]);
   const topLeft = destination(org, diagonalDistance, -45, {

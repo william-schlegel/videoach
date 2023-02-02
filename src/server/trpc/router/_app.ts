@@ -6,6 +6,7 @@ import { coachRouter } from "./coachs";
 import { dashboardRouter } from "./dashboard";
 import { eventRouter } from "./event";
 import { fileRouter } from "./files";
+import { notificationRouter } from "./notification";
 import { pageRouter } from "./page";
 import { planningRouter } from "./planning";
 import { pricingRouter } from "./pricing";
@@ -27,6 +28,7 @@ export const appRouter = router({
   plannings: planningRouter,
   subscriptions: subscriptionRouter,
   events: eventRouter,
+  notifications: notificationRouter,
 });
 
 // export type definition of API

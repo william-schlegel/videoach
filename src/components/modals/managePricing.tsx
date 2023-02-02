@@ -80,7 +80,6 @@ export const CreatePricing = ({ variant = "Primary" }: CreatePricingProps) => {
   const { getListForRole } = useFeature();
 
   const onSubmit: SubmitHandler<PricingFormValues> = (data) => {
-    console.log("data", data);
     const featureList = getListForRole(data.roleTarget ?? "MEMBER");
     const features: Feature[] = [];
     for (let f = 0; f < featureList.length; f++) {
@@ -183,7 +182,6 @@ export const UpdatePricing = ({
   });
 
   const onSubmit: SubmitHandler<PricingFormValues> = (data) => {
-    console.log("data", data);
     const featureList = getListForRole(data.roleTarget ?? "MEMBER");
     const features: Feature[] = [];
     for (let f = 0; f < featureList.length; f++) {

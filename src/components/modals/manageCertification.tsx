@@ -279,7 +279,7 @@ export const UpdateCertification = ({
   };
 
   const onError: SubmitErrorHandler<CertificationFormValues> = (errors) => {
-    console.log("errors", errors);
+    console.error("errors", errors);
   };
 
   return (

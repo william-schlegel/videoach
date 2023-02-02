@@ -132,6 +132,7 @@ export function ClubContent({ userId, clubId }: ClubContentProps) {
   const [groups, setGroups] = useState<ActivityGroup[]>([]);
   const utils = trpc.useContext();
   const { t } = useTranslation("club");
+  const { features } = useUserInfo(userId);
 
   const sensors = useSensors(
     useSensor(PointerSensor, {
@@ -175,19 +176,34 @@ export function ClubContent({ userId, clubId }: ClubContentProps) {
           {/* <p>({clubQuery.data?.address})</p> */}
         </div>
         <div className="flex items-center gap-2">
-          <Link href={`/manager/${userId}/${clubId}/subscription`}>
+          <UpdateClub clubId={clubId} />
+          <CreateClubCalendar clubId={clubId} />
+          <DeleteClub clubId={clubId} />
+        </div>
+      </div>
+      <div className="flex items-center gap-2">
+        {features.includes("MANAGER_COACH") ? (
+          <Link href={`/manager/${userId}/${clubId}/coach`}>
             <ButtonIcon
-              iconComponent={<i className="bx bx-euro bx-sm" />}
-              title={t("subscription.manage-subscriptions")}
+              iconComponent={<i className="bx bx-user bx-sm" />}
+              title={t("club.manage-coachs")}
               buttonVariant="Icon-Primary"
               buttonSize="md"
               fullButton
             />
           </Link>
-          <UpdateClub clubId={clubId} />
-          <CreateClubCalendar clubId={clubId} />
-          <DeleteClub clubId={clubId} />
-        </div>
+        ) : (
+          <LockedButton label={t("club.manage-coachs")} limited />
+        )}
+        <Link href={`/manager/${userId}/${clubId}/subscription`}>
+          <ButtonIcon
+            iconComponent={<i className="bx bx-euro bx-sm" />}
+            title={t("subscription.manage-subscriptions")}
+            buttonVariant="Icon-Primary"
+            buttonSize="md"
+            fullButton
+          />
+        </Link>
       </div>
       <CalendarWeek
         calendar={calendarQuery.data}
@@ -201,7 +217,7 @@ export function ClubContent({ userId, clubId }: ClubContentProps) {
                 {t("site.site", { count: clubQuery?.data?.sites?.length ?? 0 })}
               </h3>
               <Link
-                className="btn-secondary btn"
+                className="btn btn-secondary"
                 href={`/manager/${userId}/${clubId}/sites`}
               >
                 {t("site.manage")}

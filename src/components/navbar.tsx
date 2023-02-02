@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useTranslation } from "next-i18next";
 import { type TThemes } from "./themeSelector";
 import useUserInfo from "@lib/useUserInfo";
+import useNotifications from "@lib/useNotifications";
 
 type MenuDefinitionType = {
   label: string;
@@ -45,12 +46,12 @@ const MENUS: MenuDefinitionType[] = [
     access: ["MANAGER", "MANAGER_COACH"],
     featured: "MANAGER_PLANNING",
   },
-  {
-    label: "navigation.coach-management",
-    page: `/coach-management`,
-    access: ["MANAGER", "MANAGER_COACH"],
-    featured: "MANAGER_COACH",
-  },
+  // {
+  //   label: "navigation.coach-marketplace",
+  //   page: `/coach-management`,
+  //   access: ["MANAGER", "MANAGER_COACH"],
+  //   featured: "MANAGER_COACH",
+  // },
   {
     label: "navigation.coaching-offer",
     page: `/coach/offer`,
@@ -92,6 +93,7 @@ type NavbarProps = {
 export default function Navbar({ theme, onChangeTheme }: NavbarProps) {
   const { data: sessionData } = useSession();
   const { t } = useTranslation("common");
+  const { notifications, unread } = useNotifications(sessionData?.user?.id);
 
   return (
     <div className="navbar bg-base-100">
@@ -128,7 +130,7 @@ export default function Navbar({ theme, onChangeTheme }: NavbarProps) {
         </ul>
       </div>
 
-      <div className="navbar-end">
+      <div className="navbar-end space-x-2">
         <label className="swap swap-rotate">
           <input
             type="checkbox"
@@ -155,44 +157,74 @@ export default function Navbar({ theme, onChangeTheme }: NavbarProps) {
           </svg>
         </label>
         {sessionData?.user?.id ? (
-          <div className="dropdown dropdown-end">
-            <label tabIndex={0} className="btn btn-ghost btn-circle avatar">
-              <div className="w-10 rounded-full">
-                <Image
-                  src={sessionData.user?.image || "/images/dummy.jpg"}
-                  alt=""
-                  width={80}
-                  height={80}
-                />
+          <>
+            {notifications.length ? (
+              <div className="dropdown dropdown-end">
+                <label tabIndex={0} className="btn btn-ghost btn-circle">
+                  <div className="w-10 rounded-full">
+                    {unread ? (
+                      <div className="indicator ">
+                        <i className="bx bx-bell bx-md text-primary" />
+                        <span className="badge badge-secondary badge-sm indicator-item">
+                          {unread}
+                        </span>
+                      </div>
+                    ) : (
+                      <i className="bx bx-bell bx-md text-primary" />
+                    )}
+                  </div>
+                </label>
+                <ul
+                  tabIndex={0}
+                  className="dropdown-content menu rounded-box menu-compact mt-3 w-52 bg-base-100 p-2 shadow"
+                >
+                  {notifications.map((notification) => (
+                    <li key={notification.id}>
+                      <Link
+                        href={`/user/${notification.userToId}/notification?notificationId=${notification.id}`}
+                      >
+                        {notification.message}
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
               </div>
-            </label>
-            <ul
-              tabIndex={0}
-              className="dropdown-content menu rounded-box menu-compact mt-3 w-52 bg-base-100 p-2 shadow"
-            >
-              <li>
-                <Link
-                  className="justify-between"
-                  href={`/user/${sessionData.user.id}/profile`}
-                >
-                  {t("navigation.my-profile")}
-                </Link>
-              </li>
-              <li>
-                <Link
-                  className="justify-between"
-                  href={`/user/${sessionData.user.id}/account`}
-                >
-                  {t("navigation.my-account")}
-                </Link>
-              </li>
-              <li>
-                <div onClick={() => signOut()}>
-                  {t("navigation.disconnect")}
+            ) : (
+              <i className="bx bx-bell bx-md text-base-300" />
+            )}{" "}
+            <div className="dropdown dropdown-end">
+              <label tabIndex={0} className="btn btn-ghost btn-circle avatar">
+                <div className="w-10 rounded-full">
+                  <Image
+                    src={sessionData.user?.image || "/images/dummy.jpg"}
+                    alt=""
+                    width={80}
+                    height={80}
+                  />
                 </div>
-              </li>
-            </ul>
-          </div>
+              </label>
+              <ul
+                tabIndex={0}
+                className="dropdown-content menu rounded-box menu-compact mt-3 w-52 bg-base-100 p-2 shadow"
+              >
+                <li>
+                  <Link href={`/user/${sessionData.user.id}/profile`}>
+                    {t("navigation.my-profile")}
+                  </Link>
+                </li>
+                <li>
+                  <Link href={`/user/${sessionData.user.id}/account`}>
+                    {t("navigation.my-account")}
+                  </Link>
+                </li>
+                <li>
+                  <div onClick={() => signOut()}>
+                    {t("navigation.disconnect")}
+                  </div>
+                </li>
+              </ul>
+            </div>
+          </>
         ) : (
           <ul className="menu menu-horizontal p-0">
             <li>

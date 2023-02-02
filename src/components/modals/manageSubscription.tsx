@@ -1,3 +1,4 @@
+import { isCUID } from "@lib/checkValidity";
 import { formatDateAsYYYYMMDD } from "@lib/formatDate";
 import { SubscriptionMode, SubscriptionRestriction } from "@prisma/client";
 import Confirmation from "@ui/confirmation";
@@ -115,6 +116,7 @@ export const UpdateSubscription = ({
   const querySubscription = trpc.subscriptions.getSubscriptionById.useQuery(
     subscriptionId,
     {
+      enabled: isCUID(subscriptionId),
       onSuccess(data) {
         if (data)
           reset({ ...data, startDate: formatDateAsYYYYMMDD(data.startDate) });

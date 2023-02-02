@@ -98,7 +98,6 @@ export const CoachCreation = ({ userId, pageId }: CoachCreationProps) => {
   const deleteUserDocument = trpc.files.deleteUserDocument.useMutation();
 
   const onSubmit: SubmitHandler<CoachCreationForm> = async (data) => {
-    console.log("hero section onSubmit data", data);
     const hc = querySection?.data?.elements.find(
       (e) => e.elementType === "HERO_CONTENT"
     );

@@ -466,7 +466,6 @@ function ActivityGroupForm({
   };
 
   const onSuccess: SubmitHandler<ActivityForm> = (data) => {
-    console.log("submit data", data);
     onSubmit(data);
     reset();
   };

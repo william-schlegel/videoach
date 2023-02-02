@@ -149,7 +149,6 @@ export const siteRouter = router({
   updateRoom: protectedProcedure
     .input(RoomObject.partial())
     .mutation(({ ctx, input }) => {
-      console.log("input", input);
       return ctx.prisma.room.update({
         where: { id: input.id },
         data: input,

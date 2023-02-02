@@ -77,7 +77,6 @@ function CoachPage(
   }, [fields.activity, fields.latitude, fields.longitude]);
 
   function onValid(data: SearchFormValues) {
-    console.log("data :>> ", data);
     offerQuery.refetch();
   }
 
@@ -143,7 +142,7 @@ function CoachPage(
                 required
                 error={errors.location ? t("common:enter-location") : ""}
               />
-              <button className="btn-primary btn">{t("search-coach")}</button>
+              <button className="btn btn-primary">{t("search-coach")}</button>
             </div>
           </form>
           <div className="flex flex-wrap gap-8 py-12">
@@ -256,7 +255,7 @@ function OfferCard({ id }: { id: string }) {
           ) : null}
         </div>
         <div className="card-actions justify-end">
-          <Link className="btn-primary btn" href={`/company/${id}`}>
+          <Link className="btn btn-primary" href={`/company/${id}`}>
             {t("offer-details")}
           </Link>
         </div>

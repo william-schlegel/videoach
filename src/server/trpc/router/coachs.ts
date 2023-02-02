@@ -118,8 +118,6 @@ export const coachRouter = router({
         },
         include: { page: true, certifications: true, coachingActivities: true },
       });
-      console.log("bbox :>> ", bbox);
-      console.log("coachs :>> ", coachs);
       return coachs
         .map((coach) => ({
           ...coach,

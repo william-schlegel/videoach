@@ -99,7 +99,6 @@ export const UpdateSite = ({ siteId, clubId }: UpdateSiteProps) => {
   const { t } = useTranslation("club");
 
   const onSubmit = (data: SiteFormValues) => {
-    console.log("data", data);
     updateSite.mutate({ id: siteId, ...data });
   };
 
@@ -272,7 +271,7 @@ function SiteForm({
       <div className="col-span-2 flex items-center justify-end gap-2">
         <button
           type="button"
-          className="btn-outline btn-secondary btn"
+          className="btn btn-outline btn-secondary"
           onClick={(e) => {
             e.preventDefault();
             onCancel();
@@ -280,7 +279,7 @@ function SiteForm({
         >
           {t("common:cancel")}
         </button>
-        <button className="btn-primary btn" type="submit">
+        <button className="btn btn-primary" type="submit">
           {t("common:save")}
         </button>
       </div>

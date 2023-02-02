@@ -126,7 +126,6 @@ export const UpdateEvent = ({
   const [closeModal, setCloseModal] = useState(false);
   const queryEvent = trpc.events.getEventById.useQuery(eventId, {
     onSuccess(data) {
-      console.log("data", data);
       setInitialData({
         name: data?.name ?? "",
         brief: data?.brief ?? "",
@@ -339,7 +338,6 @@ function EventForm({
   };
 
   const onSuccess: SubmitHandler<EventFormValues> = (data) => {
-    console.log("submit data", data);
     onSubmit(data);
     reset();
   };
@@ -348,7 +346,6 @@ function EventForm({
     setValue("searchAddress", adr.address);
     setValue("longitude", adr.lng);
     setValue("latitude", adr.lat);
-    console.log("adr", adr);
   }
 
   return (
@@ -515,7 +512,7 @@ function EventForm({
       <div className="col-span-full flex items-center justify-end gap-2">
         <button
           type="button"
-          className="btn-outline btn btn-secondary"
+          className="btn btn-outline btn-secondary"
           onClick={(e) => {
             e.preventDefault();
             reset();

@@ -59,7 +59,6 @@ export const CreateRoom = ({
   const { t } = useTranslation("club");
 
   const onSubmit: SubmitHandler<RoomFormValues> = (data) => {
-    console.log("data", data);
     if (siteId)
       createRoom.mutate({
         siteId,
@@ -72,7 +71,7 @@ export const CreateRoom = ({
   };
 
   const onError: SubmitErrorHandler<RoomFormValues> = (errors) => {
-    console.log("errors", errors);
+    console.error("errors", errors);
   };
 
   return (
@@ -128,7 +127,6 @@ export const UpdateRoom = ({
   const { t } = useTranslation("club");
 
   const onSubmit: SubmitHandler<RoomFormValues> = (data) => {
-    console.log("data", data);
     if (siteId)
       updateRoom.mutate({
         id: roomId,
@@ -138,7 +136,7 @@ export const UpdateRoom = ({
   };
 
   const onError: SubmitErrorHandler<RoomFormValues> = (errors) => {
-    console.log("errors", errors);
+    console.error("errors", errors);
   };
 
   return (

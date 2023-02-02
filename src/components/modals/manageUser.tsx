@@ -65,7 +65,6 @@ export const UpdateUser = ({
   const { t } = useTranslation("auth");
 
   const onSubmit: SubmitHandler<UserFormValues> = (data) => {
-    console.log("data", data);
     updateUser.mutate({
       id: userId,
       ...data,
@@ -73,7 +72,7 @@ export const UpdateUser = ({
   };
 
   const onError: SubmitErrorHandler<UserFormValues> = (errors) => {
-    console.log("errors", errors);
+    console.error("errors", errors);
   };
 
   return (

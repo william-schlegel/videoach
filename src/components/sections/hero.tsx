@@ -144,7 +144,6 @@ export const HeroCreation = ({ clubId, pageId }: HeroCreationProps) => {
   });
 
   const onSubmit: SubmitHandler<HeroCreationForm> = async (data) => {
-    console.log("hero section onSubmit data", data);
     if (updating) {
       const hc = querySection?.data?.elements.find(
         (e) => e.elementType === "HERO_CONTENT"

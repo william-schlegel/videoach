@@ -21,7 +21,8 @@
     "logo": "Logo",
     "logo-size": "Taille maximum du logo {{size}}",
     "delete-logo": "Supprimer le logo",
-    "search-address": "Géolocalisation du club/site d'activité"
+    "search-address": "Géolocalisation du club/site d'activité",
+    "manage-coachs": "Gestion de mes coachs"
   },
   "site": {
     "site_zero": "Aucun site",
@@ -115,7 +116,20 @@
     "coachs": "Liste des coachs",
     "certifications": "Certifications",
     "view-page": "Voir sa page de présentation",
-    "rating": "Note"
+    "rating": "Note",
+    "manage-my-coachs_zero": "Aucun coach pour le moment",
+    "manage-my-coachs_one": "Gérer mon coach",
+    "manage-my-coachs_other": "Gérer mes coachs",
+    "back-to-clubs": "Retour aux clubs",
+    "coach-unknown": "Coach introuvable ou inconnu",
+    "weekly-planning": "Planning de la semaine",
+    "no-planning": "Pas d'activités pour ce coach",
+    "search": "Chercher",
+    "write": "Ecrire",
+    "message": "Message à envoyer",
+    "cancel": "Annuler",
+    "message-placeholder": "Bonjour, je recherche un coach pour une activité de ... sur notre site de ... (adresse) pour au moins ...h par semaine (ou pour un remplacemement). Seriez-vous intéressé par cette prestation ?",
+    "notification-success": "Notifications envoyées avec succès"
   },
   "subscription": {
     "manage-subscriptions": "Gérer les abonnements",

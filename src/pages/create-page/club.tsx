@@ -221,7 +221,6 @@ export const getServerSideProps = async ({
   const clubId = (query?.clubId ?? "") as string;
   const pageId = (query?.pageId ?? "") as string;
 
-  console.log("{pageId, clubId}", { pageId, clubId });
   return {
     props: {
       ...(await serverSideTranslations(

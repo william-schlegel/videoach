@@ -65,29 +65,31 @@ enum Role {
 }
 
 model User {
-  id              String         @id @default(cuid())
-  name            String?
-  email           String?        @unique
-  emailVerified   DateTime?
-  image           String?
-  accounts        Account[]
-  sessions        Session[]
-  role            Role           @default(MEMBER)
-  pricingId       String?
-  pricing         Pricing?       @relation(fields: [pricingId], references: [id])
-  monthlyPayment  Boolean        @default(false)
-  trialUntil      DateTime?
-  paiements       Paiement[]
-  dueDate         DateTime?
-  cancelationDate DateTime?
-  documents       UserDocument[]
-  phone           String?
-  address         String?        @db.Text
-  memberData      UserMember?    @relation("member-user")
-  coachData       UserCoach?     @relation("coach-user")
-  managerData     UserManager?   @relation("manager-user")
-  reservations    Reservation[]
-  chatToken       String?
+  id                String             @id @default(cuid())
+  name              String?
+  email             String?            @unique
+  emailVerified     DateTime?
+  image             String?
+  accounts          Account[]
+  sessions          Session[]
+  role              Role               @default(MEMBER)
+  pricingId         String?
+  pricing           Pricing?           @relation(fields: [pricingId], references: [id])
+  monthlyPayment    Boolean            @default(false)
+  trialUntil        DateTime?
+  paiements         Paiement[]
+  dueDate           DateTime?
+  cancelationDate   DateTime?
+  documents         UserDocument[]
+  phone             String?
+  address           String?            @db.Text
+  memberData        UserMember?        @relation("member-user")
+  coachData         UserCoach?         @relation("coach-user")
+  managerData       UserManager?       @relation("manager-user")
+  reservations      Reservation[]
+  chatToken         String?
+  notificationsTo   UserNotification[] @relation("user-to")
+  notificationsFrom UserNotification[] @relation("user-from")
 
   @@index([pricingId])
 }
@@ -183,6 +185,32 @@ model UserDocument {
   event              Event?
 
   @@index([userId])
+}
+
+enum NotificationType {
+  SEARCH_COACH
+  SEARCH_CLUB
+  NEW_MESSAGE
+}
+
+model UserNotification {
+  id         String           @id @default(cuid())
+  type       NotificationType
+  userTo     User             @relation(fields: [userToId], references: [id], name: "user-to")
+  userToId   String
+  userFromId String
+  userFrom   User             @relation(fields: [userFromId], references: [id], name: "user-from")
+  message    String           @db.Text
+  link1      String?
+  link1Text  String?
+  link2      String?
+  link2Text  String?
+  viewDate   DateTime?
+  date       DateTime         @default(now())
+  data       Json?
+
+  @@index([userToId])
+  @@index([userFromId])
 }
 
 // ----------------------------------------------------------------------------------------------

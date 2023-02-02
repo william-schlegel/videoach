@@ -401,7 +401,6 @@ function ActivityForm({
   };
 
   const onSuccess: SubmitHandler<ActivityForm> = (data) => {
-    console.log("submit data", data);
     const ags =
       groups.data?.filter((_, idx) => activityGroups[idx]).map((ag) => ag.id) ??
       [];

@@ -345,7 +345,7 @@ function ClubForm({ onSubmit, onCancel, update, initialData }: ClubFormProps) {
       ) : null}
       <div className="col-span-2 flex items-center justify-end gap-2">
         <button
-          className="btn-outline btn btn-secondary"
+          className="btn btn-outline btn-secondary"
           onClick={(e) => {
             e.preventDefault();
             onCancel();
@@ -392,16 +392,41 @@ export const DeleteClub = ({ clubId }: PropsWithoutRef<PropsUpdateDelete>) => {
 
 export default CreateClub;
 
-export const AddCoachToClub = ({ clubId }: { clubId: string }) => {
-  const utils = trpc.useContext();
-  const addCoachToClub = trpc.clubs.updateClubCoach.useMutation({
-    onSuccess() {
-      utils.coachs.getCoachsForClub.invalidate(clubId);
-      setCloseModal(false);
-    },
-  });
+const AddCoachToClubSteps = [
+  { content: String.fromCodePoint(0x1f50d), label: "coach.search" },
+  { content: String.fromCodePoint(0x2709), label: "coach.write" },
+];
+
+type AddCoachToClubProps = { clubId: string; userId: string };
+
+export const AddCoachToClub = ({ clubId, userId }: AddCoachToClubProps) => {
+  const createNotifications =
+    trpc.notifications.createNotificationToUsers.useMutation({
+      onSuccess() {
+        toast.success(t("coach.notification-success"));
+      },
+      onError(error) {
+        toast.error(error.message);
+      },
+    });
   const [closeModal, setCloseModal] = useState(false);
   const { t } = useTranslation("club");
+  const [step, setStep] = useState(0);
+  const [message, setMessage] = useState("");
+  const [coachIds, setCoachIds] = useState<string[]>([]);
+
+  function handleSendMessage() {
+    if (coachIds.length > 0 && message)
+      createNotifications.mutate({
+        type: "SEARCH_COACH",
+        from: userId,
+        to: coachIds,
+        message: message,
+        data: JSON.stringify({ clubId }),
+      });
+    setCloseModal(true);
+    setStep(0);
+  }
 
   return (
     <Modal
@@ -409,15 +434,58 @@ export const AddCoachToClub = ({ clubId }: { clubId: string }) => {
       closeModal={closeModal}
       buttonIcon={<i className="bx bx-plus bx-sm" />}
       variant={"Primary"}
-      className="w-11/12 max-w-3xl @container"
+      className="w-11/12 max-w-4xl @container"
+      onCloseModal={() => {
+        setCloseModal(false);
+        setStep(0);
+      }}
     >
       <h3>{t("coach.find")}</h3>
-      <FindCoach
-        onSelect={(coachDataId) => {
-          addCoachToClub.mutate({ clubId, coachDataId });
-          setCloseModal(true);
-        }}
-      />
+      <div className="grid grid-cols-[auto,1fr] gap-2">
+        <ul className="steps steps-vertical">
+          {AddCoachToClubSteps.map((s, idx) => (
+            <li
+              key={idx}
+              data-content={s.content}
+              className={`step ${idx <= step ? "step-primary" : ""}`}
+            >
+              <span className={idx === step ? "font-bold text-primary" : ""}>
+                {t(s.label)}
+              </span>
+            </li>
+          ))}
+        </ul>
+        {step === 0 ? (
+          <FindCoach
+            onSelectMultiple={(ids) => {
+              setCoachIds(ids);
+              setStep((prev) => prev + 1);
+            }}
+          />
+        ) : null}
+        {step === 1 ? (
+          <form
+            onSubmit={(e) => {
+              e.preventDefault();
+              handleSendMessage();
+            }}
+          >
+            <label className="required w-fit">{t("coach.message")}</label>
+            <textarea
+              value={message}
+              onChange={(e) => setMessage(e.target.value)}
+              rows={5}
+              placeholder={t("coach.message-placeholder") ?? ""}
+              required
+            />
+            <div className="mt-4 flex justify-end gap-2">
+              <button className="btn btn-primary" type="submit">
+                {t("coach.write")}
+              </button>
+            </div>
+          </form>
+        ) : null}
+      </div>
     </Modal>
   );
 };

@@ -73,7 +73,7 @@ export const CreatePlanning = ({
   };
 
   const onError: SubmitErrorHandler<CreatePlanningFormValues> = (errors) => {
-    console.log("errors", errors);
+    console.error("errors", errors);
   };
 
   return (
@@ -250,7 +250,7 @@ export function UpdatePlanning({
   };
 
   const onError: SubmitErrorHandler<UpdatePlanningFormValues> = (errors) => {
-    console.log("errors", errors);
+    console.error("errors", errors);
   };
 
   if (queryPlanning.isLoading) return <Spinner />;
@@ -268,12 +268,12 @@ export function UpdatePlanning({
       </h3>
       {siteName ? (
         <div className="mb-2 flex gap-2">
-          <span className="badge-primary badge flex gap-2">
+          <span className="badge badge-primary flex gap-2">
             <span>{t("site")}:</span>
             <span>{siteName}</span>
           </span>
           {roomName ? (
-            <span className="badge-primary badge flex gap-2">
+            <span className="badge badge-primary flex gap-2">
               <span>{t("room")}:</span>
               <span>{roomName}</span>
             </span>

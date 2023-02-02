@@ -78,7 +78,6 @@ export const CreatePage = ({
   const { t } = useTranslation("pages");
 
   const onSubmit: SubmitHandler<CreatePageFormValues> = (data) => {
-    console.log("data", data);
     createPage.mutate({
       clubId,
       ...data,
@@ -86,7 +85,7 @@ export const CreatePage = ({
   };
 
   const onError: SubmitErrorHandler<CreatePageFormValues> = (errors) => {
-    console.log("errors", errors);
+    console.error("errors", errors);
   };
 
   return (
@@ -169,7 +168,6 @@ export function UpdatePage({
   const { t } = useTranslation("pages");
 
   const onSubmit: SubmitHandler<CreatePageFormValues> = (data) => {
-    console.log("data", data);
     updatePage.mutate({
       id: pageId,
       ...data,
@@ -177,7 +175,7 @@ export function UpdatePage({
   };
 
   const onError: SubmitErrorHandler<CreatePageFormValues> = (errors) => {
-    console.log("errors", errors);
+    console.error("errors", errors);
   };
 
   return (

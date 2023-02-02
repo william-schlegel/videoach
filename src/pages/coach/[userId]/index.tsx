@@ -58,7 +58,7 @@ const CoachDashboard = ({
         <div className="flex items-center gap-4">
           {features.includes("COACH_CERTIFICATION") ? (
             <Link
-              className="btn-secondary btn"
+              className="btn btn-secondary"
               href={`${userId}/certifications`}
             >
               {t("manage-certifications")}

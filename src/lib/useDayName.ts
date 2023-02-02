@@ -22,6 +22,10 @@ export function useDayName() {
     return t(getLabel(value));
   }
 
+  function getDayNumber(value?: DayName | null) {
+    return DAYS.find((d) => d.value === value)?.number ?? 0;
+  }
+
   function getToday() {
     const today = getDay(startOfToday());
     return DAYS.find((d) => d.number === today)?.value ?? "MONDAY";
@@ -30,16 +34,14 @@ export function useDayName() {
   function getNextDay(value?: DayName | null) {
     const n = (DAYS.find((d) => d.value === value)?.number as number) ?? 0;
     let next: DayName = "MONDAY";
-    if (n === DAYS.length)
-      next = DAYS.find((d) => d.number === 0)?.value ?? "MONDAY";
+    if (n === 6) next = DAYS.find((d) => d.number === 0)?.value ?? "SUNDAY";
     else next = DAYS.find((d) => d.number === n + 1)?.value ?? "MONDAY";
     return next;
   }
   function getPreviousDay(value?: DayName | null) {
     const n = (DAYS.find((d) => d.value === value)?.number as number) ?? 0;
     let next: DayName = "MONDAY";
-    if (n === 0)
-      next = DAYS.find((d) => d.number === DAYS.length - 1)?.value ?? "MONDAY";
+    if (n === 0) next = DAYS.find((d) => d.number === 6)?.value ?? "SATURDAY";
     else next = DAYS.find((d) => d.number === n - 1)?.value ?? "MONDAY";
     return next;
   }
@@ -56,5 +58,6 @@ export function useDayName() {
     getPreviousDay,
     getToday,
     getDayForDate,
+    getDayNumber,
   };
 }

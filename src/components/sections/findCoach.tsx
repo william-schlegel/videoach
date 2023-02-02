@@ -17,9 +17,16 @@ import { useHover } from "@lib/useHover";
 type FindCoachProps = {
   address?: string;
   onSelect?: (coachDataId: string) => void;
+  onSelectMultiple?: (coachDataIds: string[]) => void;
+  className?: string;
 };
 
-function FindCoach({ address = "", onSelect }: FindCoachProps) {
+function FindCoach({
+  address = "",
+  onSelect,
+  onSelectMultiple,
+  className,
+}: FindCoachProps) {
   const { t } = useTranslation("home");
   const [myAddress, setMyAddress] = useState<AddressData>({
     address: "",
@@ -34,14 +41,17 @@ function FindCoach({ address = "", onSelect }: FindCoachProps) {
       locationLng: myAddress.lng,
       range,
     },
-    { enabled: false }
+    { enabled: false, refetchOnWindowFocus: false }
   );
   const [theme] = useLocalStorage<TThemes>("theme", "cupcake");
 
   type TCoachItem = typeof coachSearch.data extends (infer U)[] | undefined
     ? U
     : never;
-  const handleSearch = () => coachSearch.refetch();
+  const handleSearch = () => {
+    setSelectedCoachs(new Set());
+    coachSearch.refetch();
+  };
   const mapContainerRef = useRef<HTMLDivElement | null>(null);
   const map = useMap();
   const handleResize = useCallback(() => {
@@ -71,7 +81,17 @@ function FindCoach({ address = "", onSelect }: FindCoachProps) {
     });
     return c;
   }, [myAddress.lat, myAddress.lng, range]);
+  const [selectedCoachs, setSelectedCoachs] = useState(new Set<string>());
+
   const withSelect = typeof onSelect === "function";
+  const withSelectMultiple = typeof onSelectMultiple === "function";
+
+  function handleSelect(id: string, checked: boolean) {
+    const selected = new Set(selectedCoachs);
+    if (checked) selected.add(id);
+    else selected.delete(id);
+    setSelectedCoachs(selected);
+  }
 
   function CoachRow({
     item,
@@ -88,7 +108,7 @@ function FindCoach({ address = "", onSelect }: FindCoachProps) {
     }, [isHovered, onHover, item]);
 
     return (
-      <tr className="hover" ref={ref}>
+      <tr className={`hover ${className ?? ""}`} ref={ref}>
         <td>{item.publicName}</td>
         <td>{item.distance.toFixed(0)}&nbsp;km</td>
         <td>
@@ -130,10 +150,20 @@ function FindCoach({ address = "", onSelect }: FindCoachProps) {
             <span
               className="btn btn-primary btn-xs"
               tabIndex={0}
-              onClick={() => onSelect(item.id)}
+              onClick={() => onSelect(item.userId)}
             >
               {t("select")}
             </span>
+          </td>
+        ) : null}
+        {withSelectMultiple ? (
+          <td>
+            <input
+              type="checkbox"
+              checked={selectedCoachs.has(item.userId)}
+              className="checkbox-primary checkbox"
+              onChange={(e) => handleSelect(item.userId, e.target.checked)}
+            />
           </td>
         ) : null}
       </tr>
@@ -141,7 +171,7 @@ function FindCoach({ address = "", onSelect }: FindCoachProps) {
   }
 
   return (
-    <div className="grid grid-cols-1 gap-4 @3xl:grid-cols-2">
+    <div className="grid grid-cols-1 gap-4 @4xl:grid-cols-2">
       <div className="flex flex-col items-center gap-4">
         <div className="w-full max-w-sm text-start">
           <AddressSearch
@@ -179,7 +209,8 @@ function FindCoach({ address = "", onSelect }: FindCoachProps) {
                 <th>{t("rating")}</th>
                 <th>{t("activities")}</th>
                 <th>{t("page")}</th>
-                {withSelect ? <th>{t("select")}</th> : null}
+                {withSelect ? <th>{t("action")}</th> : null}
+                {withSelectMultiple ? <th>{t("select")}</th> : null}
               </tr>
             </thead>
             <tbody>
@@ -192,6 +223,17 @@ function FindCoach({ address = "", onSelect }: FindCoachProps) {
               ))}
             </tbody>
           </table>
+          {withSelectMultiple && selectedCoachs.size > 0 ? (
+            <div className="mt-2 flex justify-end">
+              <button
+                className="btn btn-primary btn-sm"
+                type="button"
+                onClick={() => onSelectMultiple(Array.from(selectedCoachs))}
+              >
+                {t("select")}
+              </button>
+            </div>
+          ) : null}
         </div>
       </div>
       <div className="min-h-[30vh]">

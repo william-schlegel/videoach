@@ -214,7 +214,7 @@ function DailyPlanning({ memberId, day }: DailyPlanningProps) {
     memberId,
   });
   if (planning.isInitialLoading) return <Spinner />;
-  if (!planning.data) return <div>{t("member.no-planning")}</div>;
+  if (!planning.data) return <div>{t("no-planning")}</div>;
   return (
     <div className="flex flex-col gap-2">
       {planning.data.map((plan) => (
@@ -453,7 +453,6 @@ function ReserveDuration({
   if (isBefore(day, startOfToday())) return null;
 
   const onSubmit = (slot: TSlot) => {
-    console.log("slot :>> ", slot);
     const [hours, minutes] = getHour(setHour(slot.start));
     const date = add(startOfDay(day), { hours, minutes });
     createReservation.mutate({
