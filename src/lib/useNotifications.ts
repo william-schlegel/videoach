@@ -17,7 +17,7 @@ function useNotifications(userId: string | undefined | null) {
           setUnread(data.unread);
         }
       },
-      refetchInterval: 30000,
+      refetchInterval: 1 * 60 * 1000, // 1'
     }
   );
 

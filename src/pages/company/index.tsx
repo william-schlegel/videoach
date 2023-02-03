@@ -77,6 +77,7 @@ function CoachPage(
   }, [fields.activity, fields.latitude, fields.longitude]);
 
   function onValid(data: SearchFormValues) {
+    console.log("data", data);
     offerQuery.refetch();
   }
 
