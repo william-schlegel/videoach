@@ -4,12 +4,34 @@ import { router, protectedProcedure } from "../trpc";
 
 export const notificationRouter = router({
   getNotificationById: protectedProcedure
-    .input(z.string().cuid())
-    .query(({ ctx, input }) =>
-      ctx.prisma.userNotification.findUnique({
-        where: { id: input },
+    .input(
+      z.object({
+        notificationId: z.string().cuid(),
+        noUpdate: z.boolean().default(false).optional(),
       })
-    ),
+    )
+    .query(async ({ ctx, input }) => {
+      const notification = await ctx.prisma.userNotification.findUnique({
+        where: { id: input.notificationId },
+        include: {
+          userFrom: {
+            select: {
+              name: true,
+              image: true,
+            },
+          },
+        },
+      });
+      if (!notification?.viewDate && !input.noUpdate) {
+        ctx.prisma.userNotification.update({
+          where: { id: input.notificationId },
+          data: {
+            viewDate: new Date(Date.now()),
+          },
+        });
+      }
+      return notification;
+    }),
 
   getNotificationFromUser: protectedProcedure
     .input(
@@ -37,6 +59,9 @@ export const notificationRouter = router({
       })
     )
     .query(async ({ ctx, input }) => {
+      const total = await ctx.prisma.userNotification.count({
+        where: { userToId: input.userToId },
+      });
       const unread = await ctx.prisma.userNotification.count({
         where: { userToId: input.userToId, viewDate: null },
       });
@@ -45,7 +70,7 @@ export const notificationRouter = router({
         take: input.take,
         skip: input.skip,
       });
-      return { notifications, unread };
+      return { notifications, unread, total };
     }),
   createNotificationToUsers: protectedProcedure
     .input(
