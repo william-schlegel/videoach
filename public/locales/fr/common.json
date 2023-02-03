@@ -36,5 +36,13 @@
     "company-offer": "Offres pour les entreprises",
     "insufficient-plan": "Votre abonnement ne vous donne pas accès à cette fonctionnalité",
     "limited-plan": "Votre abonnement ne vous donne qu'un accès limité à cette fonctionnalité"
+  },
+  "api": {
+    "error-accept-search-coach": "Erreur lors de l'acceptatio de cette requète",
+    "accept": "Accepté",
+    "refused": "Refusé",
+    "coach-added": "Le coach a été ajouté au club",
+    "answer-sent": "Réponse envoyée",
+    "error": "Erreur lors de l'écriture"
   }
 }

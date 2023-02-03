@@ -32,7 +32,25 @@ export const notificationRouter = router({
       }
       return notification;
     }),
-
+  updateNotification: protectedProcedure
+    .input(
+      z.object({
+        id: z.string().cuid(),
+        answered: z.date(),
+        answer: z.string(),
+        linkedNotification: z.string().optional(),
+      })
+    )
+    .mutation(({ ctx, input }) =>
+      ctx.prisma.userNotification.update({
+        where: { id: input.id },
+        data: {
+          answered: input.answered,
+          answer: input.answer,
+          linkedNotification: input.linkedNotification,
+        },
+      })
+    ),
   getNotificationFromUser: protectedProcedure
     .input(
       z.object({
@@ -79,19 +97,12 @@ export const notificationRouter = router({
         from: z.string().cuid(),
         to: z.array(z.string().cuid()),
         message: z.string(),
-        link: z
-          .array(z.object({ text: z.string(), link: z.string().url() }))
-          .max(2)
-          .optional(),
         data: z.string().optional(),
+        linkedNotification: z.string().optional(),
       })
     )
     .mutation(({ ctx, input }) => {
       const data = input.data ? JSON.parse(input.data) : {};
-      console.log(
-        "------------------------------------------------------  data",
-        data
-      );
       return ctx.prisma.userNotification.createMany({
         data: input.to.map((to) => ({
           type: input.type,
@@ -99,7 +110,32 @@ export const notificationRouter = router({
           userToId: to,
           message: input.message,
           data,
+          linkedNotification: input.linkedNotification,
         })),
+      });
+    }),
+  createNotificationToUser: protectedProcedure
+    .input(
+      z.object({
+        type: z.nativeEnum(NotificationType),
+        from: z.string().cuid(),
+        to: z.string().cuid(),
+        message: z.string(),
+        data: z.string().optional(),
+        linkedNotification: z.string().optional(),
+      })
+    )
+    .mutation(({ ctx, input }) => {
+      const data = input.data ? JSON.parse(input.data) : {};
+      return ctx.prisma.userNotification.create({
+        data: {
+          type: input.type,
+          userFromId: input.from,
+          userToId: input.to,
+          message: input.message,
+          data,
+          linkedNotification: input.linkedNotification,
+        },
       });
     }),
 });

@@ -275,7 +275,7 @@ export const clubRouter = router({
     .input(
       z.object({
         clubId: z.string().cuid(),
-        coachDataId: z.string().cuid(),
+        coachUserId: z.string().cuid(),
       })
     )
     .mutation(async ({ ctx, input }) => {
@@ -292,7 +292,7 @@ export const clubRouter = router({
         });
 
       return ctx.prisma.userCoach.update({
-        where: { id: input.coachDataId },
+        where: { userId: input.coachUserId },
         data: {
           clubs: {
             connect: {

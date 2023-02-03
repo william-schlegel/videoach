@@ -18,7 +18,9 @@ import { isCUID } from "@lib/checkValidity";
 import createLink from "@lib/createLink";
 import { formatDateLocalized } from "@lib/formatDate";
 import Pagination from "@ui/pagination";
-import { NotificationType } from "@prisma/client";
+import { NotificationType, type UserNotification } from "@prisma/client";
+import { isDate } from "date-fns";
+import { toast } from "react-toastify";
 
 const PER_PAGE = 20;
 
@@ -148,15 +150,94 @@ export function NotificationContent({
         ) : null}
       </div>
       <div className="space-y-4 rounded border border-primary p-4">
-        <div className="badge badge-info">
+        <div className="badge-info badge">
           {t("notification.notification-type", {
             type: getName(notification.data?.type),
           })}
         </div>
         <p>{notification.data?.message}</p>
+        {notification.data ? (
+          <NotificationInteraction notification={notification.data} />
+        ) : null}
       </div>
     </div>
   );
+}
+type NotificationInteractionProps = {
+  notification: UserNotification & {
+    userFrom: {
+      name: string | null;
+      image: string | null;
+    };
+  };
+};
+
+function NotificationInteraction({
+  notification,
+}: NotificationInteractionProps) {
+  const utils = trpc.useContext();
+  const { t } = useTranslation("auth");
+
+  async function handleClick(link: string | null, id: string) {
+    if (!link) return;
+    const sp = new URLSearchParams({ notificationId: id });
+    const url = link.concat("?", sp.toString());
+    console.log("url", url);
+    const res = await fetch(url);
+    const json = await res.json();
+    if (json.trpcerror) {
+      toast.error(json.error);
+    } else if (json.error) {
+      toast.error(t(json.error));
+    } else if (json.success) {
+      toast.success(t(json.success));
+      utils.notifications.getNotificationById.invalidate({
+        notificationId: notification.id,
+      });
+    }
+  }
+
+  if (isDate(notification.answered))
+    return (
+      <div className="flex items-center gap-2">
+        <span>
+          {t("notification.answered", {
+            date: formatDateLocalized(notification.answered, {
+              dateFormat: "long",
+              withTime: true,
+            }),
+          })}
+        </span>
+        <span className="badge-primary badge">
+          {t(notification.answer ?? "")}
+        </span>
+      </div>
+    );
+  if (notification.type === "SEARCH_COACH") {
+    return (
+      <div className="flex items-center gap-2">
+        <button
+          className="btn-success btn"
+          type="button"
+          onClick={() =>
+            handleClick("/api/notification/acceptSearchCoach", notification.id)
+          }
+        >
+          {t("notification.accept")}
+        </button>
+        <button
+          className="btn-error btn"
+          type="button"
+          onClick={() =>
+            handleClick("/api/notification/refuseSearchCoach", notification.id)
+          }
+        >
+          {t("notification.refuse")}
+        </button>
+      </div>
+    );
+  }
+  return null;
 }
 
 const NOTIFICATION_TYPES: readonly {
@@ -168,8 +249,24 @@ const NOTIFICATION_TYPES: readonly {
     label: "notification.type.search-coach",
   },
   {
+    value: NotificationType.COACH_ACCEPT,
+    label: "notification.type.coach-accept",
+  },
+  {
+    value: NotificationType.COACH_REFUSE,
+    label: "notification.type.coach-refuse",
+  },
+  {
     value: NotificationType.SEARCH_CLUB,
     label: "notification.type.search-club",
+  },
+  {
+    value: NotificationType.CLUB_ACCEPT,
+    label: "notification.type.club-accept",
+  },
+  {
+    value: NotificationType.CLUB_REFUSE,
+    label: "notification.type.club-refuse",
   },
   {
     value: NotificationType.NEW_MESSAGE,

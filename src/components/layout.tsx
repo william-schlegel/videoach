@@ -22,7 +22,7 @@ export default function Layout({ children, className, title }: Props) {
   return (
     <>
       <Head>
-        <title>Videoach{title ? ` - ${title}` : ""}</title>
+        <title>Videoach{typeof title === "string" ? ` - ${title}` : ""}</title>
         <meta name="description" content="Management de clubs de sport" />
         <link rel="icon" href="/favicon.ico" />
       </Head>

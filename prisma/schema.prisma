@@ -190,24 +190,27 @@ model UserDocument {
 enum NotificationType {
   SEARCH_COACH
   SEARCH_CLUB
+  COACH_ACCEPT
+  COACH_REFUSE
+  CLUB_ACCEPT
+  CLUB_REFUSE
   NEW_MESSAGE
 }
 
 model UserNotification {
-  id         String           @id @default(cuid())
-  type       NotificationType
-  userTo     User             @relation(fields: [userToId], references: [id], name: "user-to")
-  userToId   String
-  userFromId String
-  userFrom   User             @relation(fields: [userFromId], references: [id], name: "user-from")
-  message    String           @db.Text
-  link1      String?
-  link1Text  String?
-  link2      String?
-  link2Text  String?
-  viewDate   DateTime?
-  date       DateTime         @default(now())
-  data       Json?
+  id                 String           @id @default(cuid())
+  type               NotificationType
+  userTo             User             @relation(fields: [userToId], references: [id], name: "user-to")
+  userToId           String
+  userFromId         String
+  userFrom           User             @relation(fields: [userFromId], references: [id], name: "user-from")
+  message            String           @db.Text
+  viewDate           DateTime?
+  date               DateTime         @default(now())
+  data               Json?
+  answered           DateTime?
+  answer             String?
+  linkedNotification String? // if the notification is answering another one
 
   @@index([userToId])
   @@index([userFromId])
