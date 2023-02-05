@@ -3,6 +3,7 @@ import { Role } from "@prisma/client";
 import { z } from "zod";
 import { router, publicProcedure, protectedProcedure } from "../trpc";
 import { createToken, streamchatClient } from "../../streamchat";
+import { getDocUrl } from "./files";
 
 const UserFilter = z
   .object({
@@ -51,7 +52,11 @@ export const userRouter = router({
           data: { chatToken: token },
         });
       }
-      return user;
+      let profileImageUrl = user?.image ?? "/images/dummy.jpg";
+      if (user?.profileImageId) {
+        profileImageUrl = await getDocUrl(user.id, user.profileImageId);
+      }
+      return { ...user, profileImageUrl };
     }),
   getUserSubscriptionsById: protectedProcedure
     .input(z.string().cuid())
@@ -168,6 +173,7 @@ export const userRouter = router({
         pricingId: z.string().cuid().optional(),
         monthlyPayment: z.boolean().optional(),
         cancelationDate: z.date().optional(),
+        profileImageId: z.string().optional(),
         // coach data
         longitude: z.number().optional(),
         latitude: z.number().optional(),
@@ -239,6 +245,7 @@ export const userRouter = router({
           phone: input.phone,
           address: input.address,
           role: input.role,
+          profileImageId: input.profileImageId,
           pricingId: input.pricingId,
           monthlyPayment: input.monthlyPayment,
           cancelationDate: input.cancelationDate,

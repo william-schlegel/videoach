@@ -88,7 +88,8 @@
     "course-description": "Description du cours",
     "home": "Chez {{name}}",
     "in-limit": "Dans la limite de {{limit}} km autour de {{address}}",
-    "back-to-my-page": "Retour à ma page"
+    "back-to-my-page": "Retour à ma page",
+    "created": "Offre enregistrée"
   },
   "target": {
     "individual": "Particulier",

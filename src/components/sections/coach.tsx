@@ -42,8 +42,14 @@ export const CoachCreation = ({ userId, pageId }: CoachCreationProps) => {
   const { register, handleSubmit, control, setValue, reset } =
     useForm<CoachCreationForm>();
   const [imagePreview, setImagePreview] = useState("");
-  const queryCoach = trpc.users.getUserById.useQuery(userId);
-  const queryCoachData = trpc.pages.getCoachDataForPage.useQuery(userId);
+  const queryCoach = trpc.users.getUserById.useQuery(userId, {
+    enabled: isCUID(userId),
+    refetchOnWindowFocus: false,
+  });
+  const queryCoachData = trpc.pages.getCoachDataForPage.useQuery(userId, {
+    enabled: isCUID(userId),
+    refetchOnWindowFocus: false,
+  });
   const fields = useWatch({ control });
   const [previewTheme, setPreviewTheme] = useState<TThemes>("cupcake");
   const updatePageStyle = trpc.pages.updatePageStyleForCoach.useMutation({
@@ -78,6 +84,8 @@ export const CoachCreation = ({ userId, pageId }: CoachCreationProps) => {
         };
         reset(resetData);
       },
+      enabled: isCUID(pageId),
+      refetchOnWindowFocus: false,
     }
   );
   const writeFile = useWriteFile(
@@ -214,20 +222,20 @@ export const CoachCreation = ({ userId, pageId }: CoachCreationProps) => {
               </div>
             ) : null}
           </div>
-          <label>{t("name")}</label>
+          <label>{t("coach.name")}</label>
           <div className="flex items-center gap-2">
             <span>{queryCoach.data?.coachData?.publicName ?? ""}</span>
-            <span className="tooltip" data-tip={t("your-public-name")}>
+            <span className="tooltip" data-tip={t("coach.your-public-name")}>
               <i className="bx bx-info-circle bx-xs" />
             </span>
           </div>
-          <label>{t("info")}</label>
+          <label>{t("coach.info")}</label>
           <input
             {...register("subtitle")}
             type="text"
             className="input-bordered input w-full"
           />
-          <label>{t("description")}</label>
+          <label>{t("coach.description")}</label>
           <textarea {...register("description")} rows={4} />
           <div className="form-control col-span-2">
             <div className="label cursor-pointer justify-start gap-4">
@@ -236,10 +244,12 @@ export const CoachCreation = ({ userId, pageId }: CoachCreationProps) => {
                 className="checkbox-primary checkbox"
                 {...register("withCertifications")}
               />
-              <label className="label-text">{t("with-certifications")}</label>
+              <label className="label-text">
+                {t("coach.with-certifications")}
+              </label>
               <span
                 className="tooltip"
-                data-tip={t("certifications-from-dashboard")}
+                data-tip={t("coach.certifications-from-dashboard")}
               >
                 <i className="bx bx-info-circle bx-xs" />
               </span>
@@ -252,14 +262,17 @@ export const CoachCreation = ({ userId, pageId }: CoachCreationProps) => {
                 className="checkbox-primary checkbox"
                 {...register("withActivities")}
               />
-              <label className="label-text">{t("with-activities")}</label>
-              <span className="tooltip" data-tip={t("activities-in-profile")}>
+              <label className="label-text">{t("coach.with-activities")}</label>
+              <span
+                className="tooltip"
+                data-tip={t("coach.activities-in-profile")}
+              >
                 <i className="bx bx-info-circle bx-xs" />
               </span>
             </div>
           </div>
           <div className="col-span-2 flex justify-between">
-            <button className="btn btn-primary" type="submit">
+            <button className="btn-primary btn" type="submit">
               {t("save-section")}
             </button>
           </div>
@@ -448,11 +461,11 @@ function PhotoSection({
             href={`mailto:${email}`}
             target="_blank"
             rel="noreferrer"
-            className={`btn btn-primary btn-block ${
+            className={`btn-primary btn-block btn ${
               preview ? "btn-sm my-2 text-xs" : "btn-lg my-4 text-base"
             } gap-4`}
           >
-            {t("contact-me-email")}
+            {t("coach.contact-me-email")}
             <i className={`bx bx-envelope ${preview ? "bx-xs" : "bx-lg"}`} />
           </a>
         ) : null}
@@ -461,11 +474,11 @@ function PhotoSection({
             href={`tel:${phone}`}
             target="_blank"
             rel="noreferrer"
-            className={`btn btn-outline btn-secondary btn-block ${
+            className={`btn-outline btn-secondary btn-block btn ${
               preview ? "btn-sm my-2 text-xs" : "btn-lg my-4 text-base"
             } gap-4`}
           >
-            {t("contact-me-phone")}
+            {t("coach.contact-me-phone")}
             <i className={`bx bx-phone ${preview ? "bx-xs" : "bx-lg"}`} />
           </a>
         ) : null}
@@ -505,7 +518,7 @@ function CertificationsAndActivities({
                 : "text-[clamp(2rem,3vw,4rem)] leading-[clamp(3.5rem,4.5vw,5.5rem)]"
             }
           >
-            {t("coach-certifications")}
+            {t("coach.coach-certifications")}
           </h3>
           <div className="flex flex-wrap gap-2">
             {certifications.map((certification) => (
@@ -525,7 +538,7 @@ function CertificationsAndActivities({
                 : "text-[clamp(2rem,3vw,4rem)] leading-[clamp(3.5rem,4.5vw,5.5rem)]"
             }
           >
-            {t("coach-activities")}
+            {t("coach.coach-activities")}
           </h3>
           <div className="flex flex-wrap gap-2">
             {activities.map((activity) => (
@@ -576,7 +589,7 @@ function MapSection({
               : "text-[clamp(2rem,3vw,4rem)] leading-[clamp(3.5rem,4.5vw,5.5rem)]"
           }`}
         >
-          {t("where-to-find-me")}
+          {t("coach.where-to-find-me")}
         </h2>
         <div className="col-span-2 w-full border border-primary">
           <MapComponent
@@ -630,7 +643,7 @@ function CoachOffers({ offers, preview, coachData }: CoachOffersProps) {
   return (
     <section className={`${preview ? "py-4" : "py-12"} w-full bg-base-200`}>
       <div className={`container mx-auto ${preview ? "py-2 px-8" : "p-8"}`}>
-        <h3>{t("coach-offers")}</h3>
+        <h3>{t("coach.coach-offers")}</h3>
         <div className="flex flex-wrap gap-2">
           {offers.map((offer) => (
             <article
@@ -676,15 +689,15 @@ function CoachOffers({ offers, preview, coachData }: CoachOffersProps) {
                 </p>
                 <div className="card-actions mt-auto justify-end">
                   {preview ? (
-                    <button className="btn btn-primary btn-sm">
-                      {t("offer-details")}
+                    <button className="btn-primary btn-sm btn">
+                      {t("coach.offer-details")}
                     </button>
                   ) : (
                     <Link
-                      className="btn btn-primary"
+                      className="btn-primary btn"
                       href={`/presentation-page/offer/${offer.id}`}
                     >
-                      {t("offer-details")}
+                      {t("coach.offer-details")}
                     </Link>
                   )}
                 </div>

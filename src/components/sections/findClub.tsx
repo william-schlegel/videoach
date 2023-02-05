@@ -125,7 +125,7 @@ function FindClub({ address = "" }: FindClubProps) {
               />
             </Link>
           ) : (
-            <span>&nbsp;</span>
+            <span></span>
           )}
         </td>
       </tr>
@@ -162,8 +162,8 @@ function FindClub({ address = "" }: FindClubProps) {
           {t("search-club")}
           <i className="bx bx-search bx-xs" />
         </button>
-        <div className="mt-8 max-h-[40vh] w-full overflow-y-auto">
-          <table className="table-zebra table w-full">
+        <div className="mt-8 max-h-[40vh]">
+          <table className="table-zebra table border border-base-300">
             <thead>
               <tr>
                 <th>{t("club")}</th>
@@ -185,7 +185,7 @@ function FindClub({ address = "" }: FindClubProps) {
         </div>
       </div>
       <div className="min-h-[30vh]">
-        <div className="h-full border border-primary" ref={mapContainerRef}>
+        <div className="h-[30vh] border border-primary" ref={mapContainerRef}>
           <Map
             initialViewState={{ zoom: 9 }}
             style={{ width: "100%", height: "100%" }}

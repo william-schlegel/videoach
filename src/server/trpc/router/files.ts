@@ -93,6 +93,36 @@ export const fileRouter = router({
       );
       return { ...presigned, documentId: document.id };
     }),
+  createPresignedUrlDirect: protectedProcedure
+    .input(
+      z.object({
+        userId: z.string().cuid(),
+        fileId: z.string().uuid(),
+        fileType: z.string(),
+        maxSize: z
+          .number()
+          .optional()
+          .default(1024 * 1024),
+      })
+    )
+    .mutation(async ({ input, ctx }) => {
+      if (
+        ctx.session.user.role !== "ADMIN" &&
+        ctx.session.user.id !== input.userId
+      ) {
+        throw new TRPCError({
+          code: "UNAUTHORIZED",
+          message: "You are not allowed to upload a file",
+        });
+      }
+      const userId = input.userId;
+      const presigned = await createPost(
+        `${userId}/${input.fileId}`,
+        input.fileType,
+        input.maxSize
+      );
+      return { ...presigned };
+    }),
   getDocumentUrlById: publicProcedure
     .input(z.string().cuid())
     .query(async ({ ctx, input }) => {

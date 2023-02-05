@@ -148,7 +148,7 @@ function FindCoach({
         {withSelect ? (
           <td>
             <span
-              className="btn btn-primary btn-xs"
+              className="btn-primary btn-xs btn"
               tabIndex={0}
               onClick={() => onSelect(item.userId)}
             >
@@ -194,14 +194,14 @@ function FindCoach({
           </div>
         </div>
         <button
-          className="btn btn-primary flex items-center gap-4"
+          className="btn-primary btn flex items-center gap-4"
           onClick={() => handleSearch()}
         >
           {t("search-coach")}
           <i className="bx bx-search bx-xs" />
         </button>
-        <div className="mt-8 max-h-60 w-full">
-          <table className="table-zebra table w-full">
+        <div className="mt-8">
+          <table className="table-zebra table border border-base-300">
             <thead>
               <tr>
                 <th>{t("coach")}</th>
@@ -226,7 +226,7 @@ function FindCoach({
           {withSelectMultiple && selectedCoachs.size > 0 ? (
             <div className="mt-2 flex justify-end">
               <button
-                className="btn btn-primary btn-sm"
+                className="btn-primary btn-sm btn"
                 type="button"
                 onClick={() => onSelectMultiple(Array.from(selectedCoachs))}
               >
@@ -237,7 +237,7 @@ function FindCoach({
         </div>
       </div>
       <div className="min-h-[30vh]">
-        <div className="h-full border border-primary" ref={mapContainerRef}>
+        <div className="h-[30vh] border border-primary" ref={mapContainerRef}>
           <Map
             initialViewState={{ zoom: 9 }}
             style={{ width: "100%", height: "100%" }}

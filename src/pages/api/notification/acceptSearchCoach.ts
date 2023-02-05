@@ -9,6 +9,7 @@ import { isCUID } from "@lib/checkValidity";
 type ResponseData = {
   success?: string;
   error?: string;
+  step?: string;
   trpcerror?: string;
 };
 
@@ -24,31 +25,34 @@ const acceptSearchCoach = async (
   const notificationId = req.query.notificationId as string;
 
   if (!notificationId || !isCUID(notificationId))
-    return res
-      .status(500)
-      .json({ error: "common:api.error-accept-search-coach" });
+    return res.status(500).json({
+      error: "common:api.error-accept-search-coach",
+      step: "notificationId",
+    });
 
   if (session) {
     try {
       const notification = await caller.notifications.getNotificationById({
         notificationId: notificationId,
-        noUpdate: true,
+        updateViewDate: false,
       });
       if (!notification)
-        return res
-          .status(500)
-          .json({ error: "common:api.error-accept-search-coach" });
-      const { clubId, coachDataId } = notification.data as {
+        return res.status(500).json({
+          error: "common:api.error-accept-search-coach",
+          step: "notification",
+        });
+      const { clubId } = notification.data as {
         clubId: string;
         coachDataId: string;
       };
-      if (!isCUID(clubId) || !isCUID(coachDataId))
-        return res
-          .status(500)
-          .json({ error: "common:api.error-accept-search-coach" });
+      if (!isCUID(clubId))
+        return res.status(500).json({
+          error: "common:api.error-accept-search-coach",
+          step: "clubId - coachDataId",
+        });
       const updated = await caller.clubs.updateClubCoach({
         clubId,
-        coachUserId: coachDataId,
+        coachUserId: notification.userToId,
       });
       if (updated) {
         // create aswer notification
@@ -56,7 +60,7 @@ const acceptSearchCoach = async (
           from: notification.userToId,
           to: notification.userFromId,
           type: "COACH_ACCEPT",
-          message: "",
+          message: ">".concat(notification.message.slice(0, 15), "..."),
           linkedNotification: notification.id,
         });
         // update notification answered

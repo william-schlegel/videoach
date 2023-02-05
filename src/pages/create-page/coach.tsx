@@ -30,11 +30,11 @@ function CoachPage({
 
   return (
     <Layout
-      title={t("manage-page")}
+      title={t("coach.manage-page")}
       className="container mx-auto my-2 space-y-2 p-2"
     >
       <h1 className="flex flex-wrap items-center justify-between">
-        <span>{t("manage-page")}</span>
+        <span>{t("coach.manage-page")}</span>
 
         {queryPage.data?.id ? (
           <div className="flex flex-wrap items-center gap-2">
@@ -61,7 +61,7 @@ function CoachPage({
               href={`/presentation-page/coach/${userId}/${queryPage.data.id}`}
               target="_blank"
               referrerPolicy="no-referrer"
-              className="btn btn-primary flex gap-2"
+              className="btn-primary btn flex gap-2"
             >
               {t("page-preview")}
               <i className="bx bx-link-external bx-xs" />

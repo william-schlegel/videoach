@@ -85,10 +85,12 @@
     "delete-image": "Supprimer l'image"
   },
   "coach": {
+    "manage-page": "Gérer ma page",
     "name": "Nom",
     "email": "eMail",
     "phone": "Téléphone",
     "info": "Information",
+    "description": "Description",
     "coach-certifications": "Mes certifications",
     "coach-activities": "Mes spécialités",
     "coach-offers": "Mes offres de coaching",

@@ -6,9 +6,8 @@ import EmailProvider from "next-auth/providers/email";
 
 // Prisma adapter for NextAuth, optional and can be removed
 import { PrismaAdapter } from "@next-auth/prisma-adapter";
-
-import { env } from "../../../env/server.mjs";
-import { prisma } from "../../../server/db/client";
+import { env } from "@root/src/env/server.mjs";
+import { prisma } from "@root/src/server/db/client";
 
 export const authOptions: NextAuthOptions = {
   // Include user.id on session
@@ -42,18 +41,20 @@ export const authOptions: NextAuthOptions = {
     EmailProvider({
       server: {
         host: process.env.EMAIL_SERVER_HOST,
-        port: process.env.EMAIL_SERVER_PORT,
+        port: Number(process.env.EMAIL_SERVER_PORT),
         auth: {
           user: process.env.EMAIL_SERVER_USER,
           pass: process.env.EMAIL_SERVER_PASSWORD,
         },
       },
       from: process.env.EMAIL_FROM,
+      // process.env.EMAIL_SERVER,
     }),
   ],
   pages: {
     signIn: "/user/signin",
   },
+  debug: true,
 };
 
 export default NextAuth(authOptions);

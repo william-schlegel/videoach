@@ -13,6 +13,7 @@ import nextI18nConfig from "@root/next-i18next.config.mjs";
 import Layout from "@root/src/components/layout";
 import { trpc } from "@trpcclient/trpc";
 import Spinner from "@ui/spinner";
+import { startOfToday } from "date-fns";
 import {
   type GetServerSidePropsContext,
   type InferGetServerSidePropsType,
@@ -142,7 +143,15 @@ const ManagerClubs = ({
       </section>
       <section className="grid auto-rows-auto gap-2 lg:grid-cols-2">
         <article className="rounded-md border border-primary p-2">
-          <h2>{t("planning")}</h2>
+          <div className="flex items-center justify-between gap-4">
+            <h2>{t("planning")}</h2>
+            <span className="rounded-full bg-primary px-8 text-primary-content">
+              {formatDateLocalized(startOfToday(), {
+                dateFormat: "long",
+                withDay: "long",
+              })}
+            </span>
+          </div>
           <div className="flex flex-col gap-2">
             {managerQuery.data?.map((club) => (
               <DailyPlanning key={club.id} clubId={club.id} />

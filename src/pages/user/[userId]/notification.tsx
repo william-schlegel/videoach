@@ -1,5 +1,5 @@
 /* eslint-disable @next/next/no-img-element */
-import { useState } from "react";
+import { Fragment, useState } from "react";
 import { trpc } from "@trpcclient/trpc";
 import Spinner from "@ui/spinner";
 import {
@@ -18,20 +18,29 @@ import { isCUID } from "@lib/checkValidity";
 import createLink from "@lib/createLink";
 import { formatDateLocalized } from "@lib/formatDate";
 import Pagination from "@ui/pagination";
-import { NotificationType, type UserNotification } from "@prisma/client";
+import { NotificationType } from "@prisma/client";
 import { isDate } from "date-fns";
 import { toast } from "react-toastify";
+import { type GetNotificationByIdReturn } from "@trpcserver/router/notification";
 
 const PER_PAGE = 20;
+
+type FromTo = "from" | "to";
 
 const ManageNotifications = ({
   userId,
 }: InferGetServerSidePropsType<typeof getServerSideProps>) => {
   const router = useRouter();
   const [page, setPage] = useState(0);
+  const fromTo = (router.query.fromTo ?? "to") as FromTo;
   const notificationId = router.query.notificationId as string;
   const notificationQuery = trpc.notifications.getNotificationToUser.useQuery(
-    { userToId: userId, skip: page * PER_PAGE, take: PER_PAGE },
+    {
+      userToId: fromTo === "to" ? userId : undefined,
+      userFromId: fromTo === "from" ? userId : undefined,
+      skip: page * PER_PAGE,
+      take: PER_PAGE,
+    },
     {
       onSuccess(data) {
         if (!notificationId)
@@ -64,23 +73,71 @@ const ManageNotifications = ({
         {notificationQuery.isLoading ? (
           <Spinner />
         ) : (
-          <>
-            <ul className="menu w-1/4 overflow-hidden rounded bg-base-100">
+          <div className="w-1/4 space-y-2">
+            <div className="grid grid-cols-2 gap-2">
+              <Link
+                className={`btn-primary btn ${
+                  fromTo === "to" ? "" : "btn-outline"
+                }`}
+                href={createLink({
+                  notificationId: "",
+                  page: "0",
+                  fromTo: "to",
+                })}
+              >
+                {t("notification.to")}
+              </Link>
+              <Link
+                className={`btn-primary btn ${
+                  fromTo === "from" ? "" : "btn-outline"
+                }`}
+                href={createLink({
+                  notificationId: "",
+                  page: "0",
+                  fromTo: "from",
+                })}
+              >
+                {t("notification.from")}
+              </Link>
+            </div>
+            <ul className="menu w-full overflow-hidden rounded bg-base-100">
               {notificationQuery.data?.notifications.map((notification) => (
                 <li key={notification.id}>
                   <Link
                     href={createLink({
                       notificationId: notification.id,
                       page: page.toString(),
+                      fromTo,
                     })}
-                    className={`w-full text-center ${
+                    className={`flex items-center justify-between ${
                       notificationId === notification.id ? "active" : ""
+                    } ${
+                      notification.viewDate ? "" : "font-bold text-secondary"
                     }`}
                   >
-                    {formatDateLocalized(notification.date, {
-                      dateFormat: "short",
-                      withTime: true,
-                    })}
+                    <div>
+                      {formatDateLocalized(notification.date, {
+                        dateFormat: "short",
+                        withTime: true,
+                      })}
+                    </div>
+                    <div className="space-x-2">
+                      {notification.type === "COACH_ACCEPT" ||
+                      notification.type === "CLUB_ACCEPT" ? (
+                        <i className="bx bx-happy-heart-eyes bx-xs rounded-full bg-success p-2 text-success-content" />
+                      ) : null}
+                      {notification.type === "COACH_REFUSE" ||
+                      notification.type === "CLUB_REFUSE" ? (
+                        <i className="bx bx-x bx-xs rounded-full bg-error p-2 text-error-content" />
+                      ) : null}
+                      {notification.type === "SEARCH_COACH" ||
+                      notification.type === "SEARCH_CLUB" ? (
+                        <i className="bx bx-question-mark bx-xs rounded-full bg-secondary p-2 text-secondary-content" />
+                      ) : null}
+                      {notification.answered ? (
+                        <i className="bx bx-check bx-xs rounded-full bg-success p-2 text-success-content" />
+                      ) : null}
+                    </div>
                   </Link>
                 </li>
               ))}
@@ -91,10 +148,13 @@ const ManageNotifications = ({
               onPageClick={(page) => setPage(page)}
               perPage={PER_PAGE}
             />
-          </>
+          </div>
         )}
         {notificationId === "" ? null : (
-          <NotificationContent notificationId={notificationId} />
+          <NotificationContent
+            notificationId={notificationId}
+            fromTo={fromTo}
+          />
         )}
       </div>
     </Layout>
@@ -105,32 +165,50 @@ export default ManageNotifications;
 
 type NotificationContentProps = {
   notificationId: string;
+  fromTo: FromTo;
 };
 
 export function NotificationContent({
   notificationId,
+  fromTo,
 }: NotificationContentProps) {
   const notification = trpc.notifications.getNotificationById.useQuery(
-    { notificationId },
+    { notificationId, updateViewDate: true },
     { enabled: isCUID(notificationId) }
   );
   const { t } = useTranslation("auth");
-  const { getName } = useNotificationType();
 
   return (
     <div className="space-y-4">
       <div className="flex items-center gap-4">
+        <span>
+          {fromTo === "from"
+            ? t("notification.from-user")
+            : t("notification.to-user")}
+        </span>
         <div className="avatar">
           <div className="w-16 rounded">
             <img
-              src={notification.data?.userFrom.image ?? "/images/dummy.jpg"}
-              alt={notification.data?.userFrom.name ?? ""}
+              src={
+                (fromTo === "to"
+                  ? notification.data?.userFrom.imageUrl
+                  : notification.data?.userTo.imageUrl) ?? "/images/dummy.jpg"
+              }
+              alt={
+                (fromTo === "to"
+                  ? notification.data?.userFrom.name
+                  : notification.data?.userTo.name) ?? ""
+              }
             />
           </div>
         </div>
         <span className="text-lg font-bold text-secondary">
-          {notification.data?.userFrom.name ?? ""}
+          {(fromTo === "to"
+            ? notification.data?.userFrom.name
+            : notification.data?.userTo.name) ?? ""}
         </span>
+      </div>
+      <div className="flex items-center gap-4">
         <h2>
           {formatDateLocalized(notification.data?.date, {
             dateFormat: "long",
@@ -150,33 +228,29 @@ export function NotificationContent({
         ) : null}
       </div>
       <div className="space-y-4 rounded border border-primary p-4">
-        <div className="badge-info badge">
-          {t("notification.notification-type", {
-            type: getName(notification.data?.type),
-          })}
-        </div>
-        <p>{notification.data?.message}</p>
         {notification.data ? (
-          <NotificationInteraction notification={notification.data} />
+          <NotificationMessage
+            notification={notification.data}
+            fromTo={fromTo}
+          />
         ) : null}
       </div>
     </div>
   );
 }
-type NotificationInteractionProps = {
-  notification: UserNotification & {
-    userFrom: {
-      name: string | null;
-      image: string | null;
-    };
-  };
+type NotificationMessageProps = {
+  fromTo: FromTo;
+  notification: GetNotificationByIdReturn;
 };
 
-function NotificationInteraction({
+function NotificationMessage({
   notification,
-}: NotificationInteractionProps) {
+  fromTo,
+}: NotificationMessageProps) {
   const utils = trpc.useContext();
   const { t } = useTranslation("auth");
+  const { getName } = useNotificationType();
+  if (!notification) return null;
 
   async function handleClick(link: string | null, id: string) {
     if (!link) return;
@@ -191,14 +265,23 @@ function NotificationInteraction({
       toast.error(t(json.error));
     } else if (json.success) {
       toast.success(t(json.success));
-      utils.notifications.getNotificationById.invalidate({
-        notificationId: notification.id,
-      });
+      if (notification)
+        utils.notifications.getNotificationById.invalidate({
+          notificationId: notification.id,
+        });
     }
   }
-
+  const Elem: JSX.Element[] = [];
+  Elem.push(
+    <div className="badge badge-info">
+      {t("notification.notification-type", {
+        type: getName(notification.type),
+      })}
+    </div>
+  );
+  Elem.push(<p>{notification.message}</p>);
   if (isDate(notification.answered))
-    return (
+    Elem.push(
       <div className="flex items-center gap-2">
         <span>
           {t("notification.answered", {
@@ -208,13 +291,17 @@ function NotificationInteraction({
             }),
           })}
         </span>
-        <span className="badge-primary badge">
+        <span className="badge badge-primary">
           {t(notification.answer ?? "")}
         </span>
       </div>
     );
-  if (notification.type === "SEARCH_COACH") {
-    return (
+  if (
+    fromTo === "to" &&
+    !notification.answered &&
+    notification.type === "SEARCH_COACH"
+  ) {
+    Elem.push(
       <div className="flex items-center gap-2">
         <button
           className="btn-success btn"
@@ -237,7 +324,13 @@ function NotificationInteraction({
       </div>
     );
   }
-  return null;
+  return (
+    <>
+      {Elem.map((e, idx) => (
+        <Fragment key={idx}>{e}</Fragment>
+      ))}
+    </>
+  );
 }
 
 const NOTIFICATION_TYPES: readonly {

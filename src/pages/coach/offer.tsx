@@ -22,7 +22,7 @@ import {
   useCoachingTarget,
 } from "@modals/manageCoach";
 import { Role } from "@prisma/client";
-import { CoachOfferDisplay, CoachOfferPage } from "@sections/coachOffer";
+import { CoachOfferPage } from "@sections/coachOffer";
 
 function CoachOffer({
   userId,
@@ -69,7 +69,7 @@ function CoachOffer({
                   }`}
                 >
                   <span>{offer.name}</span>
-                  <span className="badge-secondary badge">
+                  <span className="badge badge-secondary">
                     {getName(offer.target)}
                   </span>
                 </Link>
@@ -117,7 +117,7 @@ function OfferContent({ userId, offerId }: OfferContentProps) {
           <DeleteOffer userId={userId} offerId={offerId} />
         </div>
       </div>
-      <CoachOfferDisplay offerId={offerId} />
+      {/* <CoachOfferDisplay offerId={offerId} /> */}
       <CoachOfferPage offerId={offerId} condensed />
     </div>
   );

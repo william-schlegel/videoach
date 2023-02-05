@@ -9,6 +9,7 @@ import { isCUID } from "@lib/checkValidity";
 type ResponseData = {
   success?: string;
   error?: string;
+  step?: string;
   trpcerror?: string;
 };
 
@@ -24,26 +25,28 @@ const refuseSearchCoach = async (
   const notificationId = req.query.notificationId as string;
 
   if (!notificationId || !isCUID(notificationId))
-    return res
-      .status(500)
-      .json({ error: "common:api.error-accept-search-coach" });
+    return res.status(500).json({
+      error: "common:api.error-refuse-search-coach",
+      step: "notificationId",
+    });
 
   if (session) {
     try {
       const notification = await caller.notifications.getNotificationById({
         notificationId: notificationId,
-        noUpdate: true,
+        updateViewDate: false,
       });
       if (!notification)
-        return res
-          .status(500)
-          .json({ error: "common:api.error-refuse-search-coach" });
+        return res.status(500).json({
+          error: "common:api.error-refuse-search-coach",
+          step: "notification",
+        });
       // create aswer notification
       const answer = await caller.notifications.createNotificationToUser({
         from: notification.userToId,
         to: notification.userFromId,
         type: "COACH_REFUSE",
-        message: "",
+        message: ">".concat(notification.message.slice(0, 15), "..."),
         linkedNotification: notification.id,
       });
       // update notification answered

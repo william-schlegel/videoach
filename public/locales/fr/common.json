@@ -35,7 +35,8 @@
     "coaching-offer": "Offres de coaching",
     "company-offer": "Offres pour les entreprises",
     "insufficient-plan": "Votre abonnement ne vous donne pas accès à cette fonctionnalité",
-    "limited-plan": "Votre abonnement ne vous donne qu'un accès limité à cette fonctionnalité"
+    "limited-plan": "Votre abonnement ne vous donne qu'un accès limité à cette fonctionnalité",
+    "my-notifications": "Mes notifications"
   },
   "api": {
     "error-accept-search-coach": "Erreur lors de l'acceptatio de cette requète",

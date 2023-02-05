@@ -1,11 +1,13 @@
+/* eslint-disable @next/next/no-img-element */
 import type { Feature, Role } from "@prisma/client";
 import { signIn, signOut, useSession } from "next-auth/react";
-import Image from "next/image";
 import Link from "next/link";
 import { useTranslation } from "next-i18next";
 import { type TThemes } from "./themeSelector";
 import useUserInfo from "@lib/useUserInfo";
 import useNotifications from "@lib/useNotifications";
+import { trpc } from "@trpcclient/trpc";
+import { isCUID } from "@lib/checkValidity";
 
 type MenuDefinitionType = {
   label: string;
@@ -92,14 +94,18 @@ type NavbarProps = {
 
 export default function Navbar({ theme, onChangeTheme }: NavbarProps) {
   const { data: sessionData } = useSession();
+  const userId = sessionData?.user?.id;
   const { t } = useTranslation("common");
-  const { notifications, unread } = useNotifications(sessionData?.user?.id);
+  const { notifications, unread } = useNotifications(userId);
+  const user = trpc.users.getUserById.useQuery(userId ?? "", {
+    enabled: isCUID(userId),
+  });
 
   return (
     <div className="navbar bg-base-100">
       <div className="navbar-start">
         <div className="dropdown">
-          <label tabIndex={0} className="btn btn-ghost lg:hidden">
+          <label tabIndex={0} className="btn-ghost btn lg:hidden">
             <svg
               xmlns="http://www.w3.org/2000/svg"
               className="h-5 w-5"
@@ -131,7 +137,7 @@ export default function Navbar({ theme, onChangeTheme }: NavbarProps) {
       </div>
 
       <div className="navbar-end space-x-2">
-        <label className="swap swap-rotate">
+        <label className="swap-rotate swap">
           <input
             type="checkbox"
             onChange={(e) =>
@@ -160,7 +166,7 @@ export default function Navbar({ theme, onChangeTheme }: NavbarProps) {
           <>
             {notifications.length ? (
               <div className="dropdown dropdown-end">
-                <label tabIndex={0} className="btn btn-ghost btn-circle">
+                <label tabIndex={0} className="btn-ghost btn-circle btn">
                   <div className="w-10 rounded-full">
                     {unread ? (
                       <div className="indicator ">
@@ -179,25 +185,36 @@ export default function Navbar({ theme, onChangeTheme }: NavbarProps) {
                   className="dropdown-content menu rounded-box menu-compact mt-3 w-52 bg-base-100 p-2 shadow"
                 >
                   {notifications.map((notification) => (
-                    <li key={notification.id}>
+                    <li
+                      key={notification.id}
+                      className={`max-w-full overflow-hidden truncate text-ellipsis ${
+                        notification.viewDate ? "" : "font-bold text-secondary"
+                      }`}
+                    >
                       <Link
                         href={`/user/${notification.userToId}/notification?notificationId=${notification.id}`}
                       >
-                        {notification.message}
+                        <span>{notification.message}</span>
                       </Link>
                     </li>
                   ))}
+                  <div className="divider my-1"></div>
+                  <li>
+                    <Link href={`/user/${sessionData.user.id}/notification`}>
+                      <span>{t("navigation.my-notifications")}</span>
+                    </Link>
+                  </li>
                 </ul>
               </div>
             ) : (
               <i className="bx bx-bell bx-md text-base-300" />
             )}{" "}
             <div className="dropdown dropdown-end">
-              <label tabIndex={0} className="btn btn-ghost btn-circle avatar">
+              <label tabIndex={0} className="btn-ghost btn-circle avatar btn">
                 <div className="w-10 rounded-full">
-                  <Image
-                    src={sessionData.user?.image || "/images/dummy.jpg"}
-                    alt=""
+                  <img
+                    src={user.data?.profileImageUrl ?? "/images/dummy.jpg"}
+                    alt={user.data?.name ?? ""}
                     width={80}
                     height={80}
                   />
@@ -278,7 +295,7 @@ const Menu = () => {
 const Logo = () => {
   return (
     <div className="flex-1">
-      <Link href={"/videoach"} className="btn btn-ghost text-2xl capitalize">
+      <Link href={"/videoach"} className="btn-ghost btn text-2xl capitalize">
         Videoach
       </Link>
     </div>

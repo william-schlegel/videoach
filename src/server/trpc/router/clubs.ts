@@ -279,17 +279,17 @@ export const clubRouter = router({
       })
     )
     .mutation(async ({ ctx, input }) => {
-      const club = await ctx.prisma.club.findFirst({
-        where: { id: input.clubId },
-      });
-      if (
-        ctx.session.user.role !== Role.ADMIN &&
-        ctx.session.user.id !== club?.managerId
-      )
-        throw new TRPCError({
-          code: "UNAUTHORIZED",
-          message: "You are not authorized to modify this club",
-        });
+      // const club = await ctx.prisma.club.findFirst({
+      //   where: { id: input.clubId },
+      // });
+      // if (
+      //   ctx.session.user.role !== Role.ADMIN &&
+      //   ctx.session.user.id !== club?.managerId
+      // )
+      //   throw new TRPCError({
+      //     code: "UNAUTHORIZED",
+      //     message: "You are not authorized to modify this club",
+      //   });
 
       return ctx.prisma.userCoach.update({
         where: { userId: input.coachUserId },

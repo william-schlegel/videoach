@@ -205,6 +205,11 @@ export const planningRouter = router({
           startDate: {
             lte: new Date(Date.now()),
           },
+          planningActivities: {
+            some: {
+              coachId: input.coachId,
+            },
+          },
         },
         include: {
           club: true,

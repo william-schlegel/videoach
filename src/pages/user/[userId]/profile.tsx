@@ -1,5 +1,6 @@
+/* eslint-disable @next/next/no-img-element */
 import { useRouter } from "next/router";
-import { useForm, type SubmitHandler } from "react-hook-form";
+import { useForm, useWatch, type SubmitHandler } from "react-hook-form";
 import type { GetServerSidePropsContext } from "next";
 import { useTranslation } from "next-i18next";
 import { serverSideTranslations } from "next-i18next/serverSideTranslations";
@@ -8,21 +9,32 @@ import { toast } from "react-toastify";
 import Layout from "@root/src/components/layout";
 import { isCUID } from "@lib/checkValidity";
 import { trpc } from "@trpcclient/trpc";
+import { useEffect, useState } from "react";
+import { formatSize } from "@lib/formatNumber";
+import ButtonIcon from "@ui/buttonIcon";
+import { useWriteFileDirect } from "@lib/useManageFile";
 
 type FormValues = {
   name: string;
   email: string;
   phone: string;
   address: string;
+  image?: FileList;
+  imageUrl?: string;
+  deleteImage: boolean;
 };
+
+const MAX_SIZE_IMAGE = 512 * 1024;
 
 export default function Profile() {
   const router = useRouter();
   const { userId } = router.query;
   const myUserId = (Array.isArray(userId) ? userId[0] : userId) || "";
+  const [imagePreview, setImagePreview] = useState("");
 
   const userQuery = trpc.users.getUserById.useQuery(myUserId, {
     enabled: isCUID(myUserId),
+    refetchOnWindowFocus: false,
     onSuccess: (data) => {
       reset({
         name: data?.name ?? "",
@@ -30,6 +42,7 @@ export default function Profile() {
         phone: data?.phone ?? "",
         address: data?.address ?? "",
       });
+      if (data.profileImageUrl) setImagePreview(data.profileImageUrl);
     },
   });
 
@@ -38,7 +51,10 @@ export default function Profile() {
     handleSubmit,
     formState: { errors },
     reset,
+    control,
+    setValue,
   } = useForm<FormValues>();
+  const fields = useWatch({ control });
 
   const utils = trpc.useContext();
   const updateUser = trpc.users.updateUser.useMutation({
@@ -51,14 +67,43 @@ export default function Profile() {
     },
   });
   const { t } = useTranslation("auth");
-  const onSubmit: SubmitHandler<FormValues> = (data) => {
+  const saveImage = useWriteFileDirect(myUserId, MAX_SIZE_IMAGE);
+
+  useEffect(() => {
+    if (fields.image?.[0]) {
+      if (fields.image[0].size > MAX_SIZE_IMAGE) {
+        toast.error(
+          t("image-size-error", { size: formatSize(MAX_SIZE_IMAGE) })
+        );
+        setValue("image", undefined);
+        return;
+      }
+
+      const src = URL.createObjectURL(fields.image[0]);
+      setImagePreview(src);
+    }
+  }, [fields.image, t, setValue]);
+
+  const handleDeleteImage = () => {
+    setImagePreview("");
+    setValue("deleteImage", true);
+    setValue("image", undefined);
+  };
+
+  const onSubmit: SubmitHandler<FormValues> = async (data) => {
+    let imageId: string | undefined = undefined;
+    if (data.image?.[0])
+      imageId = (await saveImage(data.image[0])) ?? undefined;
     updateUser.mutate({
       id: myUserId,
       name: data.name,
       email: data.email,
       phone: data.phone,
       address: data.address,
+      profileImageId: imageId,
     });
+    reset();
+    setImagePreview("");
   };
 
   return (
@@ -101,7 +146,7 @@ export default function Profile() {
           <textarea {...register("address")} rows={2} />
           <label>{t("account-provider")}</label>
           <div className="flex gap-2">
-            {userQuery.data?.accounts.map((account) => (
+            {userQuery.data?.accounts?.map((account) => (
               <span
                 key={account.id}
                 className="rounded border border-primary px-4 py-2"
@@ -111,8 +156,44 @@ export default function Profile() {
             ))}
           </div>
         </section>
+        <section>
+          <div className="col-span-2 flex flex-col items-center justify-start gap-4">
+            <div className="w-full ">
+              <label>{t("profile-image")}</label>
+              <input
+                type="file"
+                className="file-input-bordered file-input-primary file-input w-full"
+                {...register("image")}
+                accept="image/*"
+              />
+              <p className="col-span-2 text-sm text-gray-500">
+                {t("image-size", { size: formatSize(MAX_SIZE_IMAGE) })}
+              </p>
+            </div>
+            {imagePreview ? (
+              <div className="relative w-60 max-w-full">
+                <img
+                  src={imagePreview}
+                  alt=""
+                  className="aspect-square rounded-full object-cover"
+                />
+                <button
+                  onClick={handleDeleteImage}
+                  className="absolute right-2 bottom-2 z-10"
+                >
+                  <ButtonIcon
+                    iconComponent={<i className="bx bx-trash" />}
+                    title={t("delete-image")}
+                    buttonVariant="Icon-Secondary"
+                    buttonSize="sm"
+                  />
+                </button>
+              </div>
+            ) : null}
+          </div>
+        </section>
         <button
-          className="btn btn-primary col-span-2 w-fit"
+          className="btn-primary btn col-span-2 w-fit"
           disabled={updateUser.isLoading}
         >
           {t("save-profile")}

@@ -70,6 +70,7 @@ model User {
   email             String?            @unique
   emailVerified     DateTime?
   image             String?
+  profileImageId    String?
   accounts          Account[]
   sessions          Session[]
   role              Role               @default(MEMBER)
@@ -80,7 +81,7 @@ model User {
   paiements         Paiement[]
   dueDate           DateTime?
   cancelationDate   DateTime?
-  documents         UserDocument[]
+  documents         UserDocument[]     @relation("documents")
   phone             String?
   address           String?            @db.Text
   memberData        UserMember?        @relation("member-user")
@@ -174,7 +175,7 @@ enum UserDocumentType {
 
 model UserDocument {
   id                 String               @id @default(cuid())
-  user               User                 @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user               User                 @relation(fields: [userId], references: [id], onDelete: Cascade, name: "documents")
   userId             String
   documentType       UserDocumentType     @default(DOCUMENT)
   fileType           String
