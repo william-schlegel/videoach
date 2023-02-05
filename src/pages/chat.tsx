@@ -17,7 +17,7 @@ const Chat = () => {
   const user = trpc.users.getUserById.useQuery(sessionData?.user?.id ?? "", {
     enabled: isCUID(sessionData?.user?.id),
     async onSuccess(data) {
-      if (data && data.chatToken) {
+      if (data && data.id && data.chatToken) {
         const token = data.chatToken;
         await client.connectUser(
           {

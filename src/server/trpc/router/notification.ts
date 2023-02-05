@@ -4,10 +4,7 @@ import { router, protectedProcedure } from "../trpc";
 import { getDocUrl } from "./files";
 
 export type GetNotificationByIdReturn =
-  | (Omit<
-      UserNotification,
-      "userToId" | "userTo" | "userFromId" | "userFrom"
-    > & {
+  | (Omit<UserNotification, "userTo" | "userFrom"> & {
       userFrom: {
         name: string;
         imageUrl: string;
@@ -82,6 +79,8 @@ export const notificationRouter = router({
         answered: notification.answered,
         answer: notification.answer,
         linkedNotification: notification.linkedNotification,
+        userFromId: notification.userFromId,
+        userToId: notification.userToId,
         userFrom: {
           name: notification.userFrom.name ?? "",
           imageUrl: urlFrom ?? "/images/dummy?jpg",
