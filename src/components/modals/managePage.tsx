@@ -19,35 +19,79 @@ type CreatePageProps = {
   variant?: TModalVariant;
 };
 
-export const PAGE_TARGET_LIST: readonly {
+const PAGE_TARGET_LIST: readonly {
   readonly value: PageTarget;
   readonly label: string;
 }[] = [
   { value: "HOME", label: "target.home" },
-  { value: "OFFERS", label: "target.offers" },
   { value: "ACTIVITIES", label: "target.activities" },
-  { value: "ACTIVITY", label: "target.activity" },
-  { value: "CONTACT", label: "target.contact" },
-  { value: "PLANS", label: "target.plans" },
-  { value: "PRESENTATION", label: "target.presentation" },
+  { value: "OFFERS", label: "target.offers" },
   { value: "TEAM", label: "target.team" },
   { value: "PLANNING", label: "target.planning" },
   { value: "VIDEOS", label: "target.videos" },
+  { value: "EVENTS", label: "target.events" },
 ] as const;
 
-export const PAGE_SECTION_LIST: readonly {
+const PAGE_SECTION_LIST: readonly {
   readonly value: PageSectionModel;
   readonly label: string;
 }[] = [
   { value: "HERO", label: "section.hero" },
+  { value: "TITLE", label: "section.title" },
+  { value: "PLANNINGS", label: "section.plannings" },
   { value: "ACTIVITY_GROUPS", label: "section.activity-groups" },
   { value: "ACTIVITIES", label: "section.activity-details" },
   { value: "LOCATION", label: "section.location" },
   { value: "CONTACT", label: "section.contact" },
   { value: "SOCIAL", label: "section.social" },
-  { value: "FEATURES", label: "section.features" },
+  { value: "TEAMMATES", label: "section.teammates" },
   { value: "FOOTER", label: "section.footer" },
 ] as const;
+
+const TARGET_SECTIONS: {
+  target: PageTarget;
+  sections: PageSectionModel[];
+}[] = [
+  {
+    target: "HOME",
+    sections: ["HERO", "ACTIVITY_GROUPS", "ACTIVITIES", "CONTACT", "LOCATION"],
+  },
+  {
+    target: "ACTIVITIES",
+    sections: ["TITLE", "ACTIVITY_GROUPS", "ACTIVITIES"],
+  },
+  { target: "PLANNING", sections: ["TITLE", "PLANNINGS"] },
+  { target: "TEAM", sections: ["TITLE", "TEAMMATES"] },
+];
+
+export function usePageSection() {
+  const { t } = useTranslation("pages");
+  function getTargetName(target: PageTarget | undefined) {
+    if (!target) return "?";
+    const tg = PAGE_TARGET_LIST.find((t) => t.value === target);
+    if (tg) return t(tg.label);
+    return "?";
+  }
+  function getSectionName(section: PageSectionModel | undefined) {
+    if (!section) return "?";
+    const sc = PAGE_SECTION_LIST.find((s) => s.value === section);
+    if (sc) return t(sc.label);
+    return "?";
+  }
+
+  function defaultSection(target: PageTarget | undefined): PageSectionModel {
+    if (!target) return "HERO";
+    const ts = TARGET_SECTIONS.find((ts) => ts.target === target);
+    return ts?.sections?.[0] ?? "HERO";
+  }
+
+  function getSections(target: PageTarget): PageSectionModel[] {
+    const ts = TARGET_SECTIONS.find((ts) => ts.target === target);
+    return ts?.sections ?? [];
+  }
+
+  return { getTargetName, getSectionName, defaultSection, getSections };
+}
 
 type CreatePageFormValues = {
   name: string;
@@ -76,6 +120,7 @@ export const CreatePage = ({
   } = useForm<CreatePageFormValues>();
 
   const { t } = useTranslation("pages");
+  const { getTargetName } = usePageSection();
 
   const onSubmit: SubmitHandler<CreatePageFormValues> = (data) => {
     createPage.mutate({
@@ -112,9 +157,9 @@ export const CreatePage = ({
                 defaultValue={getValues("target" as Path<CreatePageFormValues>)}
                 {...register("target" as Path<CreatePageFormValues>)}
               >
-                {PAGE_TARGET_LIST.map((target) => (
-                  <option key={target.value} value={target.value}>
-                    {t(target.label)}
+                {TARGET_SECTIONS.map((ts) => (
+                  <option key={ts.target} value={ts.target}>
+                    {getTargetName(ts.target)}
                   </option>
                 ))}
               </select>
@@ -147,6 +192,7 @@ export function UpdatePage({
         target: data?.target,
       });
     },
+    refetchOnWindowFocus: false,
   });
   const updatePage = trpc.pages.updatePage.useMutation({
     onSuccess: () => {

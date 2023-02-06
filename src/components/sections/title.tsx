@@ -2,56 +2,48 @@
 import { isCUID } from "@lib/checkValidity";
 import { formatSize } from "@lib/formatNumber";
 import { useWriteFile } from "@lib/useManageFile";
-import { usePageSection } from "@modals/managePage";
-import type { PageSectionModel } from "@prisma/client";
 import { trpc } from "@trpcclient/trpc";
 import ButtonIcon from "@ui/buttonIcon";
 import Confirmation from "@ui/confirmation";
 import { getButtonSize } from "@ui/modal";
 import Spinner from "@ui/spinner";
 import { useTranslation } from "next-i18next";
-import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
 import type { SubmitHandler } from "react-hook-form";
 import { useForm, useWatch } from "react-hook-form";
 import { toast } from "react-toastify";
 import ThemeSelector, { type TThemes } from "../themeSelector";
 
-type HeroCreationProps = {
+type TitleCreationProps = {
   clubId: string;
   pageId: string;
 };
 
-type HeroCreationForm = {
+type TitleCreationForm = {
   images?: FileList;
   title: string;
   subtitle: string;
   description: string;
-  cta: string;
-  linkedPage: string;
-  pageSection: PageSectionModel;
-  protocol: string;
-  url: string;
 };
 
 const MAX_SIZE = 1024 * 1024;
 
-export const HeroCreation = ({ clubId, pageId }: HeroCreationProps) => {
+export const TitleCreation = ({ clubId, pageId }: TitleCreationProps) => {
   const { t } = useTranslation("pages");
-  const { register, handleSubmit, getValues, control, setValue, reset } =
-    useForm<HeroCreationForm>();
+  const { register, handleSubmit, control, setValue, reset } =
+    useForm<TitleCreationForm>();
   const [imagePreview, setImagePreview] = useState("");
   const clubQuery = trpc.clubs.getClubById.useQuery(clubId, {
     enabled: isCUID(clubId),
+    refetchOnWindowFocus: false,
   });
   const fields = useWatch({ control });
   const utils = trpc.useContext();
   const [updating, setUpdating] = useState(false);
   const [previewTheme, setPreviewTheme] = useState<TThemes>("cupcake");
-  const { getSectionName, getSections } = usePageSection();
 
   const querySection = trpc.pages.getPageSection.useQuery(
-    { pageId, section: "HERO" },
+    { pageId, section: "TITLE" },
     {
       onSuccess: async (data) => {
         if (!data) {
@@ -59,19 +51,10 @@ export const HeroCreation = ({ clubId, pageId }: HeroCreationProps) => {
           return;
         }
         const hc = data?.elements.find((e) => e.elementType === "HERO_CONTENT");
-        const cta = data?.elements.find((e) => e.elementType === "CTA");
         setImagePreview(hc?.images?.[0]?.url ?? "");
 
-        const linkUrl = cta?.link
-          ? new URL(cta.link)
-          : { protocol: "https:", host: "", pathname: "" };
-        const resetData: HeroCreationForm = {
-          cta: cta?.title ?? "",
+        const resetData: TitleCreationForm = {
           description: hc?.content ?? "",
-          linkedPage: cta?.pageId ?? "url",
-          pageSection: cta?.pageSection ?? "HERO",
-          url: `${linkUrl.host}${linkUrl.pathname}` ?? "",
-          protocol: linkUrl.protocol,
           title: hc?.title ?? "",
           subtitle: hc?.subTitle ?? "",
         };
@@ -81,10 +64,6 @@ export const HeroCreation = ({ clubId, pageId }: HeroCreationProps) => {
       refetchOnWindowFocus: false,
     }
   );
-  const [sections, setSections] = useState<PageSectionModel[]>([]);
-  const queryPages = trpc.pages.getPagesForClub.useQuery(clubId, {
-    enabled: isCUID(clubId),
-  });
   const writeFile = useWriteFile(
     clubQuery.data?.managerId ?? "",
     "PAGE_IMAGE",
@@ -93,7 +72,7 @@ export const HeroCreation = ({ clubId, pageId }: HeroCreationProps) => {
   const createSection = trpc.pages.createPageSection.useMutation({
     onSuccess() {
       toast.success(t("section-created"));
-      utils.pages.getPageSection.invalidate({ pageId, section: "HERO" });
+      utils.pages.getPageSection.invalidate({ pageId, section: "TITLE" });
       reset();
       setImagePreview("");
     },
@@ -116,7 +95,7 @@ export const HeroCreation = ({ clubId, pageId }: HeroCreationProps) => {
         data.elements.map((elem) => deleteSectionElement.mutateAsync(elem.id))
       );
       toast.success(t("section-deleted"));
-      utils.pages.getPageSection.invalidate({ pageId, section: "HERO" });
+      utils.pages.getPageSection.invalidate({ pageId, section: "TITLE" });
       reset();
       setImagePreview("");
     },
@@ -130,7 +109,7 @@ export const HeroCreation = ({ clubId, pageId }: HeroCreationProps) => {
   const updateSectionElement = trpc.pages.updatePageSectionElement.useMutation({
     onSuccess() {
       toast.success(t("section-updated"));
-      utils.pages.getPageSection.invalidate({ pageId, section: "HERO" });
+      utils.pages.getPageSection.invalidate({ pageId, section: "TITLE" });
     },
     onError(error) {
       toast.error(error.message);
@@ -146,13 +125,10 @@ export const HeroCreation = ({ clubId, pageId }: HeroCreationProps) => {
     },
   });
 
-  const onSubmit: SubmitHandler<HeroCreationForm> = async (data) => {
+  const onSubmit: SubmitHandler<TitleCreationForm> = async (data) => {
     if (updating) {
       const hc = querySection?.data?.elements.find(
         (e) => e.elementType === "HERO_CONTENT"
-      );
-      const cta = querySection?.data?.elements.find(
-        (e) => e.elementType === "CTA"
       );
       let docId: string | undefined;
       if (data.images?.[0]) {
@@ -172,38 +148,10 @@ export const HeroCreation = ({ clubId, pageId }: HeroCreationProps) => {
           images: docId ? [docId] : undefined,
         });
       }
-      if (data.cta) {
-        if (cta) {
-          await updateSectionElement.mutateAsync({
-            id: cta.id,
-            title: data.cta,
-            link:
-              data.linkedPage === "url"
-                ? `${data.protocol}//${data.url}`
-                : undefined,
-            pageId: data.linkedPage === "url" ? undefined : data.linkedPage,
-            pageSection:
-              data.linkedPage === "url" ? undefined : data.pageSection,
-          });
-        } else {
-          if (querySection.data?.id)
-            await createSectionElement.mutateAsync({
-              elementType: "CTA",
-              sectionId: querySection.data.id,
-              title: data.cta,
-              link: data.url ? `${data.protocol}//${data.url}` : undefined,
-              pageId: data.linkedPage === "url" ? undefined : data.linkedPage,
-              pageSection:
-                data.linkedPage === "url" ? undefined : data.pageSection,
-            });
-        }
-      } else if (cta) {
-        await deleteSectionElement.mutateAsync(cta.id);
-      }
     } else {
       const docId = await writeFile(data.images?.[0]);
       const section = await createSection.mutateAsync({
-        model: "HERO",
+        model: "TITLE",
         pageId,
       });
       await createSectionElement.mutateAsync({
@@ -214,27 +162,8 @@ export const HeroCreation = ({ clubId, pageId }: HeroCreationProps) => {
         content: data.description,
         images: docId ? [docId] : undefined,
       });
-      if (data.cta) {
-        await createSectionElement.mutateAsync({
-          elementType: "CTA",
-          sectionId: section.id,
-          title: data.cta,
-          link: data.url ? `${data.protocol}//${data.url}` : undefined,
-          pageId: data.linkedPage === "url" ? undefined : data.linkedPage,
-          pageSection: data.linkedPage === "url" ? undefined : data.pageSection,
-        });
-      }
     }
   };
-
-  useEffect(() => {
-    if (isCUID(fields.linkedPage)) {
-      const page = queryPages?.data?.find((p) => p.id === fields.linkedPage);
-      if (page) {
-        setSections(getSections(page.target));
-      } else setSections([]);
-    } else setSections([]);
-  }, [fields.linkedPage, queryPages?.data, getSections]);
 
   useEffect(() => {
     if (fields.images?.length) {
@@ -271,7 +200,7 @@ export const HeroCreation = ({ clubId, pageId }: HeroCreationProps) => {
           className="grid grid-cols-[auto_1fr] gap-2 rounded border border-primary p-2"
           onSubmit={handleSubmit(onSubmit)}
         >
-          <label>{t("hero.image")}</label>
+          <label>{t("title.image")}</label>
           <input
             type="file"
             className="file-input-bordered file-input-primary file-input w-full"
@@ -291,7 +220,7 @@ export const HeroCreation = ({ clubId, pageId }: HeroCreationProps) => {
                 >
                   <ButtonIcon
                     iconComponent={<i className="bx bx-trash" />}
-                    title={t("hero.delete-image")}
+                    title={t("title.delete-image")}
                     buttonVariant="Icon-Secondary"
                     buttonSize="sm"
                   />
@@ -299,76 +228,21 @@ export const HeroCreation = ({ clubId, pageId }: HeroCreationProps) => {
               </div>
             </div>
           ) : null}
-          <label>{t("hero.title")}</label>
+          <label>{t("title.title")}</label>
           <input
             {...register("title")}
             type="text"
             className="input-bordered input w-full"
           />
-          <label>{t("hero.subtitle")}</label>
+          <label>{t("title.subtitle")}</label>
           <input
             {...register("subtitle")}
             type="text"
             className="input-bordered input w-full"
           />
-          <label>{t("hero.description")}</label>
+          <label>{t("title.description")}</label>
           <textarea {...register("description")} rows={4} />
-          <label>{t("hero.button-cta")}</label>
-          <input
-            {...register("cta")}
-            type="text"
-            className="input-bordered input w-full"
-          />
-          {fields.cta ? (
-            <>
-              <label>{t("hero.linked-page")}</label>
-              <div className="grid grid-cols-2 gap-2">
-                <select
-                  defaultValue={getValues("linkedPage")}
-                  {...register("linkedPage")}
-                >
-                  {queryPages.data?.map((page) => (
-                    <option key={page.id} value={page.id}>
-                      {page.name}
-                    </option>
-                  ))}
-                  <option value={"url"}>{t("hero.external-url")}</option>
-                </select>
-                <select
-                  defaultValue={getValues("pageSection")}
-                  {...register("pageSection")}
-                >
-                  {sections.map((sec) => (
-                    <option key={sec} value={sec}>
-                      {getSectionName(sec)}
-                    </option>
-                  ))}
-                </select>
-              </div>
-            </>
-          ) : null}
-          {fields.cta && fields.linkedPage === "url" ? (
-            <>
-              <label className="label">
-                <span>{t("hero.external-url")}</span>
-              </label>
-              <label className="input-group">
-                <select
-                  defaultValue={"https:"}
-                  {...register("protocol")}
-                  className="w-fit bg-primary text-primary-content"
-                >
-                  <option value="https:">https://</option>
-                  <option value="http:">http://</option>
-                </select>
-                <input
-                  type="text"
-                  {...register("url")}
-                  className="input-bordered input w-full"
-                />
-              </label>
-            </>
-          ) : null}
+
           <div className="col-span-2 flex justify-between">
             <button className="btn btn-primary" type="submit">
               {t("save-section")}
@@ -398,12 +272,11 @@ export const HeroCreation = ({ clubId, pageId }: HeroCreationProps) => {
           />
         </h3>
         <div data-theme={previewTheme}>
-          <HeroContent
+          <TitleContent
             imageSrc={imagePreview}
             title={fields.title}
             subtitle={fields.subtitle}
             description={fields.description}
-            cta={fields.cta}
             preview={true}
           />
         </div>
@@ -412,64 +285,56 @@ export const HeroCreation = ({ clubId, pageId }: HeroCreationProps) => {
   );
 };
 
-type HeroDisplayProps = {
+type TitleDisplayProps = {
   clubId: string;
   pageId: string;
 };
 
-export const HeroDisplay = ({ clubId, pageId }: HeroDisplayProps) => {
-  const querySection = trpc.pages.getPageSection.useQuery({
-    pageId,
-    section: "HERO",
-  });
-  const heroContent = querySection.data?.elements.find(
+export const TitleDisplay = ({ pageId }: TitleDisplayProps) => {
+  const querySection = trpc.pages.getPageSection.useQuery(
+    {
+      pageId,
+      section: "TITLE",
+    },
+    {
+      refetchOnWindowFocus: false,
+    }
+  );
+  const titleContent = querySection.data?.elements.find(
     (e) => e.elementType === "HERO_CONTENT"
   );
-  const cta = querySection.data?.elements.find((e) => e.elementType === "CTA");
-
   if (querySection.isLoading) return <Spinner />;
-  if (!querySection.data) return <div>Hero section unavailable</div>;
+  if (!querySection.data) return <div>Title section unavailable</div>;
 
   return (
-    <HeroContent
-      imageSrc={heroContent?.images?.[0]?.url}
-      title={heroContent?.title ?? ""}
-      subtitle={heroContent?.subTitle ?? ""}
-      description={heroContent?.content ?? ""}
-      cta={cta?.title ?? ""}
-      ctaLink={
-        cta?.link ??
-        `/presentation-page/club/${clubId}/${cta?.pageId}#${cta?.pageSection}`
-      }
+    <TitleContent
+      imageSrc={titleContent?.images?.[0]?.url}
+      title={titleContent?.title ?? ""}
+      subtitle={titleContent?.subTitle ?? ""}
+      description={titleContent?.content ?? ""}
     />
   );
 };
 
-type HeroContentProps = {
+type TitleContentProps = {
   imageSrc?: string;
   title?: string;
   subtitle?: string;
   description?: string;
-  cta?: string;
-  ctaLink?: string;
   preview?: boolean;
 };
 
-function HeroContent({
+function TitleContent({
   imageSrc,
   title,
   subtitle,
   description,
-  cta,
-  ctaLink,
   preview = false,
-}: HeroContentProps) {
-  const router = useRouter();
-
+}: TitleContentProps) {
   return (
     <div
       className={`cover flex ${
-        preview ? "aspect-[4/3]" : "min-h-screen"
+        preview ? "aspect-[4/1]" : "min-h-[30vh]"
       } w-full flex-col items-center justify-center gap-4`}
       style={{
         backgroundImage: `${imageSrc ? `url(${imageSrc})` : "unset"}`,
@@ -498,18 +363,6 @@ function HeroContent({
         {subtitle}
       </p>
       <p className="text-gray-100">{description}</p>
-      {cta && (
-        <button
-          className={`btn btn-primary ${
-            preview ? "btn-sm" : "btn-xl"
-          } w-fit normal-case`}
-          onClick={() => {
-            if (ctaLink) router.push(ctaLink);
-          }}
-        >
-          {cta}
-        </button>
-      )}
     </div>
   );
 }

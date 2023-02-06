@@ -9,10 +9,26 @@ export const clubRouter = router({
   getClubById: protectedProcedure
     .input(z.string().cuid())
     .query(async ({ ctx, input }) => {
+      const user = await ctx.prisma.user.findUnique({
+        where: { id: ctx.session.user.id },
+        include: {
+          pricing: {
+            include: {
+              features: true,
+            },
+          },
+        },
+      });
+      const take: number | undefined = user?.pricing?.features.find(
+        (f) => f.feature === "MANAGER_MULTI_SITE"
+      )
+        ? undefined
+        : 1;
       const myClub = await ctx.prisma.club.findUnique({
         where: { id: input },
         include: {
           sites: {
+            take,
             include: {
               rooms: {
                 include: {

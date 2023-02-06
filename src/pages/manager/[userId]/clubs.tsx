@@ -225,7 +225,9 @@ export function ClubContent({ userId, clubId }: ClubContentProps) {
             </div>
             {clubQuery?.data?.sites?.map((site) => (
               <div key={site.id} className="my-2 flex items-center gap-4">
-                <span>{site.address}</span>
+                <span>
+                  {site.name} ({site.address})
+                </span>
                 <div className="pill">
                   {site.rooms.length > 0 && (
                     <span className="mr-2 text-lg text-primary">

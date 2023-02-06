@@ -13,9 +13,8 @@ import { useState } from "react";
 import {
   CreatePage,
   DeletePage,
-  PAGE_SECTION_LIST,
-  PAGE_TARGET_LIST,
   UpdatePage,
+  usePageSection,
 } from "@modals/managePage";
 import Spinner from "@ui/spinner";
 import { HeroCreation } from "@sections/hero";
@@ -27,6 +26,8 @@ import { useRouter } from "next/router";
 import createLink from "@lib/createLink";
 import { ActivityGroupCreation } from "@sections/activities";
 import { ActivityCreation } from "@sections/activity";
+import { TitleCreation } from "@sections/title";
+import { PlanningCreation } from "@sections/planning";
 
 function ClubPage({
   userId,
@@ -39,13 +40,16 @@ function ClubPage({
     onSuccess(data) {
       if (!clubId) router.push(createLink({ clubId: data[0]?.id, pageId: "" }));
     },
+    refetchOnWindowFocus: false,
   });
   const queryPages = trpc.pages.getPagesForClub.useQuery(clubId, {
     enabled: isCUID(clubId),
+    refetchOnWindowFocus: false,
     onSuccess(data) {
       if (!pageId) router.push(createLink({ clubId, pageId: data[0]?.id }));
     },
   });
+  const { getTargetName } = usePageSection();
 
   return (
     <Layout
@@ -79,21 +83,18 @@ function ClubPage({
           <ul className="menu overflow-hidden rounded border border-secondary bg-base-100">
             {queryPages.data?.map((page) => (
               <li key={page.id}>
-                <div className={`flex ${pageId === page.id ? "active" : ""}`}>
+                <div className={pageId === page.id ? "active" : ""}>
                   <button
                     onClick={() => {
                       const path = `/create-page/club?clubId=${clubId}&pageId=${page.id}`;
                       router.push(path);
                     }}
-                    className="flex flex-1 items-center justify-between"
+                    className="flex flex-1 items-center justify-between gap-2"
                   >
                     <span>{page.name}</span>
                     <div className="flex items-center gap-2">
                       <span className="badge badge-secondary">
-                        {t(
-                          PAGE_TARGET_LIST.find((t) => t.value === page.target)
-                            ?.label ?? ""
-                        )}
+                        {getTargetName(page.target)}
                       </span>
                       <i
                         className={`bx bx-xs aspect-square rounded-full bg-base-100 ${
@@ -123,10 +124,20 @@ type PageContentProps = {
 };
 
 const PageContent = ({ pageId, clubId }: PageContentProps) => {
-  const queryPage = trpc.pages.getPageById.useQuery(pageId);
-  const [section, setSection] = useState<PageSectionModel>(
-    PAGE_SECTION_LIST[0]?.value ?? "HERO"
-  );
+  const queryPage = trpc.pages.getPageById.useQuery(pageId, {
+    enabled: isCUID(pageId),
+    refetchOnWindowFocus: false,
+    onSuccess(data) {
+      if (data?.target) {
+        setSections(getSections(data.target));
+        setSection(defaultSection(data.target));
+      }
+    },
+  });
+  const { getSectionName, getSections, defaultSection } = usePageSection();
+
+  const [sections, setSections] = useState<PageSectionModel[]>([]);
+  const [section, setSection] = useState<PageSectionModel>("HERO");
   const { t } = useTranslation("pages");
   const utils = trpc.useContext();
 
@@ -177,20 +188,26 @@ const PageContent = ({ pageId, clubId }: PageContentProps) => {
         </div>
       </div>
       <div className="btn-group flex-wrap">
-        {PAGE_SECTION_LIST.map((sec) => (
+        {sections.map((sec) => (
           <button
-            key={sec.value}
+            key={sec}
             className={`btn btn-primary flex-1 ${
-              sec.value === section ? "" : "btn-outline"
+              sec === section ? "" : "btn-outline"
             }`}
-            onClick={() => setSection(sec.value)}
+            onClick={() => setSection(sec)}
           >
-            {t(sec.label)}
+            {getSectionName(sec)}
           </button>
         ))}
       </div>
       <div className="w-full">
         {section === "HERO" && <HeroCreation clubId={clubId} pageId={pageId} />}
+        {section === "TITLE" && (
+          <TitleCreation clubId={clubId} pageId={pageId} />
+        )}
+        {section === "PLANNINGS" && (
+          <PlanningCreation clubId={clubId} pageId={pageId} />
+        )}
         {section === "ACTIVITY_GROUPS" && (
           <ActivityGroupCreation clubId={clubId} pageId={pageId} />
         )}

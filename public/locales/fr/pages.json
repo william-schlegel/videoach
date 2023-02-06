@@ -25,10 +25,13 @@
     "presentation": "Présentation d'un coach",
     "team": "Présentation de l'équipe",
     "planning": "Planning",
-    "videos": "Vidéos"
+    "videos": "Vidéos",
+    "events": "Evenements"
   },
   "section": {
     "hero": "Haut de page",
+    "title": "Titre",
+    "plannings": "Plannings",
     "activity-groups": "Activités (groupe)",
     "activity-details": "Activité (détails)",
     "location": "Plan et emplacements",
@@ -48,6 +51,31 @@
     "button-alt": "Autre bouton",
     "external-url": "Lien externe",
     "delete-image": "Supprimer l'image"
+  },
+  "title": {
+    "image": "Image de fond",
+    "title": "Titre de la page",
+    "subtitle": "Sous titre",
+    "description": "Description",
+    "delete-image": "Supprimer l'image"
+  },
+  "planning": {
+    "planning-section": "Personnalisation des plannings",
+    "planning-created": "Planning créé",
+    "new-planning": "Nouveau planning",
+    "planning-updated": "Planning mis à jour",
+    "update-planning": "Modifier le planning",
+    "deleted": "Planning supprimé",
+    "deletion": "Supprimer ce planning",
+    "deletion-message": "La suppression de ce planning est irréversible|Confirmez-vous ?",
+    "deletion-confirm": "Supprimer",
+    "image": "Image de fond",
+    "delete-image": "Supprimer l'image",
+    "title": "Titre",
+    "subtitle": "Sous titre",
+    "title-mandatory": "Le titre est obligatoire",
+    "description": "Desciption",
+    "sites": "Sites d'activités sur ce planning"
   },
   "activity-group": {
     "image": "Image d'illustration",

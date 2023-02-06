@@ -14,6 +14,8 @@ import Head from "next/head";
 import superjson from "superjson";
 import { ActivityGroupDisplayCard } from "@sections/activities";
 import { isCUID } from "@lib/checkValidity";
+import { TitleDisplay } from "@sections/title";
+import { PlanningDisplayCard } from "@sections/planning";
 
 function ClubPresentation(
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -48,6 +50,14 @@ function ClubPresentation(
           />
         ) : section.model === "ACTIVITY_GROUPS" ? (
           <ActivityGroupDisplayCard key={section.id} pageId={props.pageId} />
+        ) : section.model === "TITLE" ? (
+          <TitleDisplay
+            key={section.id}
+            clubId={queryPage.data.clubId}
+            pageId={props.pageId}
+          />
+        ) : section.model === "PLANNINGS" ? (
+          <PlanningDisplayCard key={section.id} pageId={props.pageId} />
         ) : null
       )}
     </div>
