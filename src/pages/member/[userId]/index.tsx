@@ -67,7 +67,7 @@ const MemberDashboard = ({
       <h1 className="flex justify-between">
         {t("member.dashboard")}
         <Link
-          className="btn btn-secondary"
+          className="btn-secondary btn"
           href={`/member/${userId}/subscribe`}
         >
           {t("member.new-subscription")}
@@ -308,7 +308,7 @@ function MakeReservation({
   if (room.reservation === "NONE")
     return (
       <div className="text-center">
-        <p className="btn btn-outline btn-disabled btn-xs">
+        <p className="btn-outline btn-disabled btn-xs btn">
           {t("member.free-access")}
         </p>
       </div>
@@ -324,10 +324,10 @@ function MakeReservation({
       {reservations.find(
         (r) => r.id === planningActivityId && isEqual(day, r.date)
       ) ? (
-        <span className="btn btn-accent btn-xs">{t("member.reserved")}</span>
+        <span className="btn-accent btn-xs btn">{t("member.reserved")}</span>
       ) : (
         <button
-          className="btn btn-primary btn-xs"
+          className="btn-primary btn-xs btn"
           onClick={() =>
             createReservation.mutate({
               planningActivityId,
@@ -468,7 +468,7 @@ function ReserveDuration({
   if (room?.reservation === "NONE")
     return (
       <div className="text-center">
-        <p className="btn btn-outline btn-disabled btn-xs">
+        <p className="btn-outline btn-disabled btn-xs btn">
           {t("member.free-access")}
         </p>
       </div>
@@ -488,7 +488,7 @@ function ReserveDuration({
       {reservations.find(
         (r) => r.id === activity.id && isEqual(day, r.date)
       ) ? (
-        <span className="btn btn-accent btn-xs">{t("member.reserved")}</span>
+        <span className="btn-accent btn-xs btn">{t("member.reserved")}</span>
       ) : (
         <Modal
           title={t("member.reserve")}
@@ -589,7 +589,7 @@ function AvailableSlots({
       {slots.map((slot, idx) => (
         <span
           key={idx}
-          className={`btn btn-sm ${
+          className={`btn-sm btn ${
             slot.available ? "btn-primary" : "btn-disabled"
           }`}
           onClick={() => onSelect(slot)}
@@ -626,7 +626,7 @@ function Subscription({ subscription }: SubscriptionProps) {
       <div className="card-body">
         <div className="flex items-center justify-between">
           <h3 className="card-title text-primary">{subscription.name}</h3>
-          <span className="badge badge-primary">{subscription.club.name}</span>
+          <span className="badge-primary badge">{subscription.club.name}</span>
         </div>
         {shortInfo ? <p>{shortInfo}</p> : ""}
         <div className="flex gap-2">
@@ -666,11 +666,21 @@ export const getServerSideProps = async ({
   res,
 }: GetServerSidePropsContext) => {
   const session = await unstable_getServerSession(req, res, authOptions);
-  if (session?.user?.role !== Role.MEMBER && session?.user?.role !== Role.ADMIN)
+  console.log("session?.user?.role", session?.user?.role);
+  if (
+    session?.user?.role !== Role.MEMBER &&
+    session?.user?.role !== Role.ADMIN
+  ) {
     return {
-      redirect: "/signin",
-      permanent: false,
+      redirect: {
+        permanent: false,
+        destination: "/",
+      },
+      props: {
+        userId: "",
+      },
     };
+  }
 
   return {
     props: {

@@ -14,6 +14,7 @@ import { useTranslation } from "next-i18next";
 import { Feature, FeatureContainer } from "@ui/features";
 import Link from "next/link";
 import Layout from "@root/src/components/layout";
+import { useSession } from "next-auth/react";
 
 function CoachPage(
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -22,6 +23,7 @@ function CoachPage(
   const pricingQuery = trpc.pricings.getPricingForRole.useQuery("COACH");
   const { data } = pricingQuery;
   const { t } = useTranslation("home");
+  const { data: sessionData } = useSession();
 
   return (
     <Layout title={t("coach-title")}>
@@ -67,11 +69,22 @@ function CoachPage(
               <Pricing key={pricing.id} pricingId={pricing.id} />
             ))}
           </PricingContainer>
-          <Link href="/user/signin">
-            <button className="btn-accent btn-block btn my-4">
-              {t("pricing.create-your-account")}
-            </button>
-          </Link>
+          {sessionData?.user?.id ? (
+            <div className="text-center">
+              {t("pricing.go-to-account")}{" "}
+              <Link href={`/user/${sessionData?.user?.id}/account`}>
+                <button className="btn btn-accent my-4">
+                  {t("pricing.my-account")}
+                </button>
+              </Link>
+            </div>
+          ) : (
+            <Link href="/user/signin">
+              <button className="btn btn-accent btn-block my-4">
+                {t("pricing.create-your-account")}
+              </button>
+            </Link>
+          )}
         </div>
       </section>
     </Layout>

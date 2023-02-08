@@ -189,8 +189,13 @@ export const getServerSideProps = async ({
   const session = await unstable_getServerSession(req, res, authOptions);
   if (session?.user?.role !== Role.COACH && session?.user?.role !== Role.ADMIN)
     return {
-      redirect: "/",
-      permanent: false,
+      redirect: {
+        permanent: false,
+        destination: "/",
+      },
+      props: {
+        userId: "",
+      },
     };
 
   return {

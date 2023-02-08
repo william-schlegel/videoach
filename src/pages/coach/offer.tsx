@@ -69,7 +69,7 @@ function CoachOffer({
                   }`}
                 >
                   <span>{offer.name}</span>
-                  <span className="badge badge-secondary">
+                  <span className="badge-secondary badge">
                     {getName(offer.target)}
                   </span>
                 </Link>
@@ -103,7 +103,7 @@ function OfferContent({ userId, offerId }: OfferContentProps) {
         <div className="flex flex-wrap items-center gap-4">
           <h2>{offerQuery.data?.name}</h2>
           <Link
-            className="btn-primary btn flex items-center gap-4"
+            className="btn btn-primary flex items-center gap-4"
             href={`/company/${offerId}`}
             target="_blank"
             rel="noreffer"
@@ -135,8 +135,13 @@ export const getServerSideProps = async ({
     session?.user?.role !== Role.ADMIN
   )
     return {
-      redirect: "/",
-      permanent: false,
+      redirect: {
+        permanent: false,
+        destination: "/",
+      },
+      props: {
+        userId: "",
+      },
     };
 
   return {

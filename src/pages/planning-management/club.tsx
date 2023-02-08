@@ -775,8 +775,13 @@ export const getServerSideProps = async ({
     session?.user?.role !== Role.ADMIN
   )
     return {
-      redirect: "/",
-      permanent: false,
+      redirect: {
+        permanent: false,
+        destination: "/",
+      },
+      props: {
+        userId: "",
+      },
     };
 
   return {

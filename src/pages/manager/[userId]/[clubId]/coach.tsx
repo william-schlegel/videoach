@@ -75,7 +75,7 @@ const ManageCoachs = ({
         <div className="flex gap-4">
           <AddCoachToClub clubId={clubId} userId={userId} />
           <button
-            className="btn btn-outline btn-primary"
+            className="btn-outline btn btn-primary"
             onClick={() => {
               const path = `/manager/${sessionData?.user?.id}/clubs?clubId=${clubId}`;
               router.push(path);
@@ -265,8 +265,14 @@ export const getServerSideProps = async ({
     session?.user?.role !== Role.ADMIN
   )
     return {
-      redirect: "/",
-      permanent: false,
+      redirect: {
+        permanent: false,
+        destination: "/",
+      },
+      props: {
+        userId: "",
+        clubId: "",
+      },
     };
 
   return {

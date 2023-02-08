@@ -29,7 +29,7 @@ export default function Layout({ children, className, title }: Props) {
       <div
         ref={wrapperRef}
         className="grid min-h-screen grid-rows-[auto_1fr_auto] bg-base-200"
-        data-theme="cupcake"
+        data-theme={theme}
       >
         <Navbar
           theme={theme}

@@ -55,6 +55,9 @@ export const authOptions: NextAuthOptions = {
     signIn: "/user/signin",
   },
   debug: true,
+  session: {
+    strategy: "database",
+  },
 };
 
 export default NextAuth(authOptions);

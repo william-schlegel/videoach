@@ -33,7 +33,7 @@ const MENUS: MenuDefinitionType[] = [
     access: ["ADMIN", "COACH", "MANAGER", "MANAGER_COACH", "MEMBER"],
   },
 
-  { label: "navigation.clubs", page: "/clubs", access: ["MEMBER"] },
+  // { label: "navigation.clubs", page: "/clubs", access: ["MEMBER"] },
   {
     label: "navigation.find-coach",
     page: "/videoach#find-coach",
@@ -171,7 +171,7 @@ export default function Navbar({ theme, onChangeTheme }: NavbarProps) {
                     {unread ? (
                       <div className="indicator ">
                         <i className="bx bx-bell bx-md text-primary" />
-                        <span className="badge badge-secondary badge-sm indicator-item">
+                        <span className="badge-secondary badge badge-sm indicator-item">
                           {unread}
                         </span>
                       </div>
@@ -235,7 +235,13 @@ export default function Navbar({ theme, onChangeTheme }: NavbarProps) {
                   </Link>
                 </li>
                 <li>
-                  <div onClick={() => signOut()}>
+                  <div
+                    onClick={() => {
+                      signOut({
+                        redirect: true,
+                      });
+                    }}
+                  >
                     {t("navigation.disconnect")}
                   </div>
                 </li>

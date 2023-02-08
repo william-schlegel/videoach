@@ -81,7 +81,7 @@ function UserManagement() {
               <div className="collapse-title text-xl font-medium">
                 <span className="flex items-center gap-4">
                   {t("user.filter")}
-                  <span className="badge badge-info">
+                  <span className="badge-info badge">
                     {Object.keys(filter).length}
                   </span>
                 </span>
@@ -212,7 +212,7 @@ export function UserContent({ userId }: UserContentProps) {
         <article className="flex flex-col gap-2 rounded-md border border-primary p-2">
           <h2 className="flex items-center justify-between gap-2">
             {t("user.plan")}
-            <span className="badge badge-primary">
+            <span className="badge-primary badge">
               {t(`auth:${getRoleName(userQuery.data?.role ?? "MEMBER")}`)}
             </span>
           </h2>
@@ -374,8 +374,13 @@ export const getServerSideProps = async ({
   const session = await unstable_getServerSession(req, res, authOptions);
   if (session?.user?.role !== Role.ADMIN)
     return {
-      redirect: "/",
-      permanent: false,
+      redirect: {
+        permanent: false,
+        destination: "/",
+      },
+      props: {
+        userId: "",
+      },
     };
 
   return {

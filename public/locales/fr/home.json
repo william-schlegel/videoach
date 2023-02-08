@@ -42,7 +42,9 @@
     "try-offer": "Vous bénéficiez de 30j d'éssai gratuit lors de votre inscription !",
     "deleted": "Supprimé le {{date}}",
     "free": "Gratuit !",
-    "create-your-account": "Créez votre compte ou connectez-vous pour continuer"
+    "create-your-account": "Créez votre compte ou connectez-vous pour continuer",
+    "go-to-account": "Allez dans vos paramètres de compte pour modifier votre plan",
+    "my-account": "Mon compte"
   },
   "features": {
     "manager": "Des outils pour le gérant de club",

@@ -273,7 +273,7 @@ function NotificationMessage({
   }
   const Elem: JSX.Element[] = [];
   Elem.push(
-    <div className="badge badge-info">
+    <div className="badge-info badge">
       {t("notification.notification-type", {
         type: getName(notification.type),
       })}
@@ -291,7 +291,7 @@ function NotificationMessage({
             }),
           })}
         </span>
-        <span className="badge badge-primary">
+        <span className="badge-primary badge">
           {t(notification.answer ?? "")}
         </span>
       </div>
@@ -391,8 +391,13 @@ export const getServerSideProps = async ({
   const session = await unstable_getServerSession(req, res, authOptions);
   if (!session?.user)
     return {
-      redirect: "/",
-      permanent: false,
+      redirect: {
+        permanent: false,
+        destination: "/",
+      },
+      props: {
+        userId: "",
+      },
     };
 
   return {

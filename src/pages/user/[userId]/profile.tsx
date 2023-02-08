@@ -146,14 +146,20 @@ export default function Profile() {
           <textarea {...register("address")} rows={2} />
           <label>{t("account-provider")}</label>
           <div className="flex gap-2">
-            {userQuery.data?.accounts?.map((account) => (
-              <span
-                key={account.id}
-                className="rounded border border-primary px-4 py-2"
-              >
-                {account.provider}
+            {!userQuery.data?.accounts?.length ? (
+              <span className="rounded border border-primary px-4 py-2">
+                email
               </span>
-            ))}
+            ) : (
+              userQuery.data.accounts?.map((account) => (
+                <span
+                  key={account.id}
+                  className="rounded border border-primary px-4 py-2"
+                >
+                  {account.provider}
+                </span>
+              ))
+            )}
           </div>
         </section>
         <section>

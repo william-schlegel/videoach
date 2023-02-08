@@ -79,7 +79,7 @@ const ManagerClubs = ({
     >
       <h1 className="flex justify-between">
         {t("manager-dashboard")}
-        <Link className="btn-secondary btn" href={`${userId}/clubs`}>
+        <Link className="btn btn-secondary" href={`${userId}/clubs`}>
           {t("manage-club")}
         </Link>
       </h1>
@@ -255,8 +255,13 @@ export const getServerSideProps = async ({
     session?.user?.role !== Role.ADMIN
   )
     return {
-      redirect: "/",
-      permanent: false,
+      redirect: {
+        permanent: false,
+        destination: "/",
+      },
+      props: {
+        userId: "",
+      },
     };
 
   return {

@@ -61,7 +61,7 @@ function CoachPage({
               href={`/presentation-page/coach/${userId}/${queryPage.data.id}`}
               target="_blank"
               referrerPolicy="no-referrer"
-              className="btn-primary btn flex gap-2"
+              className="btn btn-primary flex gap-2"
             >
               {t("page-preview")}
               <i className="bx bx-link-external bx-xs" />
@@ -94,8 +94,13 @@ export const getServerSideProps = async ({
     session?.user?.role !== Role.ADMIN
   )
     return {
-      redirect: "/",
-      permanent: false,
+      redirect: {
+        permanent: false,
+        destination: "/",
+      },
+      props: {
+        userId: "",
+      },
     };
 
   return {

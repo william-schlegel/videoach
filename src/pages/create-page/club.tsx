@@ -93,7 +93,7 @@ function ClubPage({
                   >
                     <span>{page.name}</span>
                     <div className="flex items-center gap-2">
-                      <span className="badge badge-secondary">
+                      <span className="badge-secondary badge">
                         {getTargetName(page.target)}
                       </span>
                       <i
@@ -177,7 +177,7 @@ const PageContent = ({ pageId, clubId }: PageContentProps) => {
             href={`/presentation-page/club/${clubId}/${pageId}`}
             target="_blank"
             referrerPolicy="no-referrer"
-            className="btn btn-primary flex gap-2"
+            className="btn-primary btn flex gap-2"
           >
             {t("page-preview")}
             <i className="bx bx-link-external bx-xs" />
@@ -232,8 +232,15 @@ export const getServerSideProps = async ({
     session?.user?.role !== Role.ADMIN
   )
     return {
-      redirect: "/",
-      permanent: false,
+      redirect: {
+        permanent: false,
+        destination: "/",
+      },
+      props: {
+        userId: "",
+        clubId: "",
+        pageId: "",
+      },
     };
   const clubId = (query?.clubId ?? "") as string;
   const pageId = (query?.pageId ?? "") as string;
