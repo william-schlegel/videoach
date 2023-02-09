@@ -60,7 +60,11 @@ function ClubPresentation(
         ) : section.model === "PLANNINGS" ? (
           <PlanningDisplayCard key={section.id} pageId={props.pageId} />
         ) : section.model === "OFFERS" ? (
-          <OfferDisplayCard key={section.id} pageId={props.pageId} />
+          <OfferDisplayCard
+            key={section.id}
+            pageId={props.pageId}
+            clubId={props.clubId}
+          />
         ) : null
       )}
     </div>

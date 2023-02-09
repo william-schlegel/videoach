@@ -26,14 +26,14 @@ export const dashboardRouter = router({
           activities: {
             select: { name: true },
           },
-          members: {
-            select: {
-              _count: true,
-            },
-          },
           subscriptions: {
             select: {
               _count: true,
+              users: {
+                select: {
+                  userId: true,
+                },
+              },
             },
           },
           events: {
@@ -46,7 +46,47 @@ export const dashboardRouter = router({
           },
         },
       });
-      return clubData;
+
+      if (!clubData) return null;
+      const memberSet = new Set<string>();
+      let members = 0;
+      const initialValue = {
+        activities: 0,
+        subscriptions: 0,
+        sites: 0,
+        rooms: 0,
+      };
+      const { activities, subscriptions, sites, rooms } = clubData.reduce(
+        (acc, c) => {
+          for (const s of c.subscriptions)
+            for (const u of s.users) memberSet.add(u.userId);
+          acc.subscriptions += c.subscriptions.length;
+          acc.sites += c.sites.length;
+          acc.rooms += c.sites.reduce((ss, s) => (ss += s._count.rooms), 0);
+          acc.activities += c.activities.length;
+          return acc;
+        },
+        initialValue
+      );
+      members = memberSet.size;
+
+      return {
+        clubs: clubData.map((c) => ({
+          id: c.id,
+          name: c.name,
+          events: c.events.map((e) => ({
+            id: e.id,
+            name: e.name,
+            startDate: e.startDate,
+          })),
+        })),
+        clubCount: clubData.length,
+        activities,
+        subscriptions,
+        sites,
+        rooms,
+        members,
+      };
     }),
   getCoachDataForUserId: protectedProcedure
     .input(z.string())

@@ -9,6 +9,7 @@ import type {
 import { getProviders, signIn } from "next-auth/react";
 import { useTranslation } from "next-i18next";
 import { serverSideTranslations } from "next-i18next/serverSideTranslations";
+import Head from "next/head";
 import { useRouter } from "next/router";
 import { useState } from "react";
 
@@ -27,6 +28,9 @@ export default function SignIn({
         className="flex min-h-screen items-center justify-center bg-base-200"
         data-theme={theme}
       >
+        <Head>
+          <title>Videoach - Magic link</title>
+        </Head>
         <div className="rounded border border-primary bg-base-100 p-12 text-center">
           <h1>{t("continue-with-link")}</h1>
           <p className="text-lg font-semibold">

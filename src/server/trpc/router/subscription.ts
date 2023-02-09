@@ -2,7 +2,7 @@ import type { Activity, ActivityGroup } from "@prisma/client";
 import { SubscriptionMode, SubscriptionRestriction } from "@prisma/client";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
-import { router, protectedProcedure } from "../trpc";
+import { router, protectedProcedure, publicProcedure } from "../trpc";
 
 const subscriptionObject = z.object({
   id: z.string().cuid(),
@@ -19,7 +19,7 @@ const subscriptionObject = z.object({
 });
 
 export const subscriptionRouter = router({
-  getSubscriptionById: protectedProcedure
+  getSubscriptionById: publicProcedure
     .input(z.string().cuid())
     .query(({ ctx, input }) => {
       return ctx.prisma.subscription.findUnique({
@@ -215,7 +215,7 @@ export const subscriptionRouter = router({
       }
       return {};
     }),
-  getDataNames: protectedProcedure
+  getDataNames: publicProcedure
     .input(
       z.object({
         siteIds: z.array(z.string().cuid()),

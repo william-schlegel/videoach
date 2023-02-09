@@ -10,6 +10,7 @@
   "tag-line": "Gestion de club de sport",
   "social": "Social",
   "navigation": {
+    "home": "Accueil",
     "dashboard": "Mon tableau de bord",
     "find-club": "Trouver un club",
     "chat": "Messagerie",

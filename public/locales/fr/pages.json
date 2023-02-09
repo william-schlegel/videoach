@@ -78,7 +78,8 @@
     "title-mandatory": "Le titre est obligatoire",
     "description": "Desciption",
     "offer": "Offre associée",
-    "select": "Sélectioner cette  offre"
+    "select": "Sélectioner cette offre",
+    "connect-to-subscribe": "Connectez-vous pour prendre un abonnement"
   },
   "planning": {
     "planning-section": "Personnalisation des plannings",

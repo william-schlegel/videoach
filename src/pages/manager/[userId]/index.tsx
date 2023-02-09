@@ -22,7 +22,6 @@ import { unstable_getServerSession } from "next-auth";
 import { useTranslation } from "next-i18next";
 import { serverSideTranslations } from "next-i18next/serverSideTranslations";
 import Link from "next/link";
-import { useMemo } from "react";
 
 /***
  *
@@ -36,39 +35,6 @@ const ManagerClubs = ({
   const managerQuery = trpc.dashboards.getManagerDataForUserId.useQuery(userId);
   const { t } = useTranslation("dashboard");
   const { features } = useUserInfo(userId);
-
-  const siteCount = useMemo(
-    () =>
-      managerQuery.data?.reduce(
-        (acc, c) => {
-          acc.sites += c.sites.length;
-          acc.rooms += c.sites.reduce((ss, s) => (ss += s._count.rooms), 0);
-          return acc;
-        },
-        { sites: 0, rooms: 0 }
-      ) ?? { sites: 0, rooms: 0 },
-    [managerQuery.data]
-  );
-  const activityCount = useMemo(
-    () =>
-      managerQuery.data?.reduce((acc, r) => (acc += r.activities.length), 0) ??
-      0,
-    [managerQuery.data]
-  );
-  const memberCount = useMemo(
-    () =>
-      managerQuery.data?.reduce((acc, r) => (acc += r.members.length), 0) ?? 0,
-    [managerQuery.data]
-  );
-
-  const subscriptionCount = useMemo(
-    () =>
-      managerQuery.data?.reduce(
-        (acc, r) => (acc += r.subscriptions.length),
-        0
-      ) ?? 0,
-    [managerQuery.data]
-  );
 
   if (managerQuery.isLoading) return <Spinner />;
 
@@ -89,10 +55,10 @@ const ManagerClubs = ({
             <i className="bx bx-building bx-lg" />
           </div>
           <div className="stat-title">
-            {t("clubs", { count: managerQuery.data?.length ?? 0 })}
+            {t("clubs", { count: managerQuery.data?.clubCount ?? 0 })}
           </div>
           <div className="stat-value text-primary">
-            {managerQuery.data?.length}
+            {managerQuery.data?.clubCount ?? 0}
           </div>
         </Link>
         <div className="stat">
@@ -100,45 +66,57 @@ const ManagerClubs = ({
             <i className="bx bx-map-pin bx-lg" />
           </div>
           <div className="stat-title">
-            {t("sites", { count: siteCount.sites })}
+            {t("sites", { count: managerQuery.data?.sites ?? 0 })}
           </div>
-          <div className="stat-value text-primary">{siteCount.sites}</div>
+          <div className="stat-value text-primary">
+            {managerQuery.data?.sites ?? 0}
+          </div>
         </div>
         <div className="stat">
           <div className="stat-figure text-primary">
             <i className="bx bx-home bx-lg" />
           </div>
           <div className="stat-title">
-            {t("rooms", { count: siteCount.rooms })}
+            {t("rooms", { count: managerQuery.data?.rooms ?? 0 })}
           </div>
-          <div className="stat-value text-primary">{siteCount.rooms}</div>
+          <div className="stat-value text-primary">
+            {managerQuery.data?.rooms ?? 0}
+          </div>
         </div>
         <div className="stat">
           <div className="stat-figure text-primary">
             <i className="bx bx-cycling bx-lg" />
           </div>
           <div className="stat-title">
-            {t("activities", { count: activityCount })}
+            {t("activities", { count: managerQuery.data?.activities ?? 0 })}
           </div>
-          <div className="stat-value text-primary">{activityCount}</div>
+          <div className="stat-value text-primary">
+            {managerQuery.data?.activities ?? 0}
+          </div>
         </div>
         <div className="stat">
           <div className="stat-figure text-primary">
             <i className="bx bx-euro bx-lg" />
           </div>
           <div className="stat-title">
-            {t("subscriptions", { count: subscriptionCount })}
+            {t("subscriptions", {
+              count: managerQuery.data?.subscriptions ?? 0,
+            })}
           </div>
-          <div className="stat-value text-primary">{subscriptionCount}</div>
+          <div className="stat-value text-primary">
+            {managerQuery.data?.subscriptions ?? 0}
+          </div>
         </div>
         <div className="stat">
           <div className="stat-figure text-primary">
             <i className="bx bx-user bx-lg" />
           </div>
           <div className="stat-title">
-            {t("members", { count: memberCount })}
+            {t("members", { count: managerQuery.data?.members ?? 0 })}
           </div>
-          <div className="stat-value text-primary">{memberCount}</div>
+          <div className="stat-value text-primary">
+            {managerQuery.data?.members ?? 0}
+          </div>
         </div>
       </section>
       <section className="grid auto-rows-auto gap-2 lg:grid-cols-2">
@@ -153,7 +131,7 @@ const ManagerClubs = ({
             </span>
           </div>
           <div className="flex flex-col gap-2">
-            {managerQuery.data?.map((club) => (
+            {managerQuery.data?.clubs?.map((club) => (
               <DailyPlanning key={club.id} clubId={club.id} />
             ))}
           </div>
@@ -162,7 +140,7 @@ const ManagerClubs = ({
           <h2>{t("event")}</h2>
           {features.includes("MANAGER_EVENT") ? (
             <div className="space-y-2">
-              {managerQuery.data?.map((club) => (
+              {managerQuery.data?.clubs?.map((club) => (
                 <div
                   key={club.id}
                   className="rounded border border-secondary p-4"

@@ -78,7 +78,7 @@ const MemberDashboard = ({
           count: queryUser.data?.memberData?.subscriptions.length ?? 0,
         })}
       </h2>
-      <section className="mb-4 grid grid-cols-[repeat(auto-fit,minmax(20rem,1fr))] gap-4">
+      <section className="mb-4 grid grid-cols-[repeat(auto-fit,minmax(20rem,30rem))] justify-center gap-4">
         {queryUser.data?.memberData?.subscriptions.map((sub) => (
           <Subscription key={sub.id} subscription={sub} />
         ))}

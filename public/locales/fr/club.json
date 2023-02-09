@@ -196,7 +196,11 @@
     },
     "club": "Club",
     "site": "Site",
-    "room": "Salle"
+    "room": "Salle",
+    "new-subscription": "Nouvel abonnement",
+    "subscribe": "S'abonner à ce programme",
+    "subscription-added": "Abonnement ajouté à votre compte",
+    "cancel": "Annuler"
   },
   "event": {
     "create": "Créer",

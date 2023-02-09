@@ -33,7 +33,6 @@ const MENUS: MenuDefinitionType[] = [
     access: ["ADMIN", "COACH", "MANAGER", "MANAGER_COACH", "MEMBER"],
   },
 
-  // { label: "navigation.clubs", page: "/clubs", access: ["MEMBER"] },
   {
     label: "navigation.find-coach",
     page: "/videoach#find-coach",
@@ -41,7 +40,11 @@ const MENUS: MenuDefinitionType[] = [
   },
   { label: "navigation.manager-offer", page: "/manager", access: ["VISITOR"] },
   { label: "navigation.coach-offer", page: "/coach", access: ["VISITOR"] },
-  { label: "navigation.company-offer", page: "/company", access: ["VISITOR"] },
+  {
+    label: "navigation.company-offer",
+    page: "/company",
+    access: ["MEMBER", "VISITOR"],
+  },
   {
     label: "navigation.planning-management",
     page: `/planning-management`,
@@ -105,7 +108,7 @@ export default function Navbar({ theme, onChangeTheme }: NavbarProps) {
     <div className="navbar bg-base-100">
       <div className="navbar-start">
         <div className="dropdown">
-          <label tabIndex={0} className="btn-ghost btn lg:hidden">
+          <label tabIndex={0} className="btn btn-ghost lg:hidden">
             <svg
               xmlns="http://www.w3.org/2000/svg"
               className="h-5 w-5"
@@ -132,6 +135,9 @@ export default function Navbar({ theme, onChangeTheme }: NavbarProps) {
       </div>
       <div className="navbar-center hidden lg:flex">
         <ul className="menu menu-horizontal p-0">
+          <li>
+            <Link href={"/videoach"}>{t("navigation.home")}</Link>
+          </li>
           <Menu />
         </ul>
       </div>
@@ -166,7 +172,7 @@ export default function Navbar({ theme, onChangeTheme }: NavbarProps) {
           <>
             {notifications.length ? (
               <div className="dropdown dropdown-end">
-                <label tabIndex={0} className="btn-ghost btn-circle btn">
+                <label tabIndex={0} className="btn btn-ghost btn-circle">
                   <div className="w-10 rounded-full">
                     {unread ? (
                       <div className="indicator ">
@@ -210,7 +216,7 @@ export default function Navbar({ theme, onChangeTheme }: NavbarProps) {
               <i className="bx bx-bell bx-md text-base-300" />
             )}{" "}
             <div className="dropdown dropdown-end">
-              <label tabIndex={0} className="btn-ghost btn-circle avatar btn">
+              <label tabIndex={0} className="btn btn-ghost btn-circle avatar">
                 <div className="w-10 rounded-full">
                   <img
                     src={user.data?.profileImageUrl ?? "/images/dummy.jpg"}
@@ -301,7 +307,7 @@ const Menu = () => {
 const Logo = () => {
   return (
     <div className="flex-1">
-      <Link href={"/videoach"} className="btn-ghost btn text-2xl capitalize">
+      <Link href={"/videoach"} className="btn btn-ghost text-2xl capitalize">
         Videoach
       </Link>
     </div>

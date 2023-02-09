@@ -111,14 +111,14 @@ function FindClub({ address = "" }: FindClubProps) {
         <td>
           {item.club.pages.find((p) => p.target === "HOME")?.published ? (
             <Link
-              href={`/presentation-page/club/${item.id}/${
+              href={`/presentation-page/club/${item.clubId}/${
                 item.club.pages.find((p) => p.target === "HOME")?.id
               }`}
               target="_blank"
               rel="noreferrer"
             >
               <ButtonIcon
-                title={t("page-club", { name: item.name })}
+                title={t("page-club", { name: item.club.name })}
                 iconComponent={<i className="bx bx-link-external bx-xs" />}
                 buttonSize="sm"
                 buttonVariant="Icon-Outlined-Primary"
@@ -156,7 +156,7 @@ function FindClub({ address = "" }: FindClubProps) {
           </div>
         </div>
         <button
-          className="btn-primary btn flex items-center gap-4"
+          className="btn btn-primary flex items-center gap-4"
           onClick={() => handleSearch()}
         >
           {t("search-club")}

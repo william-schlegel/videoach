@@ -13,6 +13,7 @@ import { TextError } from "@ui/simpleform";
 import Spinner from "@ui/spinner";
 import { useSession } from "next-auth/react";
 import { useTranslation } from "next-i18next";
+import Link from "next/link";
 import { useEffect, useState } from "react";
 import type { SubmitHandler } from "react-hook-form";
 import { useForm, useWatch } from "react-hook-form";
@@ -112,7 +113,12 @@ export const OfferCreation = ({ clubId, pageId }: OfferCreationProps) => {
         <div data-theme={previewTheme}>
           <div className="grid grid-cols-2 gap-4 bg-base-200 p-4">
             {querySection.data?.elements.map((card) => (
-              <OfferContentCard key={card.id} offer={card} preview />
+              <OfferContentCard
+                key={card.id}
+                offer={card}
+                clubId={clubId}
+                preview
+              />
             ))}
           </div>
         </div>
@@ -464,9 +470,10 @@ function OfferForm({
 
 type OfferDisplayProps = {
   pageId: string;
+  clubId: string;
 };
 
-export const OfferDisplayCard = ({ pageId }: OfferDisplayProps) => {
+export const OfferDisplayCard = ({ pageId, clubId }: OfferDisplayProps) => {
   const querySection = trpc.pages.getPageSection.useQuery(
     {
       pageId,
@@ -485,7 +492,7 @@ export const OfferDisplayCard = ({ pageId }: OfferDisplayProps) => {
       {querySection.data?.elements
         .filter((e) => e.elementType === "CARD")
         .map((e) => (
-          <OfferContentCard key={e.id} offer={e} />
+          <OfferContentCard key={e.id} offer={e} clubId={clubId} />
         ))}
     </div>
   );
@@ -494,6 +501,7 @@ export const OfferDisplayCard = ({ pageId }: OfferDisplayProps) => {
 type OffersContentCardProps = {
   preview?: boolean;
   offer: OfferContentElement;
+  clubId: string;
 };
 
 type OfferContentElement = {
@@ -511,7 +519,12 @@ type OfferContentElement = {
   }[];
 };
 
-function OfferContentCard({ preview = false, offer }: OffersContentCardProps) {
+function OfferContentCard({
+  preview = false,
+  offer,
+  clubId,
+}: OffersContentCardProps) {
+  const { data: sessionData } = useSession();
   const offerQuery = trpc.subscriptions.getSubscriptionById.useQuery(
     offer.optionValue ?? "",
     { enabled: isCUID(offer.optionValue) }
@@ -575,9 +588,27 @@ function OfferContentCard({ preview = false, offer }: OffersContentCardProps) {
             </>
           ) : null}
         </div>
-        <div className="card-actions justify-end">
-          <button className="btn btn-primary">{t("offer.select")}</button>
-        </div>
+        {preview ? (
+          <div className="card-actions justify-end">
+            <button className="btn btn-primary">{t("offer.select")}</button>
+          </div>
+        ) : sessionData?.user?.id ? (
+          <div>
+            <Link
+              href={`/user/${sessionData.user.id}/subscribe?clubId=${clubId}&offerId=${offer.optionValue}`}
+            >
+              <button className="btn btn-primary">{t("offer.select")}</button>
+            </Link>
+          </div>
+        ) : (
+          <div>
+            <Link href="/user/signin">
+              <button className="btn btn-primary">
+                {t("offer.connect-to-subscribe")}
+              </button>
+            </Link>
+          </div>
+        )}
       </div>
     </div>
   );

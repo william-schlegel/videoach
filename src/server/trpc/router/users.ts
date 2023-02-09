@@ -278,4 +278,51 @@ export const userRouter = router({
         data: { monthlyPayment: input.monthlyPayment },
       });
     }),
+  addSubscription: protectedProcedure
+    .input(
+      z.object({ userId: z.string().cuid(), subscriptionId: z.string().cuid() })
+    )
+    .mutation(async ({ ctx, input }) => {
+      const member = await ctx.prisma.userMember.findUnique({
+        where: { userId: input.userId },
+      });
+      if (!member) {
+        return ctx.prisma.userMember.create({
+          data: {
+            userId: input.userId,
+            subscriptions: {
+              connect: {
+                id: input.subscriptionId,
+              },
+            },
+          },
+        });
+      }
+      return ctx.prisma.userMember.update({
+        where: { userId: input.userId },
+        data: {
+          subscriptions: {
+            connect: {
+              id: input.subscriptionId,
+            },
+          },
+        },
+      });
+    }),
+  deleteSubscription: protectedProcedure
+    .input(
+      z.object({ userId: z.string().cuid(), subscriptionId: z.string().cuid() })
+    )
+    .mutation(({ ctx, input }) =>
+      ctx.prisma.userMember.update({
+        where: { userId: input.userId },
+        data: {
+          subscriptions: {
+            disconnect: {
+              id: input.subscriptionId,
+            },
+          },
+        },
+      })
+    ),
 });
