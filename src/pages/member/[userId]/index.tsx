@@ -67,7 +67,7 @@ const MemberDashboard = ({
       <h1 className="flex justify-between">
         {t("member.dashboard")}
         <Link
-          className="btn-secondary btn"
+          className="btn btn-secondary"
           href={`/member/${userId}/subscribe`}
         >
           {t("member.new-subscription")}
@@ -308,7 +308,7 @@ function MakeReservation({
   if (room.reservation === "NONE")
     return (
       <div className="text-center">
-        <p className="btn-outline btn-disabled btn-xs btn">
+        <p className="btn-outline btn-disabled btn btn-xs">
           {t("member.free-access")}
         </p>
       </div>
@@ -324,10 +324,10 @@ function MakeReservation({
       {reservations.find(
         (r) => r.id === planningActivityId && isEqual(day, r.date)
       ) ? (
-        <span className="btn-accent btn-xs btn">{t("member.reserved")}</span>
+        <span className="btn btn-accent btn-xs">{t("member.reserved")}</span>
       ) : (
         <button
-          className="btn-primary btn-xs btn"
+          className="btn btn-primary btn-xs"
           onClick={() =>
             createReservation.mutate({
               planningActivityId,
@@ -468,7 +468,7 @@ function ReserveDuration({
   if (room?.reservation === "NONE")
     return (
       <div className="text-center">
-        <p className="btn-outline btn-disabled btn-xs btn">
+        <p className="btn-outline btn-disabled btn btn-xs">
           {t("member.free-access")}
         </p>
       </div>
@@ -488,7 +488,7 @@ function ReserveDuration({
       {reservations.find(
         (r) => r.id === activity.id && isEqual(day, r.date)
       ) ? (
-        <span className="btn-accent btn-xs btn">{t("member.reserved")}</span>
+        <span className="btn btn-accent btn-xs">{t("member.reserved")}</span>
       ) : (
         <Modal
           title={t("member.reserve")}
@@ -589,7 +589,7 @@ function AvailableSlots({
       {slots.map((slot, idx) => (
         <span
           key={idx}
-          className={`btn-sm btn ${
+          className={`btn btn-sm ${
             slot.available ? "btn-primary" : "btn-disabled"
           }`}
           onClick={() => onSelect(slot)}
@@ -645,7 +645,7 @@ type ListProps = {
   items: string[];
 };
 
-function List({ label, items }: ListProps) {
+export function List({ label, items }: ListProps) {
   const { t } = useTranslation("dashboard");
   if (!items.length) return null;
   return (

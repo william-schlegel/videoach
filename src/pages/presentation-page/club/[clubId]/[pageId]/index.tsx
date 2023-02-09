@@ -16,6 +16,7 @@ import { ActivityGroupDisplayCard } from "@sections/activities";
 import { isCUID } from "@lib/checkValidity";
 import { TitleDisplay } from "@sections/title";
 import { PlanningDisplayCard } from "@sections/planning";
+import { OfferDisplayCard } from "@sections/offers";
 
 function ClubPresentation(
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -58,6 +59,8 @@ function ClubPresentation(
           />
         ) : section.model === "PLANNINGS" ? (
           <PlanningDisplayCard key={section.id} pageId={props.pageId} />
+        ) : section.model === "OFFERS" ? (
+          <OfferDisplayCard key={section.id} pageId={props.pageId} />
         ) : null
       )}
     </div>
@@ -85,7 +88,7 @@ export const getServerSideProps = async ({
     props: {
       ...(await serverSideTranslations(
         locale ?? "fr",
-        ["pages"],
+        ["pages", "dashboard", "club"],
         nextI18nConfig
       )),
       pageId,

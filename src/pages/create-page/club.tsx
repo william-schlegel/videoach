@@ -28,6 +28,7 @@ import { ActivityGroupCreation } from "@sections/activities";
 import { ActivityCreation } from "@sections/activity";
 import { TitleCreation } from "@sections/title";
 import { PlanningCreation } from "@sections/planning";
+import { OfferCreation } from "@sections/offers";
 
 function ClubPage({
   userId,
@@ -177,7 +178,7 @@ const PageContent = ({ pageId, clubId }: PageContentProps) => {
             href={`/presentation-page/club/${clubId}/${pageId}`}
             target="_blank"
             referrerPolicy="no-referrer"
-            className="btn-primary btn flex gap-2"
+            className="btn btn-primary flex gap-2"
           >
             {t("page-preview")}
             <i className="bx bx-link-external bx-xs" />
@@ -214,6 +215,9 @@ const PageContent = ({ pageId, clubId }: PageContentProps) => {
         {section === "ACTIVITIES" && (
           <ActivityCreation clubId={clubId} pageId={pageId} />
         )}
+        {section === "OFFERS" && (
+          <OfferCreation clubId={clubId} pageId={pageId} />
+        )}
       </div>
     </article>
   );
@@ -249,7 +253,7 @@ export const getServerSideProps = async ({
     props: {
       ...(await serverSideTranslations(
         locale ?? "fr",
-        ["common", "pages"],
+        ["common", "pages", "dashboard", "club"],
         nextI18nConfig
       )),
       userId: session?.user?.id || "",

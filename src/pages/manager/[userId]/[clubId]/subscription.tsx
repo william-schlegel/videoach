@@ -448,8 +448,8 @@ function SelectDataForMode({
 }
 
 export function useDisplaySubscriptionInfo(
-  mode: SubscriptionMode,
-  restriction: SubscriptionRestriction,
+  mode: SubscriptionMode | undefined,
+  restriction: SubscriptionRestriction | undefined,
   activityGroupIds: string[],
   activityIds: string[],
   siteIds: string[],
@@ -457,12 +457,15 @@ export function useDisplaySubscriptionInfo(
 ) {
   const { t } = useTranslation("club");
 
-  const { data } = trpc.subscriptions.getDataNames.useQuery({
-    siteIds,
-    roomIds,
-    activityGroupIds,
-    activityIds,
-  });
+  const { data } = trpc.subscriptions.getDataNames.useQuery(
+    {
+      siteIds,
+      roomIds,
+      activityGroupIds,
+      activityIds,
+    },
+    { enabled: mode != undefined && restriction != undefined }
+  );
   let info = "";
   let shortInfo = "";
 

@@ -17,7 +17,7 @@
   },
   "target": {
     "home": "Page d'accueil",
-    "offers": "Offres",
+    "offers": "Abonnements",
     "activities": "Présentation des activités",
     "activity": "Détail d'une activité",
     "contact": "Contact",
@@ -34,6 +34,8 @@
     "plannings": "Plannings",
     "activity-groups": "Activités (groupe)",
     "activity-details": "Activité (détails)",
+    "offers": "Abonnements",
+    "video": "Vidéo",
     "location": "Plan et emplacements",
     "contact": "Contact",
     "social": "Réseaux sociaux",
@@ -58,6 +60,25 @@
     "subtitle": "Sous titre",
     "description": "Description",
     "delete-image": "Supprimer l'image"
+  },
+  "offer": {
+    "offer-section": "Personnalisation des offres",
+    "offer-created": "Offre créée",
+    "new-offer": "Nouvelle offre",
+    "offer-updated": "Offre mis à jour",
+    "update-offer": "Modifier l'offre'",
+    "deleted": "Offre supprimé",
+    "deletion": "Supprimer cette offre",
+    "deletion-message": "La suppression de cette offre est irréversible|Confirmez-vous ?",
+    "deletion-confirm": "Supprimer",
+    "image": "Image de fond",
+    "delete-image": "Supprimer l'image",
+    "title": "Titre",
+    "subtitle": "Sous titre",
+    "title-mandatory": "Le titre est obligatoire",
+    "description": "Desciption",
+    "offer": "Offre associée",
+    "select": "Sélectioner cette  offre"
   },
   "planning": {
     "planning-section": "Personnalisation des plannings",

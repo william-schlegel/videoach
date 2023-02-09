@@ -57,7 +57,7 @@ const PageNavigation = ({ clubId, logoUrl, pages }: Props) => {
         </Link>
       </div>
       <div className="navbar-center hidden lg:flex">
-        <ul className="menu menu-horizontal px-1">
+        <ul className="menu menu-horizontal space-x-4">
           <PageMenu menus={pages} clubId={clubId} />
         </ul>
       </div>
@@ -75,15 +75,17 @@ function PageMenu({ menus, clubId }: { menus: PageProps[]; clubId: string }) {
         if (menu.target === "HOME") {
           return (
             <>
-              {menu.sections.map((s) => (
-                <li key={s.id}>
-                  <Link
-                    href={`/presentation-page/club/${clubId}/${menu.id}#${s.model}`}
-                  >
-                    {s.title}
-                  </Link>
-                </li>
-              ))}
+              {menu.sections
+                .filter((s) => s.title)
+                .map((s) => (
+                  <li key={s.id}>
+                    <Link
+                      href={`/presentation-page/club/${clubId}/${menu.id}#${s.model}`}
+                    >
+                      {s.title}
+                    </Link>
+                  </li>
+                ))}
             </>
           );
         }

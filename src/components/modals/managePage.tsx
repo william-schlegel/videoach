@@ -41,6 +41,8 @@ const PAGE_SECTION_LIST: readonly {
   { value: "PLANNINGS", label: "section.plannings" },
   { value: "ACTIVITY_GROUPS", label: "section.activity-groups" },
   { value: "ACTIVITIES", label: "section.activity-details" },
+  { value: "OFFERS", label: "section.offers" },
+  { value: "VIDEO", label: "section.video" },
   { value: "LOCATION", label: "section.location" },
   { value: "CONTACT", label: "section.contact" },
   { value: "SOCIAL", label: "section.social" },
@@ -55,6 +57,10 @@ const TARGET_SECTIONS: {
   {
     target: "HOME",
     sections: ["HERO", "ACTIVITY_GROUPS", "ACTIVITIES", "CONTACT", "LOCATION"],
+  },
+  {
+    target: "OFFERS",
+    sections: ["TITLE", "OFFERS"],
   },
   {
     target: "ACTIVITIES",
