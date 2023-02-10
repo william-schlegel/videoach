@@ -59,6 +59,7 @@ const cancelSubscription = async (
         type: "SUBSCRIPTION_REJECTED",
         message: "",
         linkedNotification: notification.id,
+        data: JSON.stringify(sData),
       });
       // update notification answered
       await caller.notifications.updateNotification({

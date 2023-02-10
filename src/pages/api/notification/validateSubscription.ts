@@ -86,6 +86,7 @@ const validateSubscription = async (
         type: "SUBSCRIPTION_VALIDATED",
         message: "",
         linkedNotification: notification.id,
+        data: JSON.stringify(sData),
       });
       // update notification answered
       await caller.notifications.updateNotification({

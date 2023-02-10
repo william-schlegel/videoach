@@ -26,6 +26,10 @@ function useNotifications(userId: string | undefined | null) {
   function formatMessage(notification: UserNotification) {
     if (notification.type === "NEW_SUBSCRIPTION")
       return t("api.new-subscription");
+    if (notification.type === "SUBSCRIPTION_VALIDATED")
+      return t("api.subscription-accepted");
+    if (notification.type === "SUBSCRIPTION_REJECTED")
+      return t("api.subscription-rejected");
     return notification.message;
   }
 

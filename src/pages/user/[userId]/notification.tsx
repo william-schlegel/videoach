@@ -305,7 +305,9 @@ function NotificationMessage({
       </div>
     );
   if (
-    notification.type === "NEW_SUBSCRIPTION" &&
+    (notification.type === "NEW_SUBSCRIPTION" ||
+      notification.type === "SUBSCRIPTION_REJECTED" ||
+      notification.type === "SUBSCRIPTION_VALIDATED") &&
     typeof notification.data === "object"
   ) {
     const sData = notification.data as {
