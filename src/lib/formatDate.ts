@@ -30,7 +30,7 @@ export const remainingDays = (startDate: Date) => {
 type TformatDateLocalizedOptions = {
   withTime?: boolean;
   withDay?: boolean | "short" | "long";
-  dateFormat?: "number" | "short" | "long";
+  dateFormat?: "number" | "short" | "long" | "month-year";
 };
 
 export const formatDateLocalized = (
@@ -48,6 +48,7 @@ export const formatDateLocalized = (
   if (dateFormat === "number") frmt = frmt.concat("P");
   if (dateFormat === "short") frmt = frmt.concat("PP");
   if (dateFormat === "long") frmt = frmt.concat("PPP");
+  if (dateFormat === "month-year") frmt = frmt.concat("d MMMM");
   if (withTime) frmt = frmt.concat("p");
   return format(dt ?? startOfToday(), frmt, {
     locale: i18n?.language === "en" ? enUS : fr,

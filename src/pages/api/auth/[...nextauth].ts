@@ -3,11 +3,13 @@ import FacebookProvider from "next-auth/providers/facebook";
 import GoogleProvider from "next-auth/providers/google";
 import StravaProvider from "next-auth/providers/strava";
 import EmailProvider from "next-auth/providers/email";
+import CredentialProvider from "next-auth/providers/credentials";
 
 // Prisma adapter for NextAuth, optional and can be removed
 import { PrismaAdapter } from "@next-auth/prisma-adapter";
 import { env } from "@root/src/env/server.mjs";
 import { prisma } from "@root/src/server/db/client";
+import bcrypt from "bcrypt";
 
 export const authOptions: NextAuthOptions = {
   // Include user.id on session
@@ -49,6 +51,28 @@ export const authOptions: NextAuthOptions = {
       },
       from: process.env.EMAIL_FROM,
       // process.env.EMAIL_SERVER,
+    }),
+    CredentialProvider({
+      name: "credentials",
+      credentials: {
+        email: { type: "email" },
+        password: { type: "password" },
+      },
+      async authorize(credentials) {
+        if (!credentials) return null;
+        console.log("credentials", credentials);
+        const user = await prisma.user.findUnique({
+          where: { email: credentials.email },
+        });
+        if (!user) throw new Error("wrong credentials");
+        const pwdOk = await bcrypt.compare(
+          credentials.password,
+          user.password ?? ""
+        );
+        if (!pwdOk) throw new Error("wrong credentials");
+        console.log("user", user);
+        return user;
+      },
     }),
   ],
   pages: {

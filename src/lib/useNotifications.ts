@@ -1,11 +1,13 @@
 import type { UserNotification } from "@prisma/client";
 import { trpc } from "@trpcclient/trpc";
+import { useTranslation } from "next-i18next";
 import { useState } from "react";
 import { isCUID } from "./checkValidity";
 
 function useNotifications(userId: string | undefined | null) {
   const [notifications, setNotifications] = useState<UserNotification[]>([]);
   const [unread, setUnread] = useState(0);
+  const { t } = useTranslation("common");
 
   const getNotifications = trpc.notifications.getNotificationToUser.useQuery(
     { userToId: userId ?? "" },
@@ -21,6 +23,17 @@ function useNotifications(userId: string | undefined | null) {
     }
   );
 
-  return { isLoading: getNotifications.isLoading, notifications, unread };
+  function formatMessage(notification: UserNotification) {
+    if (notification.type === "NEW_SUBSCRIPTION")
+      return t("api.new-subscription");
+    return notification.message;
+  }
+
+  return {
+    isLoading: getNotifications.isLoading,
+    notifications,
+    unread,
+    formatMessage,
+  };
 }
 export default useNotifications;

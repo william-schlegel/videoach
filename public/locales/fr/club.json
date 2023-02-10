@@ -200,7 +200,12 @@
     "new-subscription": "Nouvel abonnement",
     "subscribe": "S'abonner à ce programme",
     "subscription-added": "Abonnement ajouté à votre compte",
-    "cancel": "Annuler"
+    "cancel": "Annuler",
+    "payment": "Paiement",
+    "select-monthly": "Paiement {{price}} tous les mois",
+    "select-yearly": "Paiement {{price}} tous les ans à la date anniversaire le {{date}}",
+    "payment-online": "Payer en ligne",
+    "payment-club": "Payer directement au club"
   },
   "event": {
     "create": "Créer",

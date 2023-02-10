@@ -4,6 +4,7 @@ import { z } from "zod";
 import { router, publicProcedure, protectedProcedure } from "../trpc";
 import { createToken, streamchatClient } from "../../streamchat";
 import { getDocUrl } from "./files";
+import bcrypt from "bcrypt";
 
 const UserFilter = z
   .object({
@@ -278,36 +279,64 @@ export const userRouter = router({
         data: { monthlyPayment: input.monthlyPayment },
       });
     }),
-  addSubscription: protectedProcedure
+  addSubscriptionWithValidation: protectedProcedure
     .input(
-      z.object({ userId: z.string().cuid(), subscriptionId: z.string().cuid() })
+      z.object({
+        userId: z.string().cuid(),
+        subscriptionId: z.string().cuid(),
+        monthly: z.boolean().default(true),
+        online: z.boolean().default(false),
+      })
     )
     .mutation(async ({ ctx, input }) => {
-      const member = await ctx.prisma.userMember.findUnique({
-        where: { userId: input.userId },
+      // notify the club manager
+      const sub = await ctx.prisma.subscription.findUnique({
+        where: { id: input.subscriptionId },
+        include: { club: true },
       });
-      if (!member) {
-        return ctx.prisma.userMember.create({
+      console.log("sub", sub);
+      const managerId = sub?.club.managerId;
+      console.log("managerId", managerId);
+      if (managerId) {
+        await ctx.prisma.userNotification.create({
           data: {
-            userId: input.userId,
-            subscriptions: {
-              connect: {
-                id: input.subscriptionId,
-              },
+            userFromId: input.userId,
+            userToId: managerId,
+            type: "NEW_SUBSCRIPTION",
+            message: "",
+            data: {
+              subscriptionId: input.subscriptionId,
+              monthly: input.monthly,
+              online: input.online,
             },
           },
         });
       }
-      return ctx.prisma.userMember.update({
-        where: { userId: input.userId },
-        data: {
-          subscriptions: {
-            connect: {
-              id: input.subscriptionId,
-            },
-          },
-        },
-      });
+      // const member = await ctx.prisma.userMember.findUnique({
+      //   where: { userId: input.userId },
+      // });
+      // if (!member) {
+      //   return ctx.prisma.userMember.create({
+      //     data: {
+      //       userId: input.userId,
+      //       subscriptions: {
+      //         connect: {
+      //           id: input.subscriptionId,
+      //         },
+      //       },
+      //     },
+      //   });
+      // }
+      // return ctx.prisma.userMember.update({
+      //   where: { userId: input.userId },
+      //   data: {
+      //     subscriptions: {
+      //       connect: {
+      //         id: input.subscriptionId,
+      //       },
+      //     },
+      //   },
+      // });
     }),
   deleteSubscription: protectedProcedure
     .input(
@@ -325,4 +354,52 @@ export const userRouter = router({
         },
       })
     ),
+  createUserWithCredentials: publicProcedure
+    .input(
+      z.object({
+        name: z.string(),
+        email: z.string().email(),
+        password: z.string(),
+      })
+    )
+    .mutation(async ({ ctx, input }) => {
+      // check if user exist with email
+      const user = await ctx.prisma.user.findUnique({
+        where: { email: input.email },
+      });
+      if (user)
+        throw new TRPCError({
+          code: "CONFLICT",
+          message: "email already in use",
+        });
+      // encrypt password
+      const encPwd = await bcrypt.hash(input.password, 12);
+      // create user
+      return ctx.prisma.user.create({
+        data: {
+          email: input.email,
+          password: encPwd,
+          name: input.name,
+        },
+      });
+    }),
+  getUserByCredentials: publicProcedure
+    .input(z.object({ email: z.string().email(), password: z.string() }))
+    .query(async ({ ctx, input }) => {
+      const user = await ctx.prisma.user.findUnique({
+        where: { email: input.email },
+      });
+      if (!user)
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "wrong credentials",
+        });
+      const pwdOk = await bcrypt.compare(input.password, user.password ?? "");
+      if (!pwdOk)
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "wrong credentials",
+        });
+      return user;
+    }),
 });

@@ -11,6 +11,9 @@ import { trpc } from "@trpcclient/trpc";
 import { useDisplaySubscriptionInfo } from "../../manager/[userId]/[clubId]/subscription";
 import { List } from "../../member/[userId]";
 import { useSession } from "next-auth/react";
+import { useState } from "react";
+import { formatDateLocalized } from "@lib/formatDate";
+import { formatMoney } from "@lib/formatNumber";
 
 export default function Profile() {
   const router = useRouter();
@@ -18,6 +21,8 @@ export default function Profile() {
   const myClubId = (Array.isArray(clubId) ? clubId[0] : clubId) || "";
   const myOfferId = (Array.isArray(offerId) ? offerId[0] : offerId) || "";
   const { data: sessionData } = useSession();
+  const [monthly, setMonthly] = useState(true);
+  const [online, setOnline] = useState(false);
 
   const offerQuery = trpc.subscriptions.getSubscriptionById.useQuery(
     myOfferId,
@@ -36,7 +41,7 @@ export default function Profile() {
       offerQuery.data?.rooms.map((ag) => ag.id) ?? []
     );
 
-  const updateUser = trpc.users.addSubscription.useMutation({
+  const updateUser = trpc.users.addSubscriptionWithValidation.useMutation({
     onSuccess() {
       toast.success(t("subscription.subscription-added"));
     },
@@ -51,6 +56,8 @@ export default function Profile() {
     updateUser.mutate({
       userId: sessionData.user.id,
       subscriptionId: myOfferId,
+      monthly,
+      online,
     });
     cancel();
   }
@@ -80,18 +87,67 @@ export default function Profile() {
           </div>
         </div>
       </div>
-      <div className="rounded border border-primary p-4">Payment options</div>
+      <div className="space-y-2 rounded border border-primary p-4">
+        <h2>{t("subscription.payment")}</h2>
+        {offerQuery.data?.inscriptionFee ? (
+          <label className="w-fit gap-4">
+            {t("subscription.inscription-fee")}
+            <span>{formatMoney(offerQuery.data.inscriptionFee)}</span>
+          </label>
+        ) : null}
+        <div className="space-x-4">
+          {offerQuery.data?.monthly ? (
+            <button
+              type="button"
+              className={`btn-secondary btn ${monthly ? "" : "btn-outline"}`}
+              onClick={() => setMonthly(true)}
+            >
+              {t("subscription.select-monthly", {
+                price: formatMoney(offerQuery.data.monthly),
+              })}
+            </button>
+          ) : null}
+          {offerQuery.data?.yearly ? (
+            <button
+              type="button"
+              className={`btn-secondary btn ${monthly ? "btn-outline" : ""}`}
+              onClick={() => setMonthly(false)}
+            >
+              {t("subscription.select-yearly", {
+                price: formatMoney(offerQuery.data.yearly),
+                date: formatDateLocalized(null, { dateFormat: "month-year" }),
+              })}
+            </button>
+          ) : null}
+        </div>
+        <div className="space-x-4">
+          <button
+            type="button"
+            className={`btn-secondary btn ${online ? "" : "btn-outline"}`}
+            onClick={() => setOnline(true)}
+          >
+            {t("subscription.payment-online")}
+          </button>
+          <button
+            type="button"
+            className={`btn-secondary btn ${online ? "btn-outline" : ""}`}
+            onClick={() => setOnline(false)}
+          >
+            {t("subscription.payment-club")}
+          </button>
+        </div>
+      </div>
       <div className="flex gap-4">
         <button
           type="button"
-          className="btn btn-primary"
+          className="btn-primary btn"
           onClick={handleSubscribe}
         >
           {t("subscription.subscribe")}
         </button>
         <button
           type="button"
-          className="btn-outline btn btn-secondary"
+          className="btn-outline btn-secondary btn"
           onClick={cancel}
         >
           {t("subscription.cancel")}

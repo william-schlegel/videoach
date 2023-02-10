@@ -29,6 +29,7 @@
     "@turf/distance": "^6.5.0",
     "@turf/helpers": "^6.5.0",
     "@turf/invariant": "^6.5.0",
+    "bcrypt": "^5.1.0",
     "daisyui": "^2.49.0",
     "date-fns": "^2.29.3",
     "i18next": "^22.0.6",
@@ -50,6 +51,7 @@
   "devDependencies": {
     "@prisma/client": "^4.10.0",
     "@tailwindcss/container-queries": "^0.1.0",
+    "@types/bcrypt": "^5.0.0",
     "@types/node": "^18.11.18",
     "@types/react": "^18.0.27",
     "@types/react-dom": "^18.0.10",

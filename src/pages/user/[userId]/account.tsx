@@ -110,7 +110,7 @@ export default function Account() {
     if (!isCUID(data.pricingId) && !isCUID(userQuery.data?.pricingId)) {
       setError("pricingId", {
         type: "required",
-        message: t("pricing-mandatory") ?? "",
+        message: t("account.pricing-mandatory") ?? "",
       });
       return;
     } else clearErrors("pricingId");
@@ -158,17 +158,17 @@ export default function Account() {
 
   return (
     <Layout
-      title={t("your-account")}
+      title={t("account.your-account")}
       className="container mx-auto my-2 space-y-2 p-2"
     >
       <div className="flex items-center justify-between">
-        <h1>{t("your-account")}</h1>
+        <h1>{t("account.your-account")}</h1>
         <Modal
-          title={t("payments")}
+          title={t("account.payments")}
           buttonIcon={<i className="bx bx-euro bx-sm" />}
           variant="Secondary"
         >
-          <h3>{t("payments")}</h3>
+          <h3>{t("account.payments")}</h3>
         </Modal>
       </div>
       <form
@@ -176,9 +176,9 @@ export default function Account() {
         onSubmit={handleSubmit(onSubmit)}
       >
         <section className={`grid grid-cols-[auto_1fr] gap-2`}>
-          <label>{t("my-role")}</label>
+          <label>{t("account.my-role")}</label>
           {userQuery.data?.role === Role.ADMIN ? (
-            <div>{t("admin")}</div>
+            <div>{t("account.admin")}</div>
           ) : (
             <select
               className="max-w-xs"
@@ -194,17 +194,21 @@ export default function Account() {
           )}
           {fields?.role === "COACH" || fields.role === "MANAGER_COACH" ? (
             <>
-              <label>{t("public-name")}</label>
+              <label>{t("account.public-name")}</label>
               <input
                 {...register("publicName")}
                 className="input-bordered input w-full"
               />
               <div className="col-span-2">
-                <label className="self-start">{t("short-presentation")}</label>
+                <label className="self-start">
+                  {t("account.short-presentation")}
+                </label>
                 <textarea {...register("description")} rows={3} />
-                <label className="self-start">{t("about-me")}</label>
+                <label className="self-start">{t("account.about-me")}</label>
                 <textarea {...register("aboutMe")} rows={6} />
-                <label className="self-start">{t("public-activities")}</label>
+                <label className="self-start">
+                  {t("account.public-activities")}
+                </label>
                 <div className="input-group">
                   <input
                     className="input-bordered input w-full"
@@ -244,7 +248,7 @@ export default function Account() {
           {fields?.role === "COACH" || fields.role === "MANAGER_COACH" ? (
             <div className={`mb-2 grid  grid-cols-[auto_1fr] gap-2`}>
               <AddressSearch
-                label={t("google-address")}
+                label={t("account.google-address")}
                 defaultAddress={fields.searchAddress ?? ""}
                 onSearch={(adr) => {
                   setValue("searchAddress", adr.address);
@@ -254,13 +258,13 @@ export default function Account() {
                 className="col-span-2"
               />
               <div className="col-span-2 flex justify-between">
-                <label>{t("longitude")}</label>
+                <label>{t("account.longitude")}</label>
                 <input
                   {...register("longitude")}
                   className="input-bordered input w-full"
                   disabled
                 />
-                <label>{t("latitude")}</label>
+                <label>{t("account.latitude")}</label>
                 <input
                   {...register("latitude")}
                   className="input-bordered input w-full"
@@ -268,7 +272,7 @@ export default function Account() {
                 />
               </div>
               <div className="flex gap-2">
-                <label>{t("range")}</label>
+                <label>{t("account.range")}</label>
                 <div className="form-control">
                   <div className="input-group">
                     <input
@@ -327,11 +331,13 @@ export default function Account() {
 
           <div className="rounded border border-primary p-4">
             <div className="flex flex-col gap-2">
-              <h2>{t("plan")}</h2>
+              <h2>{t("account.plan")}</h2>
               {userQuery.data?.pricingId &&
               userQuery.data.pricing?.roleTarget === fields?.role ? (
                 <>
-                  <label className="self-start">{t("actual-plan")}</label>
+                  <label className="self-start">
+                    {t("account.actual-plan")}
+                  </label>
                   <div className="flex gap-2">
                     <div className="rounded bg-primary px-4 py-2 text-primary-content">
                       <PlanDetails
@@ -346,7 +352,7 @@ export default function Account() {
                     {userQuery.data.trialUntil &&
                     !userQuery.data.pricing?.free ? (
                       <div className="rounded bg-secondary px-4 py-2 text-secondary-content">
-                        {t("trial-remaining", {
+                        {t("account.trial-remaining", {
                           count: remainingDays(userQuery.data.trialUntil),
                         })}
                       </div>
@@ -354,11 +360,11 @@ export default function Account() {
                   </div>
                 </>
               ) : (
-                <div>{t("no-plan-yet")}</div>
+                <div>{t("account.no-plan-yet")}</div>
               )}
               {fields.pricingId ? ( // new pricing
                 <div className="flex flex-1 flex-col border-2 border-warning p-2">
-                  <h4>{t("new-plan")}</h4>
+                  <h4>{t("account.new-plan")}</h4>
                   <div className="rounded bg-warning px-4 py-2 text-center text-warning-content">
                     {newPricing.data ? (
                       <PlanDetails
@@ -389,22 +395,22 @@ export default function Account() {
           </div>
           <div className="mt-4 rounded border border-secondary p-4 text-center">
             <Confirmation
-              message={t("cancel-plan-message")}
-              title={t("cancel-plan")}
+              message={t("account.cancel-plan-message")}
+              title={t("account.cancel-plan")}
               variant="Outlined-Secondary"
               buttonIcon={<i className="bx bx-x bx-sm" />}
-              textConfirmation={t("cancel-plan-confirm")}
+              textConfirmation={t("account.cancel-plan-confirm")}
               onConfirm={() => setValue("cancelationDate", startOfToday())}
             />
             {isDate(fields.cancelationDate) ? (
               <div className="alert alert-error mt-4">
                 <div>
                   <i className="bx bx-error-circle bx-xs" />
-                  <span>{t("cancelation-requested")}</span>
+                  <span>{t("account.cancelation-requested")}</span>
                 </div>
                 <div className="flex-none">
                   <button
-                    className="btn btn-warning btn-xs"
+                    className="btn-warning btn-xs btn"
                     type="button"
                     onClick={() => setValue("cancelationDate", null)}
                   >
@@ -416,10 +422,10 @@ export default function Account() {
           </div>
         </section>
         <button
-          className="btn btn-primary col-span-2 w-fit"
+          className="btn-primary btn col-span-2 w-fit"
           disabled={updateUser.isLoading}
         >
-          {t("save-account")}
+          {t("account.save-account")}
         </button>
       </form>
     </Layout>
@@ -447,10 +453,10 @@ function PlanDetails({
     <>
       {name} (
       {free
-        ? t("free")
+        ? t("account.free")
         : monthlyPayment
-        ? `${formatMoney(monthly)} ${t("per-month")}`
-        : `${formatMoney(yearly)} ${t("per-year")}`}
+        ? `${formatMoney(monthly)} ${t("account.per-month")}`
+        : `${formatMoney(yearly)} ${t("account.per-year")}`}
       )
     </>
   );

@@ -40,11 +40,18 @@
     "my-notifications": "Mes notifications"
   },
   "api": {
-    "error-accept-search-coach": "Erreur lors de l'acceptatio de cette requète",
+    "error-accept-search-coach": "Erreur lors de l'acceptation de cette requète",
+    "error-refuse-search-coach": "Erreur lors du refus de cette requète",
+    "error-validate-subscription": "Erreur lors de la validation de cet abonnement",
+    "error-reject-subscription": "Erreur lors du rejet de cet abonnement",
     "accept": "Accepté",
     "refused": "Refusé",
+    "reject": "Rejeté",
     "coach-added": "Le coach a été ajouté au club",
     "answer-sent": "Réponse envoyée",
-    "error": "Erreur lors de l'écriture"
+    "error": "Erreur lors de l'écriture",
+    "new-subscription": "Nouveau membre abonné",
+    "subscription-accepted": "L'abonnement a été ajouté",
+    "subscription-rejected": "L'abonnement a été refusé"
   }
 }

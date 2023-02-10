@@ -108,20 +108,20 @@ export default function Profile() {
 
   return (
     <Layout
-      title={t("your-profile")}
+      title={t("profile.your-profile")}
       className="container mx-auto my-2 space-y-2 p-2"
     >
-      <h1>{t("your-profile")}</h1>
+      <h1>{t("profile.your-profile")}</h1>
       <form
         className={`flex flex-col gap-4 xl:grid xl:grid-cols-2 xl:items-start`}
         onSubmit={handleSubmit(onSubmit)}
       >
         <section className={`grid grid-cols-[auto_1fr] gap-2`}>
-          <label>{t("change-name")}</label>
+          <label>{t("profile.change-name")}</label>
           <div>
             <input
               {...register("name", {
-                required: t("name-mandatory") ?? true,
+                required: t("profile.name-mandatory") ?? true,
               })}
               type={"text"}
               className="input-bordered input w-full"
@@ -130,21 +130,21 @@ export default function Profile() {
               <p className="text-sm text-error">{errors.name.message}</p>
             ) : null}
           </div>
-          <label>{t("my-email")}</label>
+          <label>{t("profile.my-email")}</label>
           <input
             {...register("email")}
             type={"email"}
             className="input-bordered input w-full"
           />
-          <label>{t("phone")}</label>
+          <label>{t("profile.phone")}</label>
           <input
             {...register("phone")}
             type="tel"
             className="input-bordered input w-full"
           />
-          <label className="place-self-start">{t("address")}</label>
+          <label className="place-self-start">{t("profile.address")}</label>
           <textarea {...register("address")} rows={2} />
-          <label>{t("account-provider")}</label>
+          <label>{t("profile.account-provider")}</label>
           <div className="flex gap-2">
             {!userQuery.data?.accounts?.length ? (
               <span className="rounded border border-primary px-4 py-2">
@@ -165,7 +165,7 @@ export default function Profile() {
         <section>
           <div className="col-span-2 flex flex-col items-center justify-start gap-4">
             <div className="w-full ">
-              <label>{t("profile-image")}</label>
+              <label>{t("profile.profile-image")}</label>
               <input
                 type="file"
                 className="file-input-bordered file-input-primary file-input w-full"
@@ -202,7 +202,7 @@ export default function Profile() {
           className="btn-primary btn col-span-2 w-fit"
           disabled={updateUser.isLoading}
         >
-          {t("save-profile")}
+          {t("profile.save-profile")}
         </button>
       </form>
     </Layout>
